@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { Salon, Master, Language } from './types';
 import HomePage from './pages/HomePage';
 import SalonDetailPage from './pages/SalonDetailPage';
@@ -7,25 +7,29 @@ import MasterDetailPage from './pages/MasterDetailPage';
 import AdminPanel from './pages/AdminPanel';
 import './App.css';
 
-function App() {
+function AppContent() {
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
   const [currentLanguage] = useState<Language>('cs');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const navigate = useNavigate();
 
   const handleSalonSelect = (salon: Salon) => {
     console.log('Salon selected:', salon);
     setSelectedSalon(salon);
+    navigate(`/salon/${salon.id}`);
   };
 
   const handleMasterSelect = (master: Master) => {
     console.log('Master selected:', master);
     setSelectedMaster(master);
+    navigate(`/master/${master.id}`);
   };
 
   const handleBack = () => {
     setSelectedSalon(null);
     setSelectedMaster(null);
+    navigate('/');
   };
 
   const handleAdminPanel = () => {
@@ -140,27 +144,26 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                onSalonSelect={handleSalonSelect}
-                onMasterSelect={handleMasterSelect}
-                onAdminPanel={handleAdminPanel}
-              />
-            }
+    <div className="App">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              onSalonSelect={handleSalonSelect}
+              onMasterSelect={handleMasterSelect}
+              onAdminPanel={handleAdminPanel}
+            />
+          }
           />
-          <Route
-            path="/salon/:id"
-            element={
-              selectedSalon ? (
-                <SalonDetailPage
-                  salon={selectedSalon}
-                  language={currentLanguage}
-                  translations={{
+        <Route
+          path="/salon/:id"
+          element={
+            selectedSalon ? (
+              <SalonDetailPage
+                salon={selectedSalon}
+                language={currentLanguage}
+                translations={{
                     cs: {
                       back: "← Zpět na vyhledávání",
                       contact: "Kontakt",
@@ -274,8 +277,15 @@ function App() {
               )
             }
           />
-        </Routes>
-      </div>
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
