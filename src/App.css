@@ -866,7 +866,7 @@ body {
 
 /* Карта */
 .map-container {
-  height: 500px;
+  height: 600px;
   width: 100%;
   border-radius: 15px;
   overflow: hidden;

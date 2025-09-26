@@ -12,7 +12,7 @@ const mockSalons: Salon[] = [
     id: 1,
     name: "Elegance Beauty Prague",
     city: "Prague",
-    address: "Václavské náměstí 1",
+    address: "Václavské náměstí 28, 110 00 Praha 1",
     services: ["Manicure", "Pedicure", "Haircut", "Makeup", "Facial"],
     rating: 4.8,
     reviews: 127,
@@ -37,7 +37,8 @@ const mockSalons: Salon[] = [
         reviews: 45,
         photo: "https://via.placeholder.com/150x150/667eea/ffffff?text=KN",
         worksInSalon: true,
-        isFreelancer: false
+        isFreelancer: false,
+        address: "Václavské náměstí 28, 110 00 Praha 1"
       },
       {
         id: 102,
@@ -48,7 +49,20 @@ const mockSalons: Salon[] = [
         reviews: 82,
         photo: "https://via.placeholder.com/150x150/764ba2/ffffff?text=LS",
         worksInSalon: true,
-        isFreelancer: false
+        isFreelancer: false,
+        address: "Václavské náměstí 28, 110 00 Praha 1"
+      },
+      {
+        id: 103,
+        name: "Martina Krásná",
+        specialty: "Make-up artist",
+        experience: "6 let",
+        rating: 4.8,
+        reviews: 67,
+        photo: "https://via.placeholder.com/150x150/ff6b6b/ffffff?text=MK",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Václavské náměstí 28, 110 00 Praha 1"
       }
     ],
     coordinates: { lat: 50.0755, lng: 14.4378 }
@@ -57,7 +71,7 @@ const mockSalons: Salon[] = [
     id: 2,
     name: "Glamour Studio Brno",
     city: "Brno",
-    address: "Náměstí Svobody 15",
+    address: "Náměstí Svobody 15, 602 00 Brno-střed",
     services: ["Makeup", "Hair Styling", "Facial", "Massage"],
     rating: 4.6,
     reviews: 89,
@@ -73,14 +87,27 @@ const mockSalons: Salon[] = [
     masters: [
       {
         id: 201,
-        name: "Martina Krásná",
+        name: "Eva Krásná",
         specialty: "Wedding Makeup",
         experience: "6 let",
         rating: 4.8,
         reviews: 67,
-        photo: "https://via.placeholder.com/150x150/ff6b6b/ffffff?text=MK",
+        photo: "https://via.placeholder.com/150x150/ff6b6b/ffffff?text=EK",
         worksInSalon: true,
-        isFreelancer: false
+        isFreelancer: false,
+        address: "Náměstí Svobody 15, 602 00 Brno-střed"
+      },
+      {
+        id: 202,
+        name: "Jana Svobodová",
+        specialty: "Hair Styling",
+        experience: "4 let",
+        rating: 4.6,
+        reviews: 34,
+        photo: "https://via.placeholder.com/150x150/ff8e8e/ffffff?text=JS",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Náměstí Svobody 15, 602 00 Brno-střed"
       }
     ],
     coordinates: { lat: 49.1951, lng: 16.6068 }
@@ -89,7 +116,7 @@ const mockSalons: Salon[] = [
     id: 3,
     name: "Nail Art Prague",
     city: "Prague",
-    address: "Karlova 25",
+    address: "Karlova 25, 110 00 Praha 1",
     services: ["Manicure", "Nail Art", "Gel Nails", "Nail Extensions"],
     rating: 4.9,
     reviews: 203,
@@ -112,7 +139,20 @@ const mockSalons: Salon[] = [
         reviews: 134,
         photo: "https://via.placeholder.com/150x150/4ecdc4/ffffff?text=AN",
         worksInSalon: true,
-        isFreelancer: false
+        isFreelancer: false,
+        address: "Karlova 25, 110 00 Praha 1"
+      },
+      {
+        id: 302,
+        name: "Monika Krásná",
+        specialty: "Gel Nails",
+        experience: "3 let",
+        rating: 4.7,
+        reviews: 56,
+        photo: "https://via.placeholder.com/150x150/96ceb4/ffffff?text=MK",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Karlova 25, 110 00 Praha 1"
       }
     ],
     coordinates: { lat: 50.0865, lng: 14.4206 }
@@ -121,7 +161,7 @@ const mockSalons: Salon[] = [
     id: 4,
     name: "Hair Paradise Brno",
     city: "Brno",
-    address: "Joštova 8",
+    address: "Joštova 8, 602 00 Brno-střed",
     services: ["Haircut", "Coloring", "Hair Treatment", "Styling"],
     rating: 4.7,
     reviews: 156,
@@ -144,10 +184,203 @@ const mockSalons: Salon[] = [
         reviews: 89,
         photo: "https://via.placeholder.com/150x150/f9ca24/ffffff?text=PV",
         worksInSalon: true,
-        isFreelancer: false
+        isFreelancer: false,
+        address: "Joštova 8, 602 00 Brno-střed"
+      },
+      {
+        id: 402,
+        name: "Lucie Kadeřníková",
+        specialty: "Pánské střihy",
+        experience: "5 let",
+        rating: 4.6,
+        reviews: 42,
+        photo: "https://via.placeholder.com/150x150/eb4d4b/ffffff?text=LK",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Joštova 8, 602 00 Brno-střed"
       }
     ],
     coordinates: { lat: 49.2000, lng: 16.6100 }
+  },
+  {
+    id: 5,
+    name: "Beauty Center Prague",
+    city: "Prague",
+    address: "Wenceslas Square 47, 110 00 Praha 1",
+    services: ["Facial", "Massage", "Eyebrows", "Eyelashes"],
+    rating: 4.5,
+    reviews: 98,
+    image: "https://via.placeholder.com/400x300/a55eea/ffffff?text=Beauty+Center",
+    description: "Moderní centrum krásy v centru Prahy s profesionálním týmem a nejnovějšími technologiemi.",
+    phone: "+420 234 567 890",
+    email: "info@beautycenter.cz",
+    openHours: "Po-Pá: 8:00-20:00, So: 9:00-17:00",
+    photos: [
+      "https://via.placeholder.com/400x300/8e44ad/ffffff?text=Center+1",
+      "https://via.placeholder.com/400x300/9b59b6/ffffff?text=Center+2"
+    ],
+    masters: [
+      {
+        id: 501,
+        name: "Zuzana Krásná",
+        specialty: "Facial treatments",
+        experience: "8 let",
+        rating: 4.7,
+        reviews: 67,
+        photo: "https://via.placeholder.com/150x150/a55eea/ffffff?text=ZK",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Wenceslas Square 47, 110 00 Praha 1"
+      },
+      {
+        id: 502,
+        name: "Michaela Svobodová",
+        specialty: "Eyebrows & Eyelashes",
+        experience: "4 let",
+        rating: 4.5,
+        reviews: 31,
+        photo: "https://via.placeholder.com/150x150/9b59b6/ffffff?text=MS",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Wenceslas Square 47, 110 00 Praha 1"
+      }
+    ],
+    coordinates: { lat: 50.0810, lng: 14.4270 }
+  },
+  {
+    id: 6,
+    name: "Style Studio Brno",
+    city: "Brno",
+    address: "Masarykova 15, 602 00 Brno-střed",
+    services: ["Haircut", "Coloring", "Makeup", "Nail Art"],
+    rating: 4.4,
+    reviews: 76,
+    image: "https://via.placeholder.com/400x300/2ecc71/ffffff?text=Style+Studio",
+    description: "Stylový salon v centru Brna nabízející kompletní služby pro moderní ženy.",
+    phone: "+420 345 678 901",
+    email: "info@stylestudio.cz",
+    openHours: "Po-Pá: 9:00-19:00, So: 10:00-16:00",
+    photos: [
+      "https://via.placeholder.com/400x300/27ae60/ffffff?text=Studio+1",
+      "https://via.placeholder.com/400x300/16a085/ffffff?text=Studio+2"
+    ],
+    masters: [
+      {
+        id: 601,
+        name: "Tereza Stylová",
+        specialty: "Hair Styling",
+        experience: "6 let",
+        rating: 4.6,
+        reviews: 45,
+        photo: "https://via.placeholder.com/150x150/2ecc71/ffffff?text=TS",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Masarykova 15, 602 00 Brno-střed"
+      },
+      {
+        id: 602,
+        name: "Nikola Krásná",
+        specialty: "Makeup & Nail Art",
+        experience: "3 let",
+        rating: 4.3,
+        reviews: 31,
+        photo: "https://via.placeholder.com/150x150/16a085/ffffff?text=NK",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Masarykova 15, 602 00 Brno-střed"
+      }
+    ],
+    coordinates: { lat: 49.1900, lng: 16.6100 }
+  },
+  {
+    id: 7,
+    name: "Luxury Spa Prague",
+    city: "Prague",
+    address: "Národní třída 25, 110 00 Praha 1",
+    services: ["Massage", "Facial", "Body Treatment", "Sauna"],
+    rating: 4.9,
+    reviews: 145,
+    image: "https://via.placeholder.com/400x300/e74c3c/ffffff?text=Luxury+Spa",
+    description: "Luxusní spa v centru Prahy s prémiovými službami a relaxačním prostředím.",
+    phone: "+420 456 789 012",
+    email: "info@luxuryspa.cz",
+    openHours: "Po-Ne: 7:00-22:00",
+    photos: [
+      "https://via.placeholder.com/400x300/c0392b/ffffff?text=Spa+1",
+      "https://via.placeholder.com/400x300/a93226/ffffff?text=Spa+2"
+    ],
+    masters: [
+      {
+        id: 701,
+        name: "Anna Relaxová",
+        specialty: "Massage Therapy",
+        experience: "12 let",
+        rating: 4.9,
+        reviews: 89,
+        photo: "https://via.placeholder.com/150x150/e74c3c/ffffff?text=AR",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Národní třída 25, 110 00 Praha 1"
+      },
+      {
+        id: 702,
+        name: "Jana Wellness",
+        specialty: "Facial & Body Treatments",
+        experience: "7 let",
+        rating: 4.8,
+        reviews: 56,
+        photo: "https://via.placeholder.com/150x150/c0392b/ffffff?text=JW",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Národní třída 25, 110 00 Praha 1"
+      }
+    ],
+    coordinates: { lat: 50.0820, lng: 14.4200 }
+  },
+  {
+    id: 8,
+    name: "Modern Hair Brno",
+    city: "Brno",
+    address: "Kobližná 3, 602 00 Brno-střed",
+    services: ["Haircut", "Coloring", "Hair Treatment", "Beard Trim"],
+    rating: 4.6,
+    reviews: 112,
+    image: "https://via.placeholder.com/400x300/3498db/ffffff?text=Modern+Hair",
+    description: "Moderní kadeřnický salon s trendy střihy a profesionálním přístupem.",
+    phone: "+420 567 890 123",
+    email: "info@modernhair.cz",
+    openHours: "Po-Pá: 8:00-18:00, So: 9:00-15:00",
+    photos: [
+      "https://via.placeholder.com/400x300/2980b9/ffffff?text=Hair+1",
+      "https://via.placeholder.com/400x300/1f618d/ffffff?text=Hair+2"
+    ],
+    masters: [
+      {
+        id: 801,
+        name: "Tomáš Moderní",
+        specialty: "Pánské střihy",
+        experience: "9 let",
+        rating: 4.7,
+        reviews: 78,
+        photo: "https://via.placeholder.com/150x150/3498db/ffffff?text=TM",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Kobližná 3, 602 00 Brno-střed"
+      },
+      {
+        id: 802,
+        name: "Veronika Trendová",
+        specialty: "Dámské střihy a barvení",
+        experience: "5 let",
+        rating: 4.5,
+        reviews: 34,
+        photo: "https://via.placeholder.com/150x150/1f618d/ffffff?text=VT",
+        worksInSalon: true,
+        isFreelancer: false,
+        address: "Kobližná 3, 602 00 Brno-střed"
+      }
+    ],
+    coordinates: { lat: 49.1950, lng: 16.6080 }
   }
 ];
 
@@ -164,12 +397,12 @@ const freelancerMasters: Master[] = [
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
-    address: "Domácí salon, Vinohrady",
+    address: "Korunní 2565/108, 120 00 Praha 2",
     description: "Nail design specialist s 7 lety zkušeností. Pracuji z pohodlí domova s prémiovými produkty.",
     phone: "+420 987 654 321",
     email: "anna@nailart.cz",
     services: ["Manicure", "Nail Art", "Gel Nails"],
-    coordinates: { lat: 50.0755, lng: 14.4378 }
+    coordinates: { lat: 50.0750, lng: 14.4500 }
   },
   {
     id: 1002,
@@ -187,7 +420,115 @@ const freelancerMasters: Master[] = [
     phone: "+420 555 444 333",
     email: "petr@hairmaster.cz",
     services: ["Haircut", "Beard Trim", "Hair Coloring"],
-    coordinates: { lat: 49.1951, lng: 16.6068 }
+    coordinates: { lat: 49.2000, lng: 16.6100 }
+  },
+  {
+    id: 1003,
+    name: "Marie Makeup",
+    specialty: "Wedding Makeup",
+    experience: "8 let",
+    rating: 4.9,
+    reviews: 78,
+    photo: "https://via.placeholder.com/150x150/e91e63/ffffff?text=MM",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Prague",
+    address: "Vodičkova 699/36, 110 00 Praha 1",
+    description: "Profesionální makeup artist specializující se na svatební make-up a speciální události.",
+    phone: "+420 123 456 789",
+    email: "marie@makeup.cz",
+    services: ["Wedding Makeup", "Event Makeup", "Bridal Makeup"],
+    coordinates: { lat: 50.0800, lng: 14.4300 }
+  },
+  {
+    id: 1004,
+    name: "Tomáš Masér",
+    specialty: "Relaxační masáže",
+    experience: "6 let",
+    rating: 4.7,
+    reviews: 45,
+    photo: "https://via.placeholder.com/150x150/ff9800/ffffff?text=TM",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Brno",
+    address: "Kounicova 20, 602 00 Brno-střed",
+    description: "Certifikovaný masér s výjezdovou službou. Specializace na relaxační a sportovní masáže.",
+    phone: "+420 234 567 890",
+    email: "tomas@masaz.cz",
+    services: ["Relaxační masáž", "Sportovní masáž", "Lymfatická masáž"],
+    coordinates: { lat: 49.1900, lng: 16.6000 }
+  },
+  {
+    id: 1005,
+    name: "Lucie Kadeřnice",
+    specialty: "Dámské střihy",
+    experience: "4 let",
+    rating: 4.6,
+    reviews: 32,
+    photo: "https://via.placeholder.com/150x150/4caf50/ffffff?text=LK",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Prague",
+    address: "Národní 25, 110 00 Praha 1",
+    description: "Stylová kadeřnice s moderním přístupem. Specializace na trendy střihy a barvení vlasů.",
+    phone: "+420 345 678 901",
+    email: "lucie@hair.cz",
+    services: ["Dámské střihy", "Barvení vlasů", "Melírování"],
+    coordinates: { lat: 50.0820, lng: 14.4200 }
+  },
+  {
+    id: 1006,
+    name: "Jana Kosmetička",
+    specialty: "Péče o pleť",
+    experience: "9 let",
+    rating: 4.8,
+    reviews: 67,
+    photo: "https://via.placeholder.com/150x150/9c27b0/ffffff?text=JK",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Brno",
+    address: "Zelný trh 2, 602 00 Brno-střed",
+    description: "Kosmetička s dlouholetou praxí. Nabízím komplexní péči o pleť a anti-aging procedury.",
+    phone: "+420 456 789 012",
+    email: "jana@kosmetika.cz",
+    services: ["Facial", "Anti-aging", "Čištění pleti"],
+    coordinates: { lat: 49.1950, lng: 16.6050 }
+  },
+  {
+    id: 1007,
+    name: "Pavel Barber",
+    specialty: "Pánské střihy a vousy",
+    experience: "7 let",
+    rating: 4.9,
+    reviews: 89,
+    photo: "https://via.placeholder.com/150x150/795548/ffffff?text=PB",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Prague",
+    address: "Václavské náměstí 42, 110 00 Praha 1",
+    description: "Profesionální barber s výjezdovou službou. Specializace na pánské střihy, vousy a úpravu obočí.",
+    phone: "+420 567 890 123",
+    email: "pavel@barber.cz",
+    services: ["Pánské střihy", "Úprava vousů", "Horký ručník"],
+    coordinates: { lat: 50.0755, lng: 14.4378 }
+  },
+  {
+    id: 1008,
+    name: "Eva Manikérka",
+    specialty: "Manikúra a pedikúra",
+    experience: "5 let",
+    rating: 4.7,
+    reviews: 43,
+    photo: "https://via.placeholder.com/150x150/f44336/ffffff?text=EM",
+    worksInSalon: false,
+    isFreelancer: true,
+    city: "Brno",
+    address: "Masarykova 8, 602 00 Brno-střed",
+    description: "Manikérka s výjezdovou službou. Nabízím klasickou i gelovou manikúru a pedikúru.",
+    phone: "+420 678 901 234",
+    email: "eva@manikura.cz",
+    services: ["Manikúra", "Pedikúra", "Gelové nehty"],
+    coordinates: { lat: 49.2000, lng: 16.6100 }
   }
 ];
 
