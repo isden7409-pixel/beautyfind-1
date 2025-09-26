@@ -39,7 +39,9 @@ const mockSalons: Salon[] = [
         photo: "https://picsum.photos/150/150?random=1",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Václavské náměstí 28, 110 00 Praha 1"
+        address: "Václavské náměstí 28, 110 00 Praha 1",
+        phone: "+420 123 456 789",
+        email: "katerina@elegancebeauty.cz"
       },
       {
         id: "102",
@@ -51,7 +53,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Václavské náměstí 28, 110 00 Praha 1"
+        address: "Václavské náměstí 28, 110 00 Praha 1",
+        phone: "+420 234 567 890",
+        email: "lucie@elegancebeauty.cz"
       },
       {
         id: "103",
@@ -63,7 +67,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Václavské náměstí 28, 110 00 Praha 1"
+        address: "Václavské náměstí 28, 110 00 Praha 1",
+        phone: "+420 345 678 901",
+        email: "martina@elegancebeauty.cz"
       }
     ],
     coordinates: { lat: 50.0755, lng: 14.4378 }
@@ -96,7 +102,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Náměstí Svobody 15, 602 00 Brno-střed"
+        address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        phone: "+420 456 789 012",
+        email: "eva@glamourstudio.cz"
       },
       {
           id: "202",
@@ -108,7 +116,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Náměstí Svobody 15, 602 00 Brno-střed"
+        address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        phone: "+420 567 890 123",
+        email: "jana@glamourstudio.cz"
       }
     ],
     coordinates: { lat: 49.1951, lng: 16.6068 }
@@ -141,7 +151,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Karlova 25, 110 00 Praha 1"
+        address: "Karlova 25, 110 00 Praha 1",
+        phone: "+420 678 901 234",
+        email: "andrea@nailartprague.cz"
       },
       {
           id: "302",
@@ -153,7 +165,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Karlova 25, 110 00 Praha 1"
+        address: "Karlova 25, 110 00 Praha 1",
+        phone: "+420 789 012 345",
+        email: "monika@nailartprague.cz"
       }
     ],
     coordinates: { lat: 50.0865, lng: 14.4206 }
@@ -186,7 +200,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Joštova 8, 602 00 Brno-střed"
+        address: "Joštova 8, 602 00 Brno-střed",
+        phone: "+420 890 123 456",
+        email: "petra@hairparadise.cz"
       },
       {
           id: "402",
@@ -198,7 +214,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Joštova 8, 602 00 Brno-střed"
+        address: "Joštova 8, 602 00 Brno-střed",
+        phone: "+420 901 234 567",
+        email: "lucie@hairparadise.cz"
       }
     ],
     coordinates: { lat: 49.2000, lng: 16.6100 }
@@ -231,7 +249,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Wenceslas Square 47, 110 00 Praha 1"
+        address: "Wenceslas Square 47, 110 00 Praha 1",
+        phone: "+420 012 345 678",
+        email: "zuzana@beautycenter.cz"
       },
       {
           id: "502",
@@ -243,7 +263,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1580518324671-c2f0833a3af3?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Wenceslas Square 47, 110 00 Praha 1"
+        address: "Wenceslas Square 47, 110 00 Praha 1",
+        phone: "+420 111 222 333",
+        email: "michaela@beautycenter.cz"
       }
     ],
     coordinates: { lat: 50.0810, lng: 14.4270 }
@@ -276,7 +298,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Masarykova 15, 602 00 Brno-střed"
+        address: "Masarykova 15, 602 00 Brno-střed",
+        phone: "+420 222 333 444",
+        email: "tereza@stylestudio.cz"
       },
       {
         id: "602",
@@ -288,7 +312,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Masarykova 15, 602 00 Brno-střed"
+        address: "Masarykova 15, 602 00 Brno-střed",
+        phone: "+420 333 444 555",
+        email: "nikola@stylestudio.cz"
       }
     ],
     coordinates: { lat: 49.1900, lng: 16.6100 }
@@ -321,7 +347,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Národní třída 25, 110 00 Praha 1"
+        address: "Národní třída 25, 110 00 Praha 1",
+        phone: "+420 444 555 666",
+        email: "anna@luxuryspa.cz"
       },
       {
         id: "702",
@@ -333,7 +361,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Národní třída 25, 110 00 Praha 1"
+        address: "Národní třída 25, 110 00 Praha 1",
+        phone: "+420 555 666 777",
+        email: "jana@luxuryspa.cz"
       }
     ],
     coordinates: { lat: 50.0820, lng: 14.4200 }
@@ -366,7 +396,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1601455763557-db1bea8a9a5a?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Kobližná 3, 602 00 Brno-střed"
+        address: "Kobližná 3, 602 00 Brno-střed",
+        phone: "+420 666 777 888",
+        email: "tomas@modernhair.cz"
       },
       {
         id: "802",
@@ -378,7 +410,9 @@ const mockSalons: Salon[] = [
         photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
-        address: "Kobližná 3, 602 00 Brno-střed"
+        address: "Kobližná 3, 602 00 Brno-střed",
+        phone: "+420 777 888 999",
+        email: "veronika@modernhair.cz"
       }
     ],
     coordinates: { lat: 49.1950, lng: 16.6080 }
