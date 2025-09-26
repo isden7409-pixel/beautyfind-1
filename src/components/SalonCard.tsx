@@ -32,8 +32,8 @@ const SalonCard: React.FC<SalonCardProps> = ({
           {t.rating} {salon.rating} ({salon.reviews} {t.reviews})
         </div>
         <div className="salon-services">
-          {translateServices(salon.services, language).map((service, index) => (
-            <span key={salon.services[index]} className="service-tag">{service}</span>
+          {translateServices(salon.services, language).map(service => (
+            <span key={service} className="service-tag">{service}</span>
           ))}
         </div>
         <button

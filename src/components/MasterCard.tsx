@@ -1,12 +1,13 @@
 import React from 'react';
 import { Master, Language } from '../types';
-import { translateServices } from '../utils/serviceTranslations';
+import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
 interface MasterCardProps {
   master: Master;
   language: Language;
   translations: any;
   onViewDetails: (master: Master) => void;
+  onSalonSelect?: (salonId: string) => void;
 }
 
 const MasterCard: React.FC<MasterCardProps> = ({
@@ -14,6 +15,7 @@ const MasterCard: React.FC<MasterCardProps> = ({
   language,
   translations,
   onViewDetails,
+  onSalonSelect,
 }) => {
   const t = translations[language];
 
@@ -30,15 +32,25 @@ const MasterCard: React.FC<MasterCardProps> = ({
             {master.isFreelancer ? t.freelancer : t.inSalon}
           </span>
           {master.salonName && (
-            <span className="salon-name">🏢 {master.salonName}</span>
+            <span 
+              className="salon-name clickable" 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onSalonSelect && master.salonId) {
+                  onSalonSelect(master.salonId);
+                }
+              }}
+            >
+              🏢 {master.salonName}
+            </span>
           )}
         </div>
-        <p className="specialty-main">{master.specialty}</p>
+        <p className="specialty-main">{translateSpecialty(master.specialty, language)}</p>
         <p className="experience-main">{master.experience} {t.experience}</p>
         {master.services && master.services.length > 0 && (
           <div className="master-services">
             {translateServices(master.services, language).slice(0, 3).map((service, index) => (
-              <span key={master.services![index]} className="service-tag-small">{service}</span>
+              <span key={service} className="service-tag-small">{service}</span>
             ))}
             {master.services.length > 3 && (
               <span className="service-tag-small">+{master.services.length - 3}</span>

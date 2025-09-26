@@ -1,5 +1,65 @@
 import React, { useState } from 'react';
 import { SalonRegistration, Language } from '../types';
+import { translateServices } from '../utils/serviceTranslations';
+import FileUpload from './FileUpload';
+
+// Список всех чешских городов
+const CZECH_CITIES = [
+  { value: 'Prague', label: 'Praha' },
+  { value: 'Brno', label: 'Brno' },
+  { value: 'Ostrava', label: 'Ostrava' },
+  { value: 'Plzen', label: 'Plzeň' },
+  { value: 'Liberec', label: 'Liberec' },
+  { value: 'Olomouc', label: 'Olomouc' },
+  { value: 'Budweis', label: 'České Budějovice' },
+  { value: 'Hradec', label: 'Hradec Králové' },
+  { value: 'Pardubice', label: 'Pardubice' },
+  { value: 'Zlín', label: 'Zlín' },
+  { value: 'Havirov', label: 'Havířov' },
+  { value: 'Kladno', label: 'Kladno' },
+  { value: 'Most', label: 'Most' },
+  { value: 'Opava', label: 'Opava' },
+  { value: 'Frydek', label: 'Frýdek-Místek' },
+  { value: 'Karvina', label: 'Karviná' },
+  { value: 'Jihlava', label: 'Jihlava' },
+  { value: 'Teplice', label: 'Teplice' },
+  { value: 'Decin', label: 'Děčín' },
+  { value: 'Chomutov', label: 'Chomutov' },
+  { value: 'Jablonec', label: 'Jablonec nad Nisou' },
+  { value: 'Mlada', label: 'Mladá Boleslav' },
+  { value: 'Prostejov', label: 'Prostějov' },
+  { value: 'Prerov', label: 'Přerov' },
+  { value: 'Trebic', label: 'Třebíč' },
+  { value: 'Ceska', label: 'Česká Lípa' },
+  { value: 'Tabor', label: 'Tábor' },
+  { value: 'Znojmo', label: 'Znojmo' },
+  { value: 'Pribram', label: 'Příbram' },
+  { value: 'Orlova', label: 'Orlová' },
+  { value: 'Cheb', label: 'Cheb' },
+  { value: 'Modrany', label: 'Modřany' },
+  { value: 'Litvinov', label: 'Litvínov' },
+  { value: 'Trinec', label: 'Třinec' },
+  { value: 'Kolin', label: 'Kolín' },
+  { value: 'Kromeriz', label: 'Kroměříž' },
+  { value: 'Sumperk', label: 'Šumperk' },
+  { value: 'Vsetin', label: 'Vsetín' },
+  { value: 'Valasske', label: 'Valašské Meziříčí' },
+  { value: 'Litomysl', label: 'Litomyšl' },
+  { value: 'Novy', label: 'Nový Jičín' },
+  { value: 'Uherske', label: 'Uherské Hradiště' },
+  { value: 'Chrudim', label: 'Chrudim' },
+  { value: 'Havlickuv', label: 'Havlíčkův Brod' },
+  { value: 'Koprivnice', label: 'Kopřivnice' },
+  { value: 'Jindrichuv', label: 'Jindřichův Hradec' },
+  { value: 'Svitavy', label: 'Svitavy' },
+  { value: 'Kralupy', label: 'Kralupy nad Vltavou' },
+  { value: 'Vyskov', label: 'Vyškov' },
+  { value: 'Ceský', label: 'Český Těšín' },
+  { value: 'Kutna', label: 'Kutná Hora' },
+  { value: 'Breclav', label: 'Břeclav' },
+  { value: 'Hodonin', label: 'Hodonín' },
+  { value: 'Strakonice', label: 'Strakonice' }
+];
 
 interface SalonRegistrationFormProps {
   language: Language;
@@ -28,14 +88,20 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  // const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
 
   const t = translations[language];
 
   const availableServices = [
     'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial', 
     'Massage', 'Nail Art', 'Eyebrows', 'Eyelashes', 'Hair Coloring',
-    'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber'
+    'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber',
+    'Gel Nails', 'Nail Extensions', 'Coloring', 'Styling', 'Beard Trim',
+    'Event Makeup', 'Bridal Makeup', 'Relaxation Massage', 'Sports Massage',
+    'Lymphatic Massage', 'Women\'s Haircuts', 'Highlights', 'Anti-aging',
+    'Skin Cleansing', 'Men\'s Haircuts and Beards', 'Hot Towel',
+    'Women\'s Haircuts and Coloring', 'Body Treatment', 'Sauna',
+    'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts'
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -58,12 +124,18 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     }));
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
+  const handlePhotoChange = (files: FileList | null) => {
+    setPhotoFiles(files);
+    if (files) {
+      const fileArray = Array.from(files);
       setFormData(prev => ({
         ...prev,
-        photos: files
+        photos: fileArray
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        photos: []
       }));
     }
   };
@@ -102,10 +174,11 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
               className="form-select"
             >
               <option value="">{t.selectCity}</option>
-              <option value="Prague">Praha</option>
-              <option value="Brno">Brno</option>
-              <option value="Ostrava">Ostrava</option>
-              <option value="Plzen">Plzeň</option>
+              {CZECH_CITIES.map(city => (
+                <option key={city.value} value={city.value}>
+                  {city.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -174,7 +247,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             onChange={handleInputChange}
             required
             className="form-input"
-            placeholder="Po-Pá: 9:00-20:00, So: 10:00-18:00"
+            placeholder={t.openHoursPlaceholder}
           />
         </div>
 
@@ -202,7 +275,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
                   checked={selectedServices.includes(service)}
                   onChange={() => handleServiceToggle(service)}
                 />
-                <span className="service-label">{service}</span>
+                <span className="service-label">{translateServices([service], language)[0]}</span>
               </label>
             ))}
           </div>
@@ -210,12 +283,16 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
 
         <div className="form-group">
           <label htmlFor="photos">{t.photos}</label>
-          <input
-            type="file"
+          <FileUpload
             id="photos"
-            multiple
+            multiple={true}
             accept="image/*"
             onChange={handlePhotoChange}
+            selectedFiles={photoFiles}
+            selectButtonText={t.selectFiles}
+            noFileText={t.noFileSelected}
+            filesSelectedText={t.filesSelected}
+            fileSelectedText={t.fileSelected}
             className="form-file"
           />
           <p className="form-help">{t.photosHelp}</p>

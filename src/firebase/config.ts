@@ -23,3 +23,4 @@ export const auth = getAuth(app);
 export const storage = getStorage(app);
 
 export default app;
+

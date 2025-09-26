@@ -4,7 +4,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
-import MapView from '../components/MapView';
+import SimpleMapView from '../components/SimpleMapView';
 import PremiumFeatures from '../components/PremiumFeatures';
 
 // Тестовые данные салонов
@@ -32,11 +32,11 @@ const mockSalons: Salon[] = [
       {
         id: "101",
         name: "Kateřina Nováková",
-        specialty: "Manikúra a pedikúra",
+        specialty: "Manicure and Pedicure",
         experience: "5 let",
         rating: 4.9,
         reviews: 45,
-        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+        photo: "https://picsum.photos/150/150?random=1",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -48,7 +48,7 @@ const mockSalons: Salon[] = [
         experience: "8 let",
         rating: 4.7,
         reviews: 82,
-        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -56,11 +56,11 @@ const mockSalons: Salon[] = [
       {
         id: "103",
         name: "Martina Krásná",
-        specialty: "Make-up artist",
+        specialty: "Makeup Artist",
         experience: "6 let",
         rating: 4.8,
         reviews: 67,
-        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -89,11 +89,11 @@ const mockSalons: Salon[] = [
       {
         id: "201",
         name: "Eva Krásná",
-        specialty: "Wedding Makeup",
+        specialty: "Svatební make-up",
         experience: "6 let",
         rating: 4.8,
         reviews: 67,
-        photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed"
@@ -101,11 +101,11 @@ const mockSalons: Salon[] = [
       {
           id: "202",
         name: "Jana Svobodová",
-        specialty: "Hair Styling",
+        specialty: "Účesy",
         experience: "4 let",
         rating: 4.6,
         reviews: 34,
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed"
@@ -138,7 +138,7 @@ const mockSalons: Salon[] = [
         experience: "7 let",
         rating: 4.9,
         reviews: 134,
-        photo: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1"
@@ -150,7 +150,7 @@ const mockSalons: Salon[] = [
         experience: "3 let",
         rating: 4.7,
         reviews: 56,
-        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1"
@@ -163,7 +163,7 @@ const mockSalons: Salon[] = [
     name: "Hair Paradise Brno",
     city: "Brno",
     address: "Joštova 8, 602 00 Brno-střed",
-    services: ["Haircut", "Coloring", "Hair Treatment", "Styling"],
+    services: ["Haircut", "Hair Coloring", "Hair Treatment", "Hair Styling"],
     rating: 4.7,
     reviews: 156,
     image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop&crop=center",
@@ -183,7 +183,7 @@ const mockSalons: Salon[] = [
         experience: "10 let",
         rating: 4.8,
         reviews: 89,
-        photo: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed"
@@ -191,11 +191,11 @@ const mockSalons: Salon[] = [
       {
           id: "402",
         name: "Lucie Kadeřníková",
-        specialty: "Pánské střihy",
+        specialty: "Men's Haircuts",
         experience: "5 let",
         rating: 4.6,
         reviews: 42,
-        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed"
@@ -228,7 +228,7 @@ const mockSalons: Salon[] = [
         experience: "8 let",
         rating: 4.7,
         reviews: 67,
-        photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1"
@@ -240,7 +240,7 @@ const mockSalons: Salon[] = [
         experience: "4 let",
         rating: 4.5,
         reviews: 31,
-        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1580518324671-c2f0833a3af3?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1"
@@ -253,7 +253,7 @@ const mockSalons: Salon[] = [
     name: "Style Studio Brno",
     city: "Brno",
     address: "Masarykova 15, 602 00 Brno-střed",
-    services: ["Haircut", "Coloring", "Makeup", "Nail Art"],
+    services: ["Haircut", "Hair Coloring", "Makeup", "Nail Art"],
     rating: 4.4,
     reviews: 76,
     image: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop&crop=center",
@@ -269,11 +269,11 @@ const mockSalons: Salon[] = [
       {
         id: "601",
         name: "Tereza Stylová",
-        specialty: "Hair Styling",
+        specialty: "Účesy",
         experience: "6 let",
         rating: 4.6,
         reviews: 45,
-        photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed"
@@ -285,7 +285,7 @@ const mockSalons: Salon[] = [
         experience: "3 let",
         rating: 4.3,
         reviews: 31,
-        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed"
@@ -318,7 +318,7 @@ const mockSalons: Salon[] = [
         experience: "12 let",
         rating: 4.9,
         reviews: 89,
-        photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1"
@@ -330,7 +330,7 @@ const mockSalons: Salon[] = [
         experience: "7 let",
         rating: 4.8,
         reviews: 56,
-        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1"
@@ -343,7 +343,7 @@ const mockSalons: Salon[] = [
     name: "Modern Hair Brno",
     city: "Brno",
     address: "Kobližná 3, 602 00 Brno-střed",
-    services: ["Haircut", "Coloring", "Hair Treatment", "Beard Trim"],
+    services: ["Haircut", "Hair Coloring", "Hair Treatment", "Beard Trim"],
     rating: 4.6,
     reviews: 112,
     image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&h=300&fit=crop&crop=center",
@@ -359,11 +359,11 @@ const mockSalons: Salon[] = [
       {
         id: "801",
         name: "Tomáš Moderní",
-        specialty: "Pánské střihy",
+        specialty: "Men's Haircuts",
         experience: "9 let",
         rating: 4.7,
         reviews: 78,
-        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1601455763557-db1bea8a9a5a?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed"
@@ -371,11 +371,11 @@ const mockSalons: Salon[] = [
       {
         id: "802",
         name: "Veronika Trendová",
-        specialty: "Dámské střihy a barvení",
+        specialty: "Women's Haircuts and Coloring",
         experience: "5 let",
         rating: 4.5,
         reviews: 34,
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed"
@@ -385,7 +385,7 @@ const mockSalons: Salon[] = [
   }
 ];
 
-// Фрилансеры (мастера работающие на себя)
+// Frikanceři (mistři pracující na sebe)
 const freelancerMasters: Master[] = [
   {
     id: "1001",
@@ -394,7 +394,7 @@ const freelancerMasters: Master[] = [
     experience: "7 let",
     rating: 4.9,
     reviews: 56,
-    photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -412,7 +412,7 @@ const freelancerMasters: Master[] = [
     experience: "5 let",
     rating: 4.8,
     reviews: 34,
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -430,7 +430,7 @@ const freelancerMasters: Master[] = [
     experience: "8 let",
     rating: 4.9,
     reviews: 78,
-    photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -444,11 +444,11 @@ const freelancerMasters: Master[] = [
   {
     id: "1004",
     name: "Tomáš Masér",
-    specialty: "Relaxační masáže",
+    specialty: "Relaxation Massage",
     experience: "6 let",
     rating: 4.7,
     reviews: 45,
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1532074205216-d0e1f4b87368?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -456,17 +456,17 @@ const freelancerMasters: Master[] = [
     description: "Certifikovaný masér s výjezdovou službou. Specializace na relaxační a sportovní masáže.",
     phone: "+420 234 567 890",
     email: "tomas@masaz.cz",
-    services: ["Relaxační masáž", "Sportovní masáž", "Lymfatická masáž"],
+    services: ["Relaxation Massage", "Sports Massage", "Lymphatic Massage"],
     coordinates: { lat: 49.1900, lng: 16.6000 }
   },
   {
     id: "1005",
     name: "Lucie Kadeřnice",
-    specialty: "Dámské střihy",
+    specialty: "Women's Haircuts",
     experience: "4 let",
     rating: 4.6,
     reviews: 32,
-    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -474,7 +474,7 @@ const freelancerMasters: Master[] = [
     description: "Stylová kadeřnice s moderním přístupem. Specializace na trendy střihy a barvení vlasů.",
     phone: "+420 345 678 901",
     email: "lucie@hair.cz",
-    services: ["Dámské střihy", "Barvení vlasů", "Melírování"],
+    services: ["Women's Haircuts", "Hair Coloring", "Highlights"],
     coordinates: { lat: 50.0820, lng: 14.4200 }
   },
   {
@@ -484,7 +484,7 @@ const freelancerMasters: Master[] = [
     experience: "9 let",
     rating: 4.8,
     reviews: 67,
-    photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -492,17 +492,17 @@ const freelancerMasters: Master[] = [
     description: "Kosmetička s dlouholetou praxí. Nabízím komplexní péči o pleť a anti-aging procedury.",
     phone: "+420 456 789 012",
     email: "jana@kosmetika.cz",
-    services: ["Facial", "Anti-aging", "Čištění pleti"],
+    services: ["Facial", "Anti-aging", "Skin Cleansing"],
     coordinates: { lat: 49.1950, lng: 16.6050 }
   },
   {
     id: "1007",
     name: "Pavel Barber",
-    specialty: "Pánské střihy a vousy",
+        specialty: "Men's Haircuts and Beards",
     experience: "7 let",
     rating: 4.9,
     reviews: 89,
-    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -510,17 +510,17 @@ const freelancerMasters: Master[] = [
     description: "Profesionální barber s výjezdovou službou. Specializace na pánské střihy, vousy a úpravu obočí.",
     phone: "+420 567 890 123",
     email: "pavel@barber.cz",
-    services: ["Pánské střihy", "Úprava vousů", "Horký ručník"],
+    services: ["Men's Haircuts", "Beard Trim", "Hot Towel"],
     coordinates: { lat: 50.0755, lng: 14.4378 }
   },
   {
     id: "1008",
     name: "Eva Manikérka",
-    specialty: "Manikúra a pedikúra",
+    specialty: "Manicure and Pedicure",
     experience: "5 let",
     rating: 4.7,
     reviews: 43,
-    photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
+    photo: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -528,119 +528,25 @@ const freelancerMasters: Master[] = [
     description: "Manikérka s výjezdovou službou. Nabízím klasickou i gelovou manikúru a pedikúru.",
     phone: "+420 678 901 234",
     email: "eva@manikura.cz",
-    services: ["Manikúra", "Pedikúra", "Gelové nehty"],
+    services: ["Manicure", "Pedicure", "Gel Nails"],
     coordinates: { lat: 49.2000, lng: 16.6100 }
   }
 ];
 
 // Тексты для разных языков
-const translations = {
-  cs: {
-    title: "BeautyFind.cz",
-    subtitle: "Najděte svůj perfektní kosmetický salon v Česku",
-    searchPlaceholder: "Hledat salony, služby nebo města...",
-    allCities: "Všechna města",
-    allServices: "Všechny služby",
-    foundSalons: "Nalezeno {count} salonů",
-    foundMasters: "Nalezeno {count} mistrů",
-    address: "📍",
-    rating: "⭐",
-    reviews: "recenzí",
-    viewDetails: "Zobrazit detaily",
-    noResults: "Nebyl nalezen žádný salon odpovídající kritériím",
-    noMasters: "Nebyl nalezen žádný mistr odpovídající kritériím",
-    viewSalons: "Salony",
-    viewMasters: "Mistři",
-    freelancer: "🏠 Frikancer",
-    inSalon: "🏢 V salonu",
-    experience: "zkušeností",
-    adminPanel: "Admin Panel",
-    listView: "Seznam",
-    mapView: "Mapa",
-    howItWorks: "Jak to funguje",
-    step1: "Vyberte balíček",
-    step1Desc: "Zvolte si délku prémiového zobrazení",
-    step2: "Zaplaťte",
-    step2Desc: "Bezpečná platba kartou nebo převodem",
-    step3: "Začněte získávat klienty",
-    step3Desc: "Váš profil bude zobrazen na vrcholu",
-    premiumFeatures: "Prémiové funkce",
-    premiumDescription: "Zvyšte svou viditelnost a přilákejte více klientů",
-    purchaseNow: "Koupit nyní",
-    purchaseConfirm: "Zakoupeno",
-    day: "den",
-    week: "týden",
-    month: "měsíc",
-    benefit1: "Zobrazení na vrcholu výsledků",
-    benefit2: "Zvýrazněný profil",
-    benefit3: "Více zákazníků",
-    benefit4: "Statistiky a analýzy",
-    step1Title: "Vyberte balíček",
-    step1Description: "Zvolte si délku prémiového zobrazení",
-    step2Title: "Zaplaťte",
-    step2Description: "Bezpečná platba kartou nebo převodem",
-    step3Title: "Začněte získávat klienty",
-    step3Description: "Váš profil bude zobrazen na vrcholu"
-  },
-  en: {
-    title: "BeautyFind.cz",
-    subtitle: "Find your perfect beauty salon in Czech Republic",
-    searchPlaceholder: "Search for salons, services, or cities...",
-    allCities: "All Cities",
-    allServices: "All Services",
-    foundSalons: "Found {count} salons",
-    foundMasters: "Found {count} masters",
-    address: "📍",
-    rating: "⭐",
-    reviews: "reviews",
-    viewDetails: "View Details",
-    noResults: "No salons found matching your criteria",
-    noMasters: "No masters found matching your criteria",
-    viewSalons: "Salons",
-    viewMasters: "Masters",
-    freelancer: "🏠 Freelancer",
-    inSalon: "🏢 In Salon",
-    experience: "experience",
-    adminPanel: "Admin Panel",
-    listView: "List",
-    mapView: "Map",
-    howItWorks: "How it works",
-    step1: "Choose package",
-    step1Desc: "Select the duration of premium display",
-    step2: "Pay",
-    step2Desc: "Secure payment by card or transfer",
-    step3: "Start getting clients",
-    step3Desc: "Your profile will be displayed at the top",
-    premiumFeatures: "Premium Features",
-    premiumDescription: "Increase your visibility and attract more clients",
-    purchaseNow: "Purchase Now",
-    purchaseConfirm: "Purchased",
-    day: "day",
-    week: "week",
-    month: "month",
-    benefit1: "Top search results display",
-    benefit2: "Highlighted profile",
-    benefit3: "More customers",
-    benefit4: "Statistics and analytics",
-    step1Title: "Choose package",
-    step1Description: "Select the duration of premium display",
-    step2Title: "Pay",
-    step2Description: "Secure payment by card or transfer",
-    step3Title: "Start getting clients",
-    step3Description: "Your profile will be displayed at the top"
-  }
-};
 
 interface HomePageProps {
   onSalonSelect: (salon: Salon) => void;
   onMasterSelect: (master: Master) => void;
   onAdminPanel: () => void;
+  currentLanguage: Language;
+  onLanguageChange: (language: Language) => void;
+  translations: any;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel }) => {
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, currentLanguage, onLanguageChange, translations }) => {
   const [salons] = useState<Salon[]>(mockSalons);
   const [freelancers] = useState<Master[]>(freelancerMasters);
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('cs');
   const [viewMode, setViewMode] = useState<ViewMode>('salons');
   const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
@@ -652,7 +558,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
 
   const t = translations[currentLanguage];
 
-  // Все мастера вместе (из салонов + фрилансеры)
+  // Všichni mistři dohromady (ze salonů + frikanceři)
   const allMasters: Master[] = [
     ...salons.flatMap(salon => salon.masters.map(master => ({
       ...master,
@@ -675,7 +581,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     return matchesCity && matchesService && matchesSearch && matchesRating;
   });
 
-  // Фильтрация мастеров
+  // Filtrování mistrů
   const filteredMasters = allMasters.filter(master => {
     const masterServices = master.services || [master.specialty];
     const matchesCity = filters.city === "All" || master.city === filters.city;
@@ -695,7 +601,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
           </button>
           <LanguageSwitcher
             currentLanguage={currentLanguage}
-            onLanguageChange={setCurrentLanguage}
+            onLanguageChange={onLanguageChange}
           />
         </div>
         <div className="header-content">
@@ -746,7 +652,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         </h2>
         
         {displayMode === 'map' ? (
-          <MapView
+          <SimpleMapView
             salons={filteredSalons}
             masters={filteredMasters}
             language={currentLanguage}
@@ -754,6 +660,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             onSalonSelect={onSalonSelect}
             onMasterSelect={onMasterSelect}
             selectedType={viewMode}
+            filters={filters}
           />
         ) : viewMode === 'salons' ? (
           filteredSalons.length === 0 ? (
@@ -787,6 +694,12 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
                   language={currentLanguage}
                   translations={translations}
                   onViewDetails={onMasterSelect}
+                  onSalonSelect={(salonId) => {
+                    const salon = salons.find(s => s.id === salonId);
+                    if (salon) {
+                      onSalonSelect(salon);
+                    }
+                  }}
                 />
               ))}
             </div>

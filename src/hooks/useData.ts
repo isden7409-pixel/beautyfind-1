@@ -150,3 +150,4 @@ export const useReviews = (type: 'salon' | 'master', id: string) => {
 
   return { reviews, loading, error, addReview, refetch: fetchReviews };
 };
+

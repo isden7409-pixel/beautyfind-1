@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Salon, Master, Language, Review, PremiumFeature } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
 import PremiumFeatures from '../components/PremiumFeatures';
-import { translateServices } from '../utils/serviceTranslations';
+import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
 interface SalonDetailPageProps {
   salon: Salon;
@@ -96,8 +96,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           <div className="services-section">
             <h3>{t.services}</h3>
             <div className="services-grid">
-              {translateServices(salon.services, language).map((service, index) => (
-                <span key={salon.services[index]} className="service-badge">{service}</span>
+              {translateServices(salon.services, language).map(service => (
+                <span key={service} className="service-badge">{service}</span>
               ))}
             </div>
           </div>
@@ -113,7 +113,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                   <img src={master.photo} alt={master.name} className="master-photo" />
                   <div className="master-info">
                     <h4>{master.name}</h4>
-                    <p className="specialty">{master.specialty}</p>
+                    <p className="specialty">{translateSpecialty(master.specialty, language)}</p>
                     <p className="experience">{master.experience} {t.experience}</p>
                     <span className="master-rating">
                       ⭐ {master.rating} ({master.reviews})

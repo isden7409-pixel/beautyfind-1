@@ -19,7 +19,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const t = translations[language];
 
-  // Моковые данные салонов для выбора в форме мастера
+  // Mock data salonů pro výběr ve formuláři mistra
   const mockSalons = [
     { id: 1, name: "Elegance Beauty Prague" },
     { id: 2, name: "Glamour Studio Brno" },
@@ -146,3 +146,4 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 };
 
 export default AdminPanel;
+

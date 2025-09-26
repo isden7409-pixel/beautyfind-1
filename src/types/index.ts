@@ -23,7 +23,7 @@ export interface Salon {
   premiumUntil?: string;
 }
 
-// Типы для мастеров
+// Typy pro mistry
 export interface Master {
   id: string;
   name: string;
@@ -86,7 +86,7 @@ export interface SalonRegistration {
   photos: File[];
 }
 
-// Типы для мастера (регистрация)
+// Typy pro mistra (registrace)
 export interface MasterRegistration {
   name: string;
   specialty: string;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Master, Language, Review, PremiumFeature } from '../types';
+import { Master, Salon, Language, Review, PremiumFeature } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
 import PremiumFeatures from '../components/PremiumFeatures';
 import { translateServices } from '../utils/serviceTranslations';
@@ -9,6 +9,8 @@ interface MasterDetailPageProps {
   language: Language;
   translations: any;
   onBack: () => void;
+  onSalonSelect?: (salon: Salon) => void;
+  salons?: Salon[];
 }
 
 const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
@@ -16,10 +18,12 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   language,
   translations,
   onBack,
+  onSalonSelect,
+  salons = [],
 }) => {
   const t = translations[language];
   
-  // Моковые отзывы для мастера
+  // Mock recenze pro mistra
   const [reviews, setReviews] = useState<Review[]>([
     {
       id: "1",
@@ -67,7 +71,19 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             {master.isFreelancer ? t.freelancer : t.inSalon}
           </span>
           {master.salonName && (
-            <span className="salon-name">📍 {master.salonName}</span>
+            <span 
+              className="salon-name clickable" 
+              onClick={() => {
+                if (onSalonSelect && master.salonId) {
+                  const salon = salons.find(s => s.id === master.salonId);
+                  if (salon) {
+                    onSalonSelect(salon);
+                  }
+                }
+              }}
+            >
+              📍 {master.salonName}
+            </span>
           )}
           <span className="rating">
             ⭐ {master.rating} ({master.reviews} {t.reviews})
@@ -84,8 +100,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         <div className="services-section">
           <h3>{t.services}</h3>
           <div className="services-grid">
-            {translateServices(master.services || [master.specialty], language).map((service, index) => (
-              <span key={(master.services || [master.specialty])[index]} className="service-badge">{service}</span>
+            {translateServices(master.services || [master.specialty], language).map(service => (
+              <span key={service} className="service-badge">{service}</span>
             ))}
           </div>
         </div>

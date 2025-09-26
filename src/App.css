@@ -232,7 +232,7 @@ body {
   font-size: 0.8rem;
 }
 
-/* Стили для мастеров на главной */
+/* Styly pro mistry na hlavní stránce */
 .masters-grid-main {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -293,6 +293,17 @@ body {
   background: #4ecdc4;
 }
 
+.salon-name.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.salon-name.clickable:hover {
+  background: #45b7b8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 .specialty-main {
   color: #667eea;
   font-weight: 500;
@@ -347,7 +358,7 @@ body {
   background: #5a6fd8;
 }
 
-/* Страница деталей мастера */
+/* Stránka detailů mistra */
 .master-detail-page {
   max-width: 800px;
   margin: 0 auto;
@@ -761,6 +772,47 @@ body {
   border-radius: 8px;
   background: #f8f9fa;
   cursor: pointer;
+}
+
+.file-upload-container {
+  width: 100%;
+}
+
+.file-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border: 2px dashed #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.file-upload-area:hover {
+  border-color: #667eea;
+}
+
+.file-select-button {
+  padding: 8px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.file-select-button:hover {
+  background: #5a6fd8;
+}
+
+.file-status {
+  color: #666;
+  font-size: 14px;
+  flex: 1;
 }
 
 .form-help {
@@ -1609,7 +1661,7 @@ body {
   }
 }
 
-/* Стили для услуг мастеров */
+/* Styly pro služby mistrů */
 .master-services {
   display: flex;
   flex-wrap: wrap;

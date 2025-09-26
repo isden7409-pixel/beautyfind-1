@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Salon, Master, Language } from '../types';
+import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 import 'leaflet/dist/leaflet.css';
 
 // Фикс для иконок Leaflet
@@ -130,7 +131,7 @@ const MapView: React.FC<MapViewProps> = ({
                     ⭐ {salon.rating} ({salon.reviews} {t.reviews})
                   </p>
                   <div className="popup-services">
-                    {salon.services.slice(0, 3).map(service => (
+                    {translateServices(salon.services, language).slice(0, 3).map(service => (
                       <span key={service} className="popup-service-tag">
                         {service}
                       </span>
@@ -167,7 +168,7 @@ const MapView: React.FC<MapViewProps> = ({
                     className="popup-image popup-avatar"
                   />
                   <h3>{master.name}</h3>
-                  <p className="popup-specialty">{master.specialty}</p>
+                  <p className="popup-specialty">{translateSpecialty(master.specialty, language)}</p>
                   <p className="popup-address">
                     📍 {master.address}, {master.city === 'Prague' ? 'Praha' : master.city}
                   </p>
