@@ -793,14 +793,14 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
           )
         )}
         
-        {/* Premium packages for masters */}
+        {/* Premium packages */}
         <PremiumFeatures
           language={currentLanguage}
           translations={translations}
           onPurchase={(feature) => {
             console.log('Premium feature purchased:', feature);
           }}
-          type="master"
+          type={viewMode === 'salons' ? 'salon' : 'master'}
           itemId={0}
         />
 
