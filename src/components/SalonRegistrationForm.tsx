@@ -28,7 +28,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  // const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
   const t = translations[language];
 
@@ -61,7 +61,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setPhotoFiles(files);
+      // setPhotoFiles(files);
       setFormData(prev => ({
         ...prev,
         photos: files

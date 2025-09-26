@@ -90,7 +90,7 @@ const MapView: React.FC<MapViewProps> = ({
   });
 
   // Фильтруем данные в зависимости от выбранного типа
-  const displayData = selectedType === 'salons' ? salons : masters;
+  // const displayData = selectedType === 'salons' ? salons : masters;
 
   return (
     <div className="map-container">

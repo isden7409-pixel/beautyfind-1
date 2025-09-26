@@ -338,7 +338,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             </div>
           )
         )}
-        )}
       </main>
     </div>
   );

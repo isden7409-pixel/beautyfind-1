@@ -16,7 +16,7 @@ const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({
   type,
   itemId,
 }) => {
-  const [selectedFeature, setSelectedFeature] = useState<PremiumFeature | null>(null);
+  // const [selectedFeature, setSelectedFeature] = useState<PremiumFeature | null>(null);
 
   const t = translations[language];
 
@@ -54,11 +54,11 @@ const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({
   ];
 
   const handlePurchase = (feature: PremiumFeature) => {
-    setSelectedFeature(feature);
+    // setSelectedFeature(feature);
     // В реальном приложении здесь будет интеграция с платежной системой
     alert(`${t.purchaseConfirm} ${feature.name} za ${feature.price} Kč`);
     onPurchase(feature);
-    setSelectedFeature(null);
+    // setSelectedFeature(null);
   };
 
   const formatPrice = (price: number) => {
