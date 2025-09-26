@@ -1,6 +1,6 @@
 // Типы для салонов красоты
 export interface Salon {
-  id: number;
+  id: string;
   name: string;
   city: string;
   address: string;
@@ -25,7 +25,7 @@ export interface Salon {
 
 // Типы для мастеров
 export interface Master {
-  id: number;
+  id: string;
   name: string;
   specialty: string;
   experience: string;
@@ -41,7 +41,7 @@ export interface Master {
   email?: string;
   services?: string[];
   salonName?: string;
-  salonId?: number;
+  salonId?: string;
   coordinates?: {
     lat: number;
     lng: number;
@@ -52,19 +52,19 @@ export interface Master {
 
 // Типы для отзывов
 export interface Review {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   userName: string;
   rating: number;
   comment: string;
   date: string;
-  salonId?: number;
-  masterId?: number;
+  salonId?: string;
+  masterId?: string;
 }
 
 // Типы для пользователей
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -97,7 +97,7 @@ export interface MasterRegistration {
   services: string[];
   photo: File;
   isFreelancer: boolean;
-  salonId?: number;
+  salonId?: string;
   city?: string;
   address?: string;
 }
@@ -125,4 +125,10 @@ export interface PremiumFeature {
   price: number;
   duration: 'day' | 'week' | 'month';
   type: 'salon' | 'master';
+}
+
+// Дополнительные поля для Firebase
+export interface FirebaseDocument {
+  createdAt?: Date;
+  updatedAt?: Date;
 }

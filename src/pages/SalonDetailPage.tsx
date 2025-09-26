@@ -23,8 +23,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   // Моковые отзывы для салона
   const [reviews, setReviews] = useState<Review[]>([
     {
-      id: 1,
-      userId: 1,
+      id: "1",
+      userId: "1",
       userName: "Anna Nováková",
       rating: 5,
       comment: "Výborný salon s profesionálním přístupem. Manikúra byla perfektní a personál velmi milý.",
@@ -32,8 +32,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
       salonId: salon.id
     },
     {
-      id: 2,
-      userId: 2,
+      id: "2",
+      userId: "2",
       userName: "Petra Svobodová",
       rating: 4,
       comment: "Krásný interiér a kvalitní služby. Jediné mínus je delší čekací doba.",
@@ -45,7 +45,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const handleAddReview = (newReview: Omit<Review, 'id'>) => {
     const review: Review = {
       ...newReview,
-      id: Math.max(...reviews.map(r => r.id)) + 1,
+      id: (Math.max(...reviews.map(r => parseInt(r.id))) + 1).toString(),
     };
     setReviews([...reviews, review]);
   };
@@ -138,7 +138,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           translations={translations}
           onPurchase={handlePurchasePremium}
           type="salon"
-          itemId={salon.id}
+          itemId={parseInt(salon.id)}
         />
       </div>
     </div>

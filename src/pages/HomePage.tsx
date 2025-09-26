@@ -10,7 +10,7 @@ import PremiumFeatures from '../components/PremiumFeatures';
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
   {
-    id: 1,
+    id: "1",
     name: "Elegance Beauty Prague",
     city: "Prague",
     address: "Václavské náměstí 28, 110 00 Praha 1",
@@ -30,7 +30,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 101,
+        id: "101",
         name: "Kateřina Nováková",
         specialty: "Manikúra a pedikúra",
         experience: "5 let",
@@ -42,7 +42,7 @@ const mockSalons: Salon[] = [
         address: "Václavské náměstí 28, 110 00 Praha 1"
       },
       {
-        id: 102,
+        id: "102",
         name: "Lucie Svobodová",
         specialty: "Kadeřnice",
         experience: "8 let",
@@ -54,7 +54,7 @@ const mockSalons: Salon[] = [
         address: "Václavské náměstí 28, 110 00 Praha 1"
       },
       {
-        id: 103,
+        id: "103",
         name: "Martina Krásná",
         specialty: "Make-up artist",
         experience: "6 let",
@@ -69,7 +69,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 50.0755, lng: 14.4378 }
   },
   {
-    id: 2,
+    id: "2",
     name: "Glamour Studio Brno",
     city: "Brno",
     address: "Náměstí Svobody 15, 602 00 Brno-střed",
@@ -87,7 +87,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 201,
+        id: "201",
         name: "Eva Krásná",
         specialty: "Wedding Makeup",
         experience: "6 let",
@@ -99,7 +99,7 @@ const mockSalons: Salon[] = [
         address: "Náměstí Svobody 15, 602 00 Brno-střed"
       },
       {
-        id: 202,
+          id: "202",
         name: "Jana Svobodová",
         specialty: "Hair Styling",
         experience: "4 let",
@@ -114,7 +114,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 49.1951, lng: 16.6068 }
   },
   {
-    id: 3,
+    id: "3",
     name: "Nail Art Prague",
     city: "Prague",
     address: "Karlova 25, 110 00 Praha 1",
@@ -132,7 +132,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 301,
+        id: "301",
         name: "Andrea Nehtová",
         specialty: "Nail Design",
         experience: "7 let",
@@ -144,7 +144,7 @@ const mockSalons: Salon[] = [
         address: "Karlova 25, 110 00 Praha 1"
       },
       {
-        id: 302,
+          id: "302",
         name: "Monika Krásná",
         specialty: "Gel Nails",
         experience: "3 let",
@@ -159,7 +159,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 50.0865, lng: 14.4206 }
   },
   {
-    id: 4,
+    id: "4",
     name: "Hair Paradise Brno",
     city: "Brno",
     address: "Joštova 8, 602 00 Brno-střed",
@@ -177,7 +177,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 401,
+        id: "401",
         name: "Petra Vlasová",
         specialty: "Barvení vlasů",
         experience: "10 let",
@@ -189,7 +189,7 @@ const mockSalons: Salon[] = [
         address: "Joštova 8, 602 00 Brno-střed"
       },
       {
-        id: 402,
+          id: "402",
         name: "Lucie Kadeřníková",
         specialty: "Pánské střihy",
         experience: "5 let",
@@ -204,7 +204,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 49.2000, lng: 16.6100 }
   },
   {
-    id: 5,
+    id: "5",
     name: "Beauty Center Prague",
     city: "Prague",
     address: "Wenceslas Square 47, 110 00 Praha 1",
@@ -222,7 +222,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 501,
+        id: "501",
         name: "Zuzana Krásná",
         specialty: "Facial treatments",
         experience: "8 let",
@@ -234,7 +234,7 @@ const mockSalons: Salon[] = [
         address: "Wenceslas Square 47, 110 00 Praha 1"
       },
       {
-        id: 502,
+          id: "502",
         name: "Michaela Svobodová",
         specialty: "Eyebrows & Eyelashes",
         experience: "4 let",
@@ -249,7 +249,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 50.0810, lng: 14.4270 }
   },
   {
-    id: 6,
+    id: "6",
     name: "Style Studio Brno",
     city: "Brno",
     address: "Masarykova 15, 602 00 Brno-střed",
@@ -267,7 +267,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 601,
+        id: "601",
         name: "Tereza Stylová",
         specialty: "Hair Styling",
         experience: "6 let",
@@ -279,7 +279,7 @@ const mockSalons: Salon[] = [
         address: "Masarykova 15, 602 00 Brno-střed"
       },
       {
-        id: 602,
+        id: "602",
         name: "Nikola Krásná",
         specialty: "Makeup & Nail Art",
         experience: "3 let",
@@ -294,7 +294,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 49.1900, lng: 16.6100 }
   },
   {
-    id: 7,
+    id: "7",
     name: "Luxury Spa Prague",
     city: "Prague",
     address: "Národní třída 25, 110 00 Praha 1",
@@ -312,7 +312,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 701,
+        id: "701",
         name: "Anna Relaxová",
         specialty: "Massage Therapy",
         experience: "12 let",
@@ -324,7 +324,7 @@ const mockSalons: Salon[] = [
         address: "Národní třída 25, 110 00 Praha 1"
       },
       {
-        id: 702,
+        id: "702",
         name: "Jana Wellness",
         specialty: "Facial & Body Treatments",
         experience: "7 let",
@@ -339,7 +339,7 @@ const mockSalons: Salon[] = [
     coordinates: { lat: 50.0820, lng: 14.4200 }
   },
   {
-    id: 8,
+    id: "8",
     name: "Modern Hair Brno",
     city: "Brno",
     address: "Kobližná 3, 602 00 Brno-střed",
@@ -357,7 +357,7 @@ const mockSalons: Salon[] = [
     ],
     masters: [
       {
-        id: 801,
+        id: "801",
         name: "Tomáš Moderní",
         specialty: "Pánské střihy",
         experience: "9 let",
@@ -369,7 +369,7 @@ const mockSalons: Salon[] = [
         address: "Kobližná 3, 602 00 Brno-střed"
       },
       {
-        id: 802,
+        id: "802",
         name: "Veronika Trendová",
         specialty: "Dámské střihy a barvení",
         experience: "5 let",
@@ -388,7 +388,7 @@ const mockSalons: Salon[] = [
 // Фрилансеры (мастера работающие на себя)
 const freelancerMasters: Master[] = [
   {
-    id: 1001,
+    id: "1001",
     name: "Anna Krásná",
     specialty: "Nail Design",
     experience: "7 let",
@@ -406,7 +406,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 50.0750, lng: 14.4500 }
   },
   {
-    id: 1002,
+    id: "1002",
     name: "Petr Kadeřník",
     specialty: "Pánské střihy",
     experience: "5 let",
@@ -424,7 +424,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 49.2000, lng: 16.6100 }
   },
   {
-    id: 1003,
+    id: "1003",
     name: "Marie Makeup",
     specialty: "Wedding Makeup",
     experience: "8 let",
@@ -442,7 +442,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 50.0800, lng: 14.4300 }
   },
   {
-    id: 1004,
+    id: "1004",
     name: "Tomáš Masér",
     specialty: "Relaxační masáže",
     experience: "6 let",
@@ -460,7 +460,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 49.1900, lng: 16.6000 }
   },
   {
-    id: 1005,
+    id: "1005",
     name: "Lucie Kadeřnice",
     specialty: "Dámské střihy",
     experience: "4 let",
@@ -478,7 +478,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 50.0820, lng: 14.4200 }
   },
   {
-    id: 1006,
+    id: "1006",
     name: "Jana Kosmetička",
     specialty: "Péče o pleť",
     experience: "9 let",
@@ -496,7 +496,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 49.1950, lng: 16.6050 }
   },
   {
-    id: 1007,
+    id: "1007",
     name: "Pavel Barber",
     specialty: "Pánské střihy a vousy",
     experience: "7 let",
@@ -514,7 +514,7 @@ const freelancerMasters: Master[] = [
     coordinates: { lat: 50.0755, lng: 14.4378 }
   },
   {
-    id: 1008,
+    id: "1008",
     name: "Eva Manikérka",
     specialty: "Manikúra a pedikúra",
     experience: "5 let",

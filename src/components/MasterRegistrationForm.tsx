@@ -211,7 +211,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               id="salonId"
               name="salonId"
               value={formData.salonId || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, salonId: Number(e.target.value) }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, salonId: e.target.value }))}
               required
               className="form-select"
             >

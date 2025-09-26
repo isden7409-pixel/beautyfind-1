@@ -6,8 +6,8 @@ interface ReviewsSectionProps {
   language: Language;
   translations: any;
   onAddReview: (review: Omit<Review, 'id'>) => void;
-  salonId?: number;
-  masterId?: number;
+  salonId?: string;
+  masterId?: string;
 }
 
 const ReviewsSection: React.FC<ReviewsSectionProps> = ({
@@ -31,7 +31,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
     e.preventDefault();
     if (newReview.userName.trim() && newReview.comment.trim()) {
       onAddReview({
-        userId: Math.random(), // В реальном приложении это будет ID пользователя
+        userId: Math.random().toString(), // В реальном приложении это будет ID пользователя
         userName: newReview.userName,
         rating: newReview.rating,
         comment: newReview.comment,

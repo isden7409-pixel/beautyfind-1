@@ -21,8 +21,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   // Моковые отзывы для мастера
   const [reviews, setReviews] = useState<Review[]>([
     {
-      id: 1,
-      userId: 1,
+      id: "1",
+      userId: "1",
       userName: "Marie Krásná",
       rating: 5,
       comment: "Výborná práce! Kateřina je velmi zkušená a pečlivá. Určitě se vrátím.",
@@ -30,8 +30,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
       masterId: master.id
     },
     {
-      id: 2,
-      userId: 2,
+      id: "2",
+      userId: "2",
       userName: "Jana Svobodová",
       rating: 4,
       comment: "Kvalitní služby za rozumnou cenu. Doporučuji!",
@@ -43,7 +43,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   const handleAddReview = (newReview: Omit<Review, 'id'>) => {
     const review: Review = {
       ...newReview,
-      id: Math.max(...reviews.map(r => r.id)) + 1,
+      id: (Math.max(...reviews.map(r => parseInt(r.id))) + 1).toString(),
     };
     setReviews([...reviews, review]);
   };
@@ -103,7 +103,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           translations={translations}
           onPurchase={handlePurchasePremium}
           type="master"
-          itemId={master.id}
+          itemId={parseInt(master.id)}
         />
       </div>
     </div>
