@@ -563,7 +563,24 @@ const translations = {
     step2: "Zaplaťte",
     step2Desc: "Bezpečná platba kartou nebo převodem",
     step3: "Začněte získávat klienty",
-    step3Desc: "Váš profil bude zobrazen na vrcholu"
+    step3Desc: "Váš profil bude zobrazen na vrcholu",
+    premiumFeatures: "Prémiové funkce",
+    premiumDescription: "Zvyšte svou viditelnost a přilákejte více klientů",
+    purchaseNow: "Koupit nyní",
+    purchaseConfirm: "Zakoupeno",
+    day: "den",
+    week: "týden",
+    month: "měsíc",
+    benefit1: "Zobrazení na vrcholu výsledků",
+    benefit2: "Zvýrazněný profil",
+    benefit3: "Více zákazníků",
+    benefit4: "Statistiky a analýzy",
+    step1Title: "Vyberte balíček",
+    step1Description: "Zvolte si délku prémiového zobrazení",
+    step2Title: "Zaplaťte",
+    step2Description: "Bezpečná platba kartou nebo převodem",
+    step3Title: "Začněte získávat klienty",
+    step3Description: "Váš profil bude zobrazen na vrcholu"
   },
   en: {
     title: "BeautyFind.cz",
@@ -593,7 +610,24 @@ const translations = {
     step2: "Pay",
     step2Desc: "Secure payment by card or transfer",
     step3: "Start getting clients",
-    step3Desc: "Your profile will be displayed at the top"
+    step3Desc: "Your profile will be displayed at the top",
+    premiumFeatures: "Premium Features",
+    premiumDescription: "Increase your visibility and attract more clients",
+    purchaseNow: "Purchase Now",
+    purchaseConfirm: "Purchased",
+    day: "day",
+    week: "week",
+    month: "month",
+    benefit1: "Top search results display",
+    benefit2: "Highlighted profile",
+    benefit3: "More customers",
+    benefit4: "Statistics and analytics",
+    step1Title: "Choose package",
+    step1Description: "Select the duration of premium display",
+    step2Title: "Pay",
+    step2Description: "Secure payment by card or transfer",
+    step3Title: "Start getting clients",
+    step3Description: "Your profile will be displayed at the top"
   }
 };
 
