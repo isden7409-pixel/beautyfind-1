@@ -16,16 +16,16 @@ const mockSalons: Salon[] = [
     services: ["Manicure", "Pedicure", "Haircut", "Makeup", "Facial"],
     rating: 4.8,
     reviews: 127,
-    image: "https://via.placeholder.com/400x300/667eea/ffffff?text=Elegance+Beauty",
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&crop=center",
     description: "Prémiový kosmetický salon v centru Prahy s moderním vybavením a profesionálním týmem. Specializujeme se na manikúru, pedikúru a péči o pleť.",
     phone: "+420 123 456 789",
     email: "info@elegancebeauty.cz",
     website: "www.elegancebeauty.cz",
     openHours: "Po-Pá: 9:00-20:00, So: 10:00-18:00",
     photos: [
-      "https://via.placeholder.com/400x300/764ba2/ffffff?text=Interiér+1",
-      "https://via.placeholder.com/400x300/5a6fd8/ffffff?text=Interiér+2",
-      "https://via.placeholder.com/400x300/ff6b6b/ffffff?text=Interiér+3"
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -35,7 +35,7 @@ const mockSalons: Salon[] = [
         experience: "5 let",
         rating: 4.9,
         reviews: 45,
-        photo: "https://via.placeholder.com/150x150/667eea/ffffff?text=KN",
+        photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -47,7 +47,7 @@ const mockSalons: Salon[] = [
         experience: "8 let",
         rating: 4.7,
         reviews: 82,
-        photo: "https://via.placeholder.com/150x150/764ba2/ffffff?text=LS",
+        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -59,7 +59,7 @@ const mockSalons: Salon[] = [
         experience: "6 let",
         rating: 4.8,
         reviews: 67,
-        photo: "https://via.placeholder.com/150x150/ff6b6b/ffffff?text=MK",
+        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -75,14 +75,14 @@ const mockSalons: Salon[] = [
     services: ["Makeup", "Hair Styling", "Facial", "Massage"],
     rating: 4.6,
     reviews: 89,
-    image: "https://via.placeholder.com/400x300/ff6b6b/ffffff?text=Glamour+Studio",
+    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop&crop=center",
     description: "Moderní studio v srdci Brna nabízející komplexní péči o krásu. Zaměřujeme se na wedding makeup a speciální účesy.",
     phone: "+420 987 654 321",
     email: "studio@glamourbrno.cz",
     openHours: "Po-Ne: 8:00-21:00",
     photos: [
-      "https://via.placeholder.com/400x300/ff5252/ffffff?text=Studio+1",
-      "https://via.placeholder.com/400x300/ff8e8e/ffffff?text=Studio+2"
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -92,7 +92,7 @@ const mockSalons: Salon[] = [
         experience: "6 let",
         rating: 4.8,
         reviews: 67,
-        photo: "https://via.placeholder.com/150x150/ff6b6b/ffffff?text=EK",
+        photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed"
@@ -104,7 +104,7 @@ const mockSalons: Salon[] = [
         experience: "4 let",
         rating: 4.6,
         reviews: 34,
-        photo: "https://via.placeholder.com/150x150/ff8e8e/ffffff?text=JS",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed"
@@ -120,14 +120,14 @@ const mockSalons: Salon[] = [
     services: ["Manicure", "Nail Art", "Gel Nails", "Nail Extensions"],
     rating: 4.9,
     reviews: 203,
-    image: "https://via.placeholder.com/400x300/4ecdc4/ffffff?text=Nail+Art",
+    image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&h=300&fit=crop&crop=center",
     description: "Specialisté na nail design a gelové nehty v historickém centru Prahy. Používáme pouze prémiové produkty.",
     phone: "+420 555 123 456",
     email: "nailart@prague.cz",
     openHours: "Út-Ne: 10:00-19:00",
     photos: [
-      "https://via.placeholder.com/400x300/45b7d1/ffffff?text=Salon+1",
-      "https://via.placeholder.com/400x300/96ceb4/ffffff?text=Salon+2"
+      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -137,7 +137,7 @@ const mockSalons: Salon[] = [
         experience: "7 let",
         rating: 4.9,
         reviews: 134,
-        photo: "https://via.placeholder.com/150x150/4ecdc4/ffffff?text=AN",
+        photo: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1"
@@ -149,7 +149,7 @@ const mockSalons: Salon[] = [
         experience: "3 let",
         rating: 4.7,
         reviews: 56,
-        photo: "https://via.placeholder.com/150x150/96ceb4/ffffff?text=MK",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1"
@@ -165,14 +165,14 @@ const mockSalons: Salon[] = [
     services: ["Haircut", "Coloring", "Hair Treatment", "Styling"],
     rating: 4.7,
     reviews: 156,
-    image: "https://via.placeholder.com/400x300/f9ca24/ffffff?text=Hair+Paradise",
+    image: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop&crop=center",
     description: "Kadeřnický salon s 15letou tradicí a špičkovými produkty. Nabízíme kompletní služby pro vlasy.",
     phone: "+420 777 888 999",
     email: "info@hairparadise.cz",
     openHours: "Po-Pá: 8:00-19:00, So: 9:00-16:00",
     photos: [
-      "https://via.placeholder.com/400x300/f0932b/ffffff?text=Salon+1",
-      "https://via.placeholder.com/400x300/eb4d4b/ffffff?text=Salon+2"
+      "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -182,7 +182,7 @@ const mockSalons: Salon[] = [
         experience: "10 let",
         rating: 4.8,
         reviews: 89,
-        photo: "https://via.placeholder.com/150x150/f9ca24/ffffff?text=PV",
+        photo: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed"
@@ -194,7 +194,7 @@ const mockSalons: Salon[] = [
         experience: "5 let",
         rating: 4.6,
         reviews: 42,
-        photo: "https://via.placeholder.com/150x150/eb4d4b/ffffff?text=LK",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed"
@@ -210,14 +210,14 @@ const mockSalons: Salon[] = [
     services: ["Facial", "Massage", "Eyebrows", "Eyelashes"],
     rating: 4.5,
     reviews: 98,
-    image: "https://via.placeholder.com/400x300/a55eea/ffffff?text=Beauty+Center",
+    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&crop=center",
     description: "Moderní centrum krásy v centru Prahy s profesionálním týmem a nejnovějšími technologiemi.",
     phone: "+420 234 567 890",
     email: "info@beautycenter.cz",
     openHours: "Po-Pá: 8:00-20:00, So: 9:00-17:00",
     photos: [
-      "https://via.placeholder.com/400x300/8e44ad/ffffff?text=Center+1",
-      "https://via.placeholder.com/400x300/9b59b6/ffffff?text=Center+2"
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -227,7 +227,7 @@ const mockSalons: Salon[] = [
         experience: "8 let",
         rating: 4.7,
         reviews: 67,
-        photo: "https://via.placeholder.com/150x150/a55eea/ffffff?text=ZK",
+        photo: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1"
@@ -239,7 +239,7 @@ const mockSalons: Salon[] = [
         experience: "4 let",
         rating: 4.5,
         reviews: 31,
-        photo: "https://via.placeholder.com/150x150/9b59b6/ffffff?text=MS",
+        photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1"
@@ -255,14 +255,14 @@ const mockSalons: Salon[] = [
     services: ["Haircut", "Coloring", "Makeup", "Nail Art"],
     rating: 4.4,
     reviews: 76,
-    image: "https://via.placeholder.com/400x300/2ecc71/ffffff?text=Style+Studio",
+    image: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop&crop=center",
     description: "Stylový salon v centru Brna nabízející kompletní služby pro moderní ženy.",
     phone: "+420 345 678 901",
     email: "info@stylestudio.cz",
     openHours: "Po-Pá: 9:00-19:00, So: 10:00-16:00",
     photos: [
-      "https://via.placeholder.com/400x300/27ae60/ffffff?text=Studio+1",
-      "https://via.placeholder.com/400x300/16a085/ffffff?text=Studio+2"
+      "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -272,7 +272,7 @@ const mockSalons: Salon[] = [
         experience: "6 let",
         rating: 4.6,
         reviews: 45,
-        photo: "https://via.placeholder.com/150x150/2ecc71/ffffff?text=TS",
+        photo: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed"
@@ -284,7 +284,7 @@ const mockSalons: Salon[] = [
         experience: "3 let",
         rating: 4.3,
         reviews: 31,
-        photo: "https://via.placeholder.com/150x150/16a085/ffffff?text=NK",
+        photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed"
@@ -300,14 +300,14 @@ const mockSalons: Salon[] = [
     services: ["Massage", "Facial", "Body Treatment", "Sauna"],
     rating: 4.9,
     reviews: 145,
-    image: "https://via.placeholder.com/400x300/e74c3c/ffffff?text=Luxury+Spa",
+    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=300&fit=crop&crop=center",
     description: "Luxusní spa v centru Prahy s prémiovými službami a relaxačním prostředím.",
     phone: "+420 456 789 012",
     email: "info@luxuryspa.cz",
     openHours: "Po-Ne: 7:00-22:00",
     photos: [
-      "https://via.placeholder.com/400x300/c0392b/ffffff?text=Spa+1",
-      "https://via.placeholder.com/400x300/a93226/ffffff?text=Spa+2"
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -317,7 +317,7 @@ const mockSalons: Salon[] = [
         experience: "12 let",
         rating: 4.9,
         reviews: 89,
-        photo: "https://via.placeholder.com/150x150/e74c3c/ffffff?text=AR",
+        photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1"
@@ -329,7 +329,7 @@ const mockSalons: Salon[] = [
         experience: "7 let",
         rating: 4.8,
         reviews: 56,
-        photo: "https://via.placeholder.com/150x150/c0392b/ffffff?text=JW",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1"
@@ -345,14 +345,14 @@ const mockSalons: Salon[] = [
     services: ["Haircut", "Coloring", "Hair Treatment", "Beard Trim"],
     rating: 4.6,
     reviews: 112,
-    image: "https://via.placeholder.com/400x300/3498db/ffffff?text=Modern+Hair",
+    image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&h=300&fit=crop&crop=center",
     description: "Moderní kadeřnický salon s trendy střihy a profesionálním přístupem.",
     phone: "+420 567 890 123",
     email: "info@modernhair.cz",
     openHours: "Po-Pá: 8:00-18:00, So: 9:00-15:00",
     photos: [
-      "https://via.placeholder.com/400x300/2980b9/ffffff?text=Hair+1",
-      "https://via.placeholder.com/400x300/1f618d/ffffff?text=Hair+2"
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&h=300&fit=crop&crop=center",
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&crop=center"
     ],
     masters: [
       {
@@ -362,7 +362,7 @@ const mockSalons: Salon[] = [
         experience: "9 let",
         rating: 4.7,
         reviews: 78,
-        photo: "https://via.placeholder.com/150x150/3498db/ffffff?text=TM",
+        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed"
@@ -374,7 +374,7 @@ const mockSalons: Salon[] = [
         experience: "5 let",
         rating: 4.5,
         reviews: 34,
-        photo: "https://via.placeholder.com/150x150/1f618d/ffffff?text=VT",
+        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed"
@@ -393,7 +393,7 @@ const freelancerMasters: Master[] = [
     experience: "7 let",
     rating: 4.9,
     reviews: 56,
-    photo: "https://via.placeholder.com/150x150/a55eea/ffffff?text=AK",
+    photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -411,7 +411,7 @@ const freelancerMasters: Master[] = [
     experience: "5 let",
     rating: 4.8,
     reviews: 34,
-    photo: "https://via.placeholder.com/150x150/3867d6/ffffff?text=PK",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -429,7 +429,7 @@ const freelancerMasters: Master[] = [
     experience: "8 let",
     rating: 4.9,
     reviews: 78,
-    photo: "https://via.placeholder.com/150x150/e91e63/ffffff?text=MM",
+    photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -447,7 +447,7 @@ const freelancerMasters: Master[] = [
     experience: "6 let",
     rating: 4.7,
     reviews: 45,
-    photo: "https://via.placeholder.com/150x150/ff9800/ffffff?text=TM",
+    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -465,7 +465,7 @@ const freelancerMasters: Master[] = [
     experience: "4 let",
     rating: 4.6,
     reviews: 32,
-    photo: "https://via.placeholder.com/150x150/4caf50/ffffff?text=LK",
+    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -483,7 +483,7 @@ const freelancerMasters: Master[] = [
     experience: "9 let",
     rating: 4.8,
     reviews: 67,
-    photo: "https://via.placeholder.com/150x150/9c27b0/ffffff?text=JK",
+    photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
@@ -501,7 +501,7 @@ const freelancerMasters: Master[] = [
     experience: "7 let",
     rating: 4.9,
     reviews: 89,
-    photo: "https://via.placeholder.com/150x150/795548/ffffff?text=PB",
+    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Prague",
@@ -519,7 +519,7 @@ const freelancerMasters: Master[] = [
     experience: "5 let",
     rating: 4.7,
     reviews: 43,
-    photo: "https://via.placeholder.com/150x150/f44336/ffffff?text=EM",
+    photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
     worksInSalon: false,
     isFreelancer: true,
     city: "Brno",
