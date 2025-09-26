@@ -5,6 +5,7 @@ import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import MapView from '../components/MapView';
+import PremiumFeatures from '../components/PremiumFeatures';
 
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
@@ -759,49 +760,15 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         )}
         
         {/* Premium packages for masters */}
-        <section className="premium-packages-section">
-          <div className="premium-packages-content">
-            <h2>Prémiové balíčky pro mistry</h2>
-            <div className="premium-packages-grid">
-              <div className="premium-package">
-                <h3>Top Master - Den</h3>
-                <div className="price">200 Kč</div>
-                <p className="description">Zobrazte sebe na vrcholu výsledků vyhledávání na 24 hodin</p>
-                <ul className="features">
-                  <li>Zobrazení na vrcholu výsledků</li>
-                  <li>Zvýrazněný profil</li>
-                  <li>Více zobrazení</li>
-                  <li>Okamžité aktivace</li>
-                </ul>
-                <button className="purchase-btn">Zakoupit</button>
-              </div>
-              <div className="premium-package">
-                <h3>Top Master - Týden</h3>
-                <div className="price">1 000 Kč</div>
-                <p className="description">Zobrazte sebe na vrcholu výsledků vyhledávání na 7 dní</p>
-                <ul className="features">
-                  <li>Zobrazení na vrcholu výsledků</li>
-                  <li>Zvýrazněný profil</li>
-                  <li>Více zobrazení</li>
-                  <li>Okamžitá aktivace</li>
-                </ul>
-                <button className="purchase-btn">Zakoupit</button>
-              </div>
-              <div className="premium-package">
-                <h3>Top Master - Měsíc</h3>
-                <div className="price">3 000 Kč</div>
-                <p className="description">Zobrazte sebe na vrcholu výsledků vyhledávání na 30 dní</p>
-                <ul className="features">
-                  <li>Zobrazení na vrcholu výsledků</li>
-                  <li>Zvýrazněný profil</li>
-                  <li>Více zobrazení</li>
-                  <li>Okamžitá aktivace</li>
-                </ul>
-                <button className="purchase-btn">Zakoupit</button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PremiumFeatures
+          language={currentLanguage}
+          translations={translations}
+          onPurchase={(feature) => {
+            console.log('Premium feature purchased:', feature);
+          }}
+          type="master"
+          itemId={0}
+        />
 
         {/* Jak to funguje section */}
         <section className="how-it-works">

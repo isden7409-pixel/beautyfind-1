@@ -1488,22 +1488,22 @@ body {
   padding: 8px 0;
   color: #666;
   font-size: 0.9rem;
-  position: relative;
-  padding-left: 25px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
 }
 
-.premium-package .features li:before {
-  content: "✓";
+.premium-package .features .checkmark {
   color: #28a745;
   font-weight: bold;
-  position: absolute;
-  left: 0;
-  top: 8px;
+  font-size: 1.1rem;
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .purchase-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: white !important;
   border: none;
   padding: 15px 30px;
   border-radius: 25px;
@@ -1512,6 +1512,10 @@ body {
   transition: all 0.3s ease;
   width: 100%;
   font-size: 1rem;
+  text-align: center;
+  display: block;
+  text-decoration: none;
+  outline: none;
 }
 
 .purchase-btn:hover {
