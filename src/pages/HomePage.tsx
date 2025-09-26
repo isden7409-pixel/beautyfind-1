@@ -84,6 +84,70 @@ const mockSalons: Salon[] = [
       }
     ],
     coordinates: { lat: 49.1951, lng: 16.6068 }
+  },
+  {
+    id: 3,
+    name: "Nail Art Prague",
+    city: "Prague",
+    address: "Karlova 25",
+    services: ["Manicure", "Nail Art", "Gel Nails", "Nail Extensions"],
+    rating: 4.9,
+    reviews: 203,
+    image: "https://via.placeholder.com/400x300/4ecdc4/ffffff?text=Nail+Art",
+    description: "Specialisté na nail design a gelové nehty v historickém centru Prahy. Používáme pouze prémiové produkty.",
+    phone: "+420 555 123 456",
+    email: "nailart@prague.cz",
+    openHours: "Út-Ne: 10:00-19:00",
+    photos: [
+      "https://via.placeholder.com/400x300/45b7d1/ffffff?text=Salon+1",
+      "https://via.placeholder.com/400x300/96ceb4/ffffff?text=Salon+2"
+    ],
+    masters: [
+      {
+        id: 301,
+        name: "Andrea Nehtová",
+        specialty: "Nail Design",
+        experience: "7 let",
+        rating: 4.9,
+        reviews: 134,
+        photo: "https://via.placeholder.com/150x150/4ecdc4/ffffff?text=AN",
+        worksInSalon: true,
+        isFreelancer: false
+      }
+    ],
+    coordinates: { lat: 50.0865, lng: 14.4206 }
+  },
+  {
+    id: 4,
+    name: "Hair Paradise Brno",
+    city: "Brno",
+    address: "Joštova 8",
+    services: ["Haircut", "Coloring", "Hair Treatment", "Styling"],
+    rating: 4.7,
+    reviews: 156,
+    image: "https://via.placeholder.com/400x300/f9ca24/ffffff?text=Hair+Paradise",
+    description: "Kadeřnický salon s 15letou tradicí a špičkovými produkty. Nabízíme kompletní služby pro vlasy.",
+    phone: "+420 777 888 999",
+    email: "info@hairparadise.cz",
+    openHours: "Po-Pá: 8:00-19:00, So: 9:00-16:00",
+    photos: [
+      "https://via.placeholder.com/400x300/f0932b/ffffff?text=Salon+1",
+      "https://via.placeholder.com/400x300/eb4d4b/ffffff?text=Salon+2"
+    ],
+    masters: [
+      {
+        id: 401,
+        name: "Petra Vlasová",
+        specialty: "Barvení vlasů",
+        experience: "10 let",
+        rating: 4.8,
+        reviews: 89,
+        photo: "https://via.placeholder.com/150x150/f9ca24/ffffff?text=PV",
+        worksInSalon: true,
+        isFreelancer: false
+      }
+    ],
+    coordinates: { lat: 49.2000, lng: 16.6100 }
   }
 ];
 

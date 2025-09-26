@@ -14,10 +14,12 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const handleSalonSelect = (salon: Salon) => {
+    console.log('Salon selected:', salon);
     setSelectedSalon(salon);
   };
 
   const handleMasterSelect = (master: Master) => {
+    console.log('Master selected:', master);
     setSelectedMaster(master);
   };
 

@@ -61,7 +61,6 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      // setPhotoFiles(files);
       setFormData(prev => ({
         ...prev,
         photos: files
