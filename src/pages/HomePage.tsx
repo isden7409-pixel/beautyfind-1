@@ -36,7 +36,7 @@ const mockSalons: Salon[] = [
         experience: "5 let",
         rating: 4.9,
         reviews: 45,
-        photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
