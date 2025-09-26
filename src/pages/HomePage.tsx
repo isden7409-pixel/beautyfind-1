@@ -804,35 +804,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
           itemId={0}
         />
 
-        {/* Jak to funguje section */}
-        <section className="how-it-works">
-          <div className="how-it-works-content">
-            <h2>{t.howItWorks}</h2>
-            <div className="steps">
-              <div className="step">
-                <div className="step-number">1</div>
-                <div className="step-content">
-                  <h3>{t.step1}</h3>
-                  <p>{t.step1Desc}</p>
-                </div>
-              </div>
-              <div className="step">
-                <div className="step-number">2</div>
-                <div className="step-content">
-                  <h3>{t.step2}</h3>
-                  <p>{t.step2Desc}</p>
-                </div>
-              </div>
-              <div className="step">
-                <div className="step-number">3</div>
-                <div className="step-content">
-                  <h3>{t.step3}</h3>
-                  <p>{t.step3Desc}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );
