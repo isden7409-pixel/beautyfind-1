@@ -1608,3 +1608,20 @@ body {
     font-size: 2rem;
   }
 }
+
+/* Стили для услуг мастеров */
+.master-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0;
+}
+
+.service-tag-small {
+  background: #667eea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}

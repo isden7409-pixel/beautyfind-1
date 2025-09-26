@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Master, Language, Review, PremiumFeature } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
 import PremiumFeatures from '../components/PremiumFeatures';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface MasterDetailPageProps {
   master: Master;
@@ -83,8 +84,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         <div className="services-section">
           <h3>{t.services}</h3>
           <div className="services-grid">
-            {(master.services || [master.specialty]).map((service: string) => (
-              <span key={service} className="service-badge">{service}</span>
+            {translateServices(master.services || [master.specialty], language).map((service, index) => (
+              <span key={(master.services || [master.specialty])[index]} className="service-badge">{service}</span>
             ))}
           </div>
         </div>

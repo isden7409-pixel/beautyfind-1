@@ -1,5 +1,6 @@
 import React from 'react';
 import { Master, Language } from '../types';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface MasterCardProps {
   master: Master;
@@ -34,6 +35,16 @@ const MasterCard: React.FC<MasterCardProps> = ({
         </div>
         <p className="specialty-main">{master.specialty}</p>
         <p className="experience-main">{master.experience} {t.experience}</p>
+        {master.services && master.services.length > 0 && (
+          <div className="master-services">
+            {translateServices(master.services, language).slice(0, 3).map((service, index) => (
+              <span key={master.services![index]} className="service-tag-small">{service}</span>
+            ))}
+            {master.services.length > 3 && (
+              <span className="service-tag-small">+{master.services.length - 3}</span>
+            )}
+          </div>
+        )}
         <div className="master-rating-main">
           ⭐ {master.rating} ({master.reviews} {t.reviews})
         </div>

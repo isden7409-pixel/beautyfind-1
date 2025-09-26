@@ -1,5 +1,6 @@
 import React from 'react';
 import { Salon, Language } from '../types';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface SalonCardProps {
   salon: Salon;
@@ -31,8 +32,8 @@ const SalonCard: React.FC<SalonCardProps> = ({
           {t.rating} {salon.rating} ({salon.reviews} {t.reviews})
         </div>
         <div className="salon-services">
-          {salon.services.map(service => (
-            <span key={service} className="service-tag">{service}</span>
+          {translateServices(salon.services, language).map((service, index) => (
+            <span key={salon.services[index]} className="service-tag">{service}</span>
           ))}
         </div>
         <button
