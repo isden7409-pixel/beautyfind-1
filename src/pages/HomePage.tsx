@@ -35,7 +35,7 @@ const mockSalons: Salon[] = [
         experience: "5 let",
         rating: 4.9,
         reviews: 45,
-        photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
+        photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face&auto=format&q=80",
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1"
@@ -555,7 +555,14 @@ const translations = {
     experience: "zkušeností",
     adminPanel: "Admin Panel",
     listView: "Seznam",
-    mapView: "Mapa"
+    mapView: "Mapa",
+    howItWorks: "Jak to funguje",
+    step1: "Vyberte balíček",
+    step1Desc: "Zvolte si délku prémiového zobrazení",
+    step2: "Zaplaťte",
+    step2Desc: "Bezpečná platba kartou nebo převodem",
+    step3: "Začněte získávat klienty",
+    step3Desc: "Váš profil bude zobrazen na vrcholu"
   },
   en: {
     title: "BeautyFind.cz",
@@ -578,7 +585,14 @@ const translations = {
     experience: "experience",
     adminPanel: "Admin Panel",
     listView: "List",
-    mapView: "Map"
+    mapView: "Map",
+    howItWorks: "How it works",
+    step1: "Choose package",
+    step1Desc: "Select the duration of premium display",
+    step2: "Pay",
+    step2Desc: "Secure payment by card or transfer",
+    step3: "Start getting clients",
+    step3Desc: "Your profile will be displayed at the top"
   }
 };
 
@@ -743,6 +757,36 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             </div>
           )
         )}
+        
+        {/* Jak to funguje section */}
+        <section className="how-it-works">
+          <div className="how-it-works-content">
+            <h2>{t.howItWorks}</h2>
+            <div className="steps">
+              <div className="step">
+                <div className="step-number">1</div>
+                <div className="step-content">
+                  <h3>{t.step1}</h3>
+                  <p>{t.step1Desc}</p>
+                </div>
+              </div>
+              <div className="step">
+                <div className="step-number">2</div>
+                <div className="step-content">
+                  <h3>{t.step2}</h3>
+                  <p>{t.step2Desc}</p>
+                </div>
+              </div>
+              <div className="step">
+                <div className="step-number">3</div>
+                <div className="step-content">
+                  <h3>{t.step3}</h3>
+                  <p>{t.step3Desc}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
