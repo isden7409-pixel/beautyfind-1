@@ -1413,6 +1413,112 @@ body {
   }
 }
 
+/* Premium packages section for masters */
+.premium-packages-section {
+  background: #f8f9fa;
+  padding: 60px 20px;
+  margin-top: 40px;
+}
+
+.premium-packages-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.premium-packages-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: #333;
+  font-weight: 700;
+}
+
+.premium-packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.premium-package {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.premium-package:hover {
+  border-color: #667eea;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+}
+
+.premium-package h3 {
+  color: #667eea;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.premium-package .price {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.premium-package .description {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.premium-package .features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.premium-package .features li {
+  padding: 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+  position: relative;
+  padding-left: 25px;
+}
+
+.premium-package .features li:before {
+  content: "✓";
+  color: #28a745;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 8px;
+}
+
+.purchase-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.purchase-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
 /* How it works section */
 .how-it-works {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
