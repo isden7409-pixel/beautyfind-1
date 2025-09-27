@@ -265,7 +265,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             className: 'custom-marker',
             html: `
               <div style="
-                background: linear-gradient(135deg, ${master.isFreelancer ? '#ff6b6b 0%, #ee5a24 100%' : '#4ecdc4 0%, #44a08d 100%'});
+                background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)'};
                 width: 35px;
                 height: 35px;
                 border-radius: 50%;
@@ -279,7 +279,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 cursor: pointer;
               ">
-                ${master.isFreelancer ? '👤' : '✂️'}
+                ${master.isFreelancer ? '🏠' : '🏢'}
               </div>
             `,
             iconSize: [35, 35],
