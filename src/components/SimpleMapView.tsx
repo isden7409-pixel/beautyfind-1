@@ -153,7 +153,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
         setIsLoaded(true);
       }
     });
-  }, [filters.city]);
+  }, [filters]);
 
   useEffect(() => {
     if (!map || !isLoaded) return;
@@ -166,35 +166,91 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       salons.forEach((salon) => {
         if (salon.coordinates) {
           const L = (window as any).L;
-          const marker = L.marker([salon.coordinates.lat, salon.coordinates.lng])
-            .addTo(map)
-            .bindPopup(`
-              <div style="padding: 10px; max-width: 250px;">
-                <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${salon.name}</h3>
-                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">
-                  📍 ${salon.address}, ${salon.city === 'Prague' ? 'Praha' : salon.city}
-                </p>
-                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-                  ⭐ ${salon.rating} (${salon.reviews} ${t.reviews})
-                </p>
-                <div style="margin-bottom: 10px;">
-                  ${salon.services.slice(0, 3).map(service => 
-                    `<span style="display: inline-block; background: #f0f0f0; padding: 2px 6px; margin: 2px; border-radius: 12px; font-size: 12px; color: #666;">${service}</span>`
-                  ).join('')}
-                </div>
-                <button onclick="window.selectSalon('${salon.id}')" style="
-                  background: #667eea; 
-                  color: white; 
-                  border: none; 
-                  padding: 8px 16px; 
-                  border-radius: 4px; 
-                  cursor: pointer; 
-                  font-size: 14px;
-                  width: 100%;
-                ">${t.viewDetails}</button>
+          
+          // Создаем кастомную иконку для салона
+          const salonIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+              <div style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 18px;
+                font-weight: bold;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+              ">
+                🏢
               </div>
-            `);
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
+          });
+          
+          const marker = L.marker([salon.coordinates.lat, salon.coordinates.lng], { icon: salonIcon })
+            .addTo(map);
+          
+          // Добавляем отладочную информацию
+          marker.on('click', function() {
+            console.log('Salon marker clicked:', salon.name);
+          });
+          
+          const popupContent = `
+              <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                <div style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;">
+                  <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    ⭐ ${salon.rating} (${salon.reviews})
+                  </div>
+                </div>
+                <div style="padding: 16px; background: white;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${salon.name}</h3>
+                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center;">
+                    <span style="margin-right: 6px;">📍</span>
+                    <span>${salon.address}, ${salon.city === 'Prague' ? 'Praha' : salon.city}</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px;">
+                    ${salon.services.slice(0, 3).map(service => 
+                      `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
+                    ).join('')}
+                    ${salon.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${salon.services.length - 3} more</span>` : ''}
+                  </div>
+                  <div style="margin: 0 0 16px 0; display: flex; align-items: center; color: #666; font-size: 13px;">
+                    <span style="margin-right: 6px;">👥</span>
+                    <span>${salon.masters.length} ${salon.masters.length === 1 ? 'master' : 'masters'}</span>
+                  </div>
+                  <button onclick="window.selectSalon('${salon.id}')" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; 
+                    border: none; 
+                    padding: 12px 20px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-size: 14px;
+                    font-weight: 600;
+                    width: 100%;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                  " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)'">${t.viewDetails}</button>
+                </div>
+              </div>
+            `;
+          
+          marker.bindPopup(popupContent, {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
+            className: 'custom-popup',
+            maxWidth: 300,
+            minWidth: 250
+          });
 
           newMarkers.push(marker);
         }
@@ -203,43 +259,98 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       masters.forEach((master) => {
         if (master.coordinates) {
           const L = (window as any).L;
-          const marker = L.marker([master.coordinates.lat, master.coordinates.lng])
-            .addTo(map)
-            .bindPopup(`
-              <div style="padding: 10px; max-width: 250px;">
-                <img src="${master.photo}" alt="${master.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333; text-align: center;">${master.name}</h3>
-                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; text-align: center;">${translateSpecialty(master.specialty, language)}</p>
-                <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">
-                  📍 ${master.address}, ${master.city === 'Prague' ? 'Praha' : master.city}
-                </p>
-                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-                  ⭐ ${master.rating} (${master.reviews} ${t.reviews})
-                </p>
-                <div style="margin-bottom: 10px; text-align: center;">
-                  <span style="display: inline-block; background: #f0f0f0; padding: 4px 8px; border-radius: 12px; font-size: 12px; color: #666;">
-                    ${master.isFreelancer ? t.freelancer : t.inSalon}
-                  </span>
+          
+          // Создаем кастомную иконку для мастера
+          const masterIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+              <div style="
+                background: linear-gradient(135deg, ${master.isFreelancer ? '#ff6b6b 0%, #ee5a24 100%' : '#4ecdc4 0%, #44a08d 100%'});
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+              ">
+                ${master.isFreelancer ? '👤' : '✂️'}
+              </div>
+            `,
+            iconSize: [35, 35],
+            iconAnchor: [17.5, 17.5],
+            popupAnchor: [0, -17.5]
+          });
+          
+          const marker = L.marker([master.coordinates.lat, master.coordinates.lng], { icon: masterIcon })
+            .addTo(map);
+          
+          // Добавляем отладочную информацию
+          marker.on('click', function() {
+            console.log('Master marker clicked:', master.name);
+          });
+          
+          const popupContent = `
+              <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
+                  <img src="${master.photo}" alt="${master.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    ⭐ ${master.rating} (${master.reviews})
+                  </div>
                 </div>
-                ${master.salonName ? `
-                  <div style="margin-bottom: 10px; text-align: center;">
-                    <span style="display: inline-block; background: #e8f4fd; padding: 4px 8px; border-radius: 12px; font-size: 12px; color: #1976d2; cursor: pointer;" onclick="window.selectSalon('${master.salonId}')">
-                      🏢 ${master.salonName}
+                <div style="padding: 16px; background: white;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3; text-align: center;">${master.name}</h3>
+                  <div style="margin: 0 0 12px 0; color: #667eea; font-size: 14px; text-align: center; font-weight: 500;">${translateSpecialty(master.specialty, language)}</div>
+                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center; justify-content: center;">
+                    <span style="margin-right: 6px;">📍</span>
+                    <span>${master.address}, ${master.city === 'Prague' ? 'Praha' : master.city}</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px;">
+                    <span style="margin-right: 6px;">⏱️</span>
+                    <span>${master.experience} experience</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; text-align: center;">
+                    <span style="display: inline-block; background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      ${master.isFreelancer ? '🏠 ' + t.freelancer : '🏢 ' + t.inSalon}
                     </span>
                   </div>
-                ` : ''}
-                <button onclick="window.selectMaster('${master.id}')" style="
-                  background: #667eea; 
-                  color: white; 
-                  border: none; 
-                  padding: 8px 16px; 
-                  border-radius: 4px; 
-                  cursor: pointer; 
-                  font-size: 14px;
-                  width: 100%;
-                ">${t.viewDetails}</button>
+                  ${master.salonName ? `
+                    <div style="margin: 0 0 16px 0; text-align: center;">
+                      <span style="display: inline-block; background: #e8f4fd; color: #1976d2; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid #bbdefb;" onclick="window.selectSalon('${master.salonId}')">
+                        🏢 ${master.salonName}
+                      </span>
+                    </div>
+                  ` : ''}
+                  <button onclick="window.selectMaster('${master.id}')" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; 
+                    border: none; 
+                    padding: 12px 20px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-size: 14px;
+                    font-weight: 600;
+                    width: 100%;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                  " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)'">${t.viewDetails}</button>
+                </div>
               </div>
-            `);
+            `;
+          
+          marker.bindPopup(popupContent, {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
+            className: 'custom-popup',
+            maxWidth: 300,
+            minWidth: 250
+          });
 
           newMarkers.push(marker);
         }
@@ -259,7 +370,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       if (master) onMasterSelect(master);
     };
 
-  }, [map, isLoaded, salons, masters, selectedType, t, onSalonSelect, onMasterSelect, markers]);
+  }, [map, isLoaded, salons, masters, selectedType, t, onSalonSelect, onMasterSelect, language]);
 
   return (
     <div className="map-container">

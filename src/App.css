@@ -921,9 +921,56 @@ body {
   height: 700px;
   width: 100%;
   border-radius: 15px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   margin: 20px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Стили для кастомных маркеров */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-marker div {
+  transition: all 0.2s ease;
+}
+
+.custom-marker:hover div {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+/* Стили для кастомных popup'ов */
+.custom-popup .leaflet-popup-content-wrapper {
+  background: white;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  z-index: 1000 !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Убеждаемся, что popup'ы отображаются поверх всех элементов */
+.leaflet-popup-pane {
+  z-index: 1000 !important;
+}
+
+.leaflet-popup {
+  z-index: 1000 !important;
 }
 
 .map-popup {
