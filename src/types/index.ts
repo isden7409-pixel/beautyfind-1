@@ -40,6 +40,7 @@ export interface Master {
   phone?: string;
   email?: string;
   services?: string[];
+  languages?: string[];
   salonName?: string;
   salonId?: string;
   coordinates?: {
@@ -95,6 +96,7 @@ export interface MasterRegistration {
   email: string;
   description: string;
   services: string[];
+  languages: string[];
   photo: File;
   isFreelancer: boolean;
   salonId?: string;

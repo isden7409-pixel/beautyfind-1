@@ -5,7 +5,6 @@ import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
-import PremiumFeatures from '../components/PremiumFeatures';
 
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
@@ -41,7 +40,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
         phone: "+420 123 456 789",
-        email: "katerina@elegancebeauty.cz"
+        email: "katerina@elegancebeauty.cz",
+        services: ["Manicure", "Pedicure", "Nail Art", "Gel Nails"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1"
       },
       {
         id: "102",
@@ -55,7 +58,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
         phone: "+420 234 567 890",
-        email: "lucie@elegancebeauty.cz"
+        email: "lucie@elegancebeauty.cz",
+        services: ["Haircut", "Hair Coloring", "Hair Styling", "Highlights"],
+        languages: ["Czech", "English"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1"
       },
       {
         id: "103",
@@ -69,7 +76,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
         phone: "+420 345 678 901",
-        email: "martina@elegancebeauty.cz"
+        email: "martina@elegancebeauty.cz",
+        services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
+        languages: ["Czech", "English", "French"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1"
       }
     ],
     coordinates: { lat: 50.0755, lng: 14.4378 }
@@ -104,7 +115,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
         phone: "+420 456 789 012",
-        email: "eva@glamourstudio.cz"
+        email: "eva@glamourstudio.cz",
+        services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Glamour Studio Brno",
+        salonId: "2"
       },
       {
           id: "202",
@@ -118,7 +133,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
         phone: "+420 567 890 123",
-        email: "jana@glamourstudio.cz"
+        email: "jana@glamourstudio.cz",
+        services: ["Hair Styling", "Haircut", "Hair Coloring", "Wedding Makeup"],
+        languages: ["Czech", "English"],
+        salonName: "Glamour Studio Brno",
+        salonId: "2"
       }
     ],
     coordinates: { lat: 49.1951, lng: 16.6068 }
@@ -153,7 +172,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
         phone: "+420 678 901 234",
-        email: "andrea@nailartprague.cz"
+        email: "andrea@nailartprague.cz",
+        services: ["Nail Art", "Manicure", "Gel Nails", "Nail Extensions"],
+        languages: ["Czech", "English", "Italian"],
+        salonName: "Nail Art Prague",
+        salonId: "3"
       },
       {
           id: "302",
@@ -167,7 +190,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
         phone: "+420 789 012 345",
-        email: "monika@nailartprague.cz"
+        email: "monika@nailartprague.cz",
+        services: ["Gel Nails", "Manicure", "Nail Art", "Nail Extensions"],
+        languages: ["Czech", "English", "Spanish"],
+        salonName: "Nail Art Prague",
+        salonId: "3"
       }
     ],
     coordinates: { lat: 50.0865, lng: 14.4206 }
@@ -202,7 +229,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
         phone: "+420 890 123 456",
-        email: "petra@hairparadise.cz"
+        email: "petra@hairparadise.cz",
+        services: ["Hair Coloring", "Highlights", "Balayage", "Hair Treatment"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Hair Paradise Brno",
+        salonId: "4"
       },
       {
           id: "402",
@@ -216,7 +247,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
         phone: "+420 901 234 567",
-        email: "lucie@hairparadise.cz"
+        email: "lucie@hairparadise.cz",
+        services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
+        languages: ["Czech", "English"],
+        salonName: "Hair Paradise Brno",
+        salonId: "4"
       }
     ],
     coordinates: { lat: 49.2000, lng: 16.6100 }
@@ -251,7 +286,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
         phone: "+420 012 345 678",
-        email: "zuzana@beautycenter.cz"
+        email: "zuzana@beautycenter.cz",
+        services: ["Facial", "Skin Treatment", "Anti-aging", "Cleansing"],
+        languages: ["Czech", "English", "Russian"],
+        salonName: "Beauty Center Prague",
+        salonId: "5"
       },
       {
           id: "502",
@@ -265,7 +304,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
         phone: "+420 111 222 333",
-        email: "michaela@beautycenter.cz"
+        email: "michaela@beautycenter.cz",
+        services: ["Eyebrows", "Eyelashes", "Eyebrow Shaping", "Lash Extensions"],
+        languages: ["Czech", "English", "Russian"],
+        salonName: "Beauty Center Prague",
+        salonId: "5"
       }
     ],
     coordinates: { lat: 50.0810, lng: 14.4270 }
@@ -300,7 +343,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
         phone: "+420 222 333 444",
-        email: "tereza@stylestudio.cz"
+        email: "tereza@stylestudio.cz",
+        services: ["Hair Styling", "Wedding Hairstyles", "Haircut", "Hair Coloring"],
+        languages: ["Czech", "English", "Slovak"],
+        salonName: "Style Studio Brno",
+        salonId: "6"
       },
       {
         id: "602",
@@ -314,7 +361,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
         phone: "+420 333 444 555",
-        email: "nikola@stylestudio.cz"
+        email: "nikola@stylestudio.cz",
+        services: ["Makeup", "Nail Art", "Manicure", "Event Makeup"],
+        languages: ["Czech", "English"],
+        salonName: "Style Studio Brno",
+        salonId: "6"
       }
     ],
     coordinates: { lat: 49.1900, lng: 16.6100 }
@@ -349,7 +400,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
         phone: "+420 444 555 666",
-        email: "anna@luxuryspa.cz"
+        email: "anna@luxuryspa.cz",
+        services: ["Massage", "Relaxation", "Therapeutic Massage", "Aromatherapy"],
+        languages: ["Czech", "English", "German", "French"],
+        salonName: "Luxury Spa Prague",
+        salonId: "7"
       },
       {
         id: "702",
@@ -363,7 +418,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
         phone: "+420 555 666 777",
-        email: "jana@luxuryspa.cz"
+        email: "jana@luxuryspa.cz",
+        services: ["Facial", "Body Treatment", "Anti-aging", "Detox"],
+        languages: ["Czech", "English", "Italian"],
+        salonName: "Luxury Spa Prague",
+        salonId: "7"
       }
     ],
     coordinates: { lat: 50.0820, lng: 14.4200 }
@@ -398,7 +457,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
         phone: "+420 666 777 888",
-        email: "tomas@modernhair.cz"
+        email: "tomas@modernhair.cz",
+        services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Modern Hair Brno",
+        salonId: "8"
       },
       {
         id: "802",
@@ -412,7 +475,11 @@ const mockSalons: Salon[] = [
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
         phone: "+420 777 888 999",
-        email: "veronika@modernhair.cz"
+        email: "veronika@modernhair.cz",
+        services: ["Women's Haircut", "Hair Coloring", "Highlights", "Hair Styling"],
+        languages: ["Czech", "English", "Slovak"],
+        salonName: "Modern Hair Brno",
+        salonId: "8"
       }
     ],
     coordinates: { lat: 49.1950, lng: 16.6080 }
@@ -437,6 +504,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 987 654 321",
     email: "anna@nailart.cz",
     services: ["Manicure", "Nail Art", "Gel Nails"],
+    languages: ["Czech", "English", "Russian"],
     coordinates: { lat: 50.0750, lng: 14.4500 }
   },
   {
@@ -455,6 +523,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 555 444 333",
     email: "petr@hairmaster.cz",
     services: ["Haircut", "Beard Trim", "Hair Coloring"],
+    languages: ["Czech", "English", "German"],
     coordinates: { lat: 49.2000, lng: 16.6100 }
   },
   {
@@ -473,6 +542,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 123 456 789",
     email: "marie@makeup.cz",
     services: ["Wedding Makeup", "Event Makeup", "Bridal Makeup"],
+    languages: ["Czech", "English", "French"],
     coordinates: { lat: 50.0800, lng: 14.4300 }
   },
   {
@@ -491,6 +561,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 234 567 890",
     email: "tomas@masaz.cz",
     services: ["Relaxation Massage", "Sports Massage", "Lymphatic Massage"],
+    languages: ["Czech", "English", "Slovak"],
     coordinates: { lat: 49.1900, lng: 16.6000 }
   },
   {
@@ -509,6 +580,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 345 678 901",
     email: "lucie@hair.cz",
     services: ["Women's Haircuts", "Hair Coloring", "Highlights"],
+    languages: ["Czech", "English", "Italian"],
     coordinates: { lat: 50.0820, lng: 14.4200 }
   },
   {
@@ -527,6 +599,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 456 789 012",
     email: "jana@kosmetika.cz",
     services: ["Facial", "Anti-aging", "Skin Cleansing"],
+    languages: ["Czech", "English", "German"],
     coordinates: { lat: 49.1950, lng: 16.6050 }
   },
   {
@@ -545,6 +618,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 567 890 123",
     email: "pavel@barber.cz",
     services: ["Men's Haircuts", "Beard Trim", "Hot Towel"],
+    languages: ["Czech", "English", "Russian"],
     coordinates: { lat: 50.0755, lng: 14.4378 }
   },
   {
@@ -563,6 +637,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 678 901 234",
     email: "eva@manikura.cz",
     services: ["Manicure", "Pedicure", "Gel Nails"],
+    languages: ["Czech", "English", "Spanish"],
     coordinates: { lat: 49.2000, lng: 16.6100 }
   }
 ];
@@ -573,12 +648,13 @@ interface HomePageProps {
   onSalonSelect: (salon: Salon) => void;
   onMasterSelect: (master: Master) => void;
   onAdminPanel: () => void;
+  onPremiumFeatures: () => void;
   currentLanguage: Language;
   onLanguageChange: (language: Language) => void;
   translations: any;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, currentLanguage, onLanguageChange, translations }) => {
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations }) => {
   const [salons] = useState<Salon[]>(mockSalons);
   const [freelancers] = useState<Master[]>(freelancerMasters);
   const [viewMode, setViewMode] = useState<ViewMode>('salons');
@@ -630,9 +706,14 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     <div className="App">
       <header className="App-header">
         <div className="header-top">
-          <button onClick={onAdminPanel} className="admin-btn">
-            {t.adminPanel}
-          </button>
+          <div className="header-buttons">
+            <button onClick={onAdminPanel} className="admin-btn">
+              {t.adminPanel}
+            </button>
+            <button onClick={onPremiumFeatures} className="admin-btn">
+              {currentLanguage === 'cs' ? 'Prémiové funkce' : 'Premium Features'}
+            </button>
+          </div>
           <LanguageSwitcher
             currentLanguage={currentLanguage}
             onLanguageChange={onLanguageChange}
@@ -739,17 +820,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             </div>
           )
         )}
-        
-        {/* Premium packages */}
-        <PremiumFeatures
-          language={currentLanguage}
-          translations={translations}
-          onPurchase={(feature) => {
-            console.log('Premium feature purchased:', feature);
-          }}
-          type={viewMode === 'salons' ? 'salon' : 'master'}
-          itemId={0}
-        />
 
       </main>
     </div>

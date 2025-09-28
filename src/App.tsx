@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import SalonDetailPage from './pages/SalonDetailPage';
 import MasterDetailPage from './pages/MasterDetailPage';
 import AdminPanel from './pages/AdminPanel';
+import PremiumFeaturesPage from './pages/PremiumFeaturesPage';
 import './App.css';
 
 // Импортируем mock данные
@@ -245,6 +246,7 @@ function AppContent() {
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('cs');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
   const navigate = useNavigate();
 
   const handleSalonSelect = (salon: Salon) => {
@@ -272,6 +274,14 @@ function AppContent() {
 
   const handleBackFromAdmin = () => {
     setShowAdminPanel(false);
+  };
+
+  const handlePremiumFeatures = () => {
+    setShowPremiumFeatures(true);
+  };
+
+  const handleBackFromPremium = () => {
+    setShowPremiumFeatures(false);
   };
 
   if (showAdminPanel) {
@@ -387,6 +397,16 @@ function AppContent() {
     );
   }
 
+  if (showPremiumFeatures) {
+    return (
+      <PremiumFeaturesPage
+        language={currentLanguage}
+        translations={translations}
+        onBack={handleBackFromPremium}
+      />
+    );
+  }
+
   return (
     <div className="App">
       <Routes>
@@ -397,6 +417,7 @@ function AppContent() {
               onSalonSelect={handleSalonSelect}
               onMasterSelect={handleMasterSelect}
               onAdminPanel={handleAdminPanel}
+              onPremiumFeatures={handlePremiumFeatures}
               currentLanguage={currentLanguage}
               onLanguageChange={setCurrentLanguage}
               translations={translations}

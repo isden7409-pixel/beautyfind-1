@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Salon, Master, Language, Review, PremiumFeature } from '../types';
+import { Salon, Master, Language, Review } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
-import PremiumFeatures from '../components/PremiumFeatures';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
 interface SalonDetailPageProps {
@@ -51,10 +50,6 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
     setReviews([...reviews, review]);
   };
 
-  const handlePurchasePremium = (feature: PremiumFeature) => {
-    console.log('Premium feature purchased:', feature);
-    // В реальном приложении здесь будет логика покупки
-  };
 
   return (
     <div className="salon-detail-page">
@@ -132,14 +127,6 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           translations={translations}
           onAddReview={handleAddReview}
           salonId={salon.id}
-        />
-        
-        <PremiumFeatures
-          language={language}
-          translations={translations}
-          onPurchase={handlePurchasePremium}
-          type="salon"
-          itemId={parseInt(salon.id)}
         />
       </div>
     </div>

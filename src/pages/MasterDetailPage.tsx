@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Master, Salon, Language, Review, PremiumFeature } from '../types';
+import { Master, Salon, Language, Review } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
-import PremiumFeatures from '../components/PremiumFeatures';
-import { translateServices } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
 interface MasterDetailPageProps {
   master: Master;
@@ -53,10 +52,6 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     setReviews([...reviews, review]);
   };
 
-  const handlePurchasePremium = (feature: PremiumFeature) => {
-    console.log('Premium feature purchased:', feature);
-    // В реальном приложении здесь будет логика покупки
-  };
 
   return (
     <div className="master-detail-page">
@@ -96,6 +91,11 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           <p>📞 {master.phone}</p>
           <p>✉️ {master.email}</p>
           <p>📍 {master.address}, {master.city === 'Prague' ? 'Praha' : master.city}</p>
+          {master.languages && master.languages.length > 0 && (
+            <div className="languages-in-contact">
+              <p>🌐 <strong>{language === 'cs' ? 'Jazyky:' : 'Languages:'}</strong> {translateLanguages(master.languages, language).join(', ')}</p>
+            </div>
+          )}
         </div>
         <div className="services-section">
           <h3>{t.services}</h3>
@@ -105,6 +105,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             ))}
           </div>
         </div>
+        
         <button className="book-button">{t.book}</button>
         
         <ReviewsSection
@@ -113,14 +114,6 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           translations={translations}
           onAddReview={handleAddReview}
           masterId={master.id}
-        />
-        
-        <PremiumFeatures
-          language={language}
-          translations={translations}
-          onPurchase={handlePurchasePremium}
-          type="master"
-          itemId={parseInt(master.id)}
         />
       </div>
     </div>
