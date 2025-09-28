@@ -50,7 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="admin-panel">
         <div className="admin-header">
           <button onClick={handleCancel} className="back-button">
-            ← {t.back}
+            {t.back}
           </button>
           <h1>{t.adminPanel}</h1>
         </div>

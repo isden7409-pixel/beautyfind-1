@@ -45,7 +45,23 @@ const mockSalons: Salon[] = [
         services: ["Manicure", "Pedicure", "Nail Art", "Gel Nails"],
         languages: ["Czech", "English", "German"],
         salonName: "Elegance Beauty Prague",
-        salonId: "1"
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "16:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "16:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "manicure", name: "Manicure", duration: 60, price: 800, description: "Klasická manikúra s lakováním" },
+          { id: "pedicure", name: "Pedicure", duration: 90, price: 1200, description: "Péče o nohy s lakováním" },
+          { id: "nail-art", name: "Nail Art", duration: 120, price: 1500, description: "Umělecké zdobení nehtů" },
+          { id: "gel-nails", name: "Gel Nails", duration: 90, price: 1000, description: "Gelové nehty" }
+        ]
       },
       {
         id: "102",
@@ -64,7 +80,23 @@ const mockSalons: Salon[] = [
         services: ["Haircut", "Hair Coloring", "Hair Styling", "Highlights"],
         languages: ["Czech", "English"],
         salonName: "Elegance Beauty Prague",
-        salonId: "1"
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "haircut", name: "Dámský střih", duration: 90, price: 1200, description: "Profesionální střih vlasů" },
+          { id: "coloring", name: "Barvení vlasů", duration: 180, price: 2500, description: "Kompletní barvení vlasů" },
+          { id: "styling", name: "Účes", duration: 60, price: 800, description: "Profesionální účes" },
+          { id: "highlights", name: "Melíry", duration: 150, price: 2000, description: "Melíry a balayage" }
+        ]
       },
       {
         id: "103",
@@ -83,10 +115,47 @@ const mockSalons: Salon[] = [
         services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
         languages: ["Czech", "English", "French"],
         salonName: "Elegance Beauty Prague",
-        salonId: "1"
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+          { id: "wedding-makeup", name: "Svatební makeup", duration: 120, price: 2500, description: "Kompletní svatební makeup" },
+          { id: "event-makeup", name: "Event makeup", duration: 90, price: 1500, description: "Makeup pro speciální příležitosti" },
+          { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" }
+        ]
       }
     ],
-    coordinates: { lat: 50.0755, lng: 14.4378 }
+    coordinates: { lat: 50.0755, lng: 14.4378 },
+    bookingEnabled: true,
+    workingHours: [
+      { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+      { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+    ],
+    availableServices: [
+      { id: "manicure", name: "Manicure", duration: 60, price: 800, description: "Klasická manikúra s lakováním" },
+      { id: "pedicure", name: "Pedicure", duration: 90, price: 1200, description: "Péče o nohy s lakováním" },
+      { id: "nail-art", name: "Nail Art", duration: 120, price: 1500, description: "Umělecké zdobení nehtů" },
+      { id: "gel-nails", name: "Gel Nails", duration: 90, price: 1000, description: "Gelové nehty" },
+      { id: "haircut", name: "Dámský střih", duration: 90, price: 1200, description: "Profesionální střih vlasů" },
+      { id: "coloring", name: "Barvení vlasů", duration: 180, price: 2500, description: "Kompletní barvení vlasů" },
+      { id: "eyebrows", name: "Úprava obočí", duration: 30, price: 400, description: "Tvarování a barvení obočí" },
+      { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+      { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" }
+    ]
   },
   {
     id: "2",
@@ -145,7 +214,25 @@ const mockSalons: Salon[] = [
         salonId: "2"
       }
     ],
-    coordinates: { lat: 49.1951, lng: 16.6068 }
+    coordinates: { lat: 49.1951, lng: 16.6068 },
+    bookingEnabled: true,
+    workingHours: [
+      { dayOfWeek: 1, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 2, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 3, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 4, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 5, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 6, startTime: "09:00", endTime: "19:00", isWorking: true },
+      { dayOfWeek: 0, startTime: "09:00", endTime: "19:00", isWorking: true }
+    ],
+    availableServices: [
+      { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+      { id: "wedding-makeup", name: "Svatební makeup", duration: 120, price: 2500, description: "Kompletní svatební makeup" },
+      { id: "hair-styling", name: "Účes", duration: 90, price: 1200, description: "Profesionální účes" },
+      { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" },
+      { id: "massage", name: "Masáž", duration: 60, price: 1000, description: "Relaxační masáž" },
+      { id: "eyebrows", name: "Úprava obočí", duration: 30, price: 400, description: "Tvarování a barvení obočí" }
+    ]
   },
   {
     id: "3",

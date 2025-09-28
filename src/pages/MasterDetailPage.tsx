@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Master, Salon, Language, Review } from '../types';
+import { Master, Salon, Language, Review, Booking } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
+import BookingModal from '../components/BookingModal';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
 interface MasterDetailPageProps {
@@ -21,6 +22,9 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   salons = [],
 }) => {
   const t = translations[language];
+  
+  // Состояние для бронирования
+  const [showBookingModal, setShowBookingModal] = useState(false);
   
   // Mock recenze pro mistra
   const [reviews, setReviews] = useState<Review[]>([
@@ -116,6 +120,22 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     };
   }, [master, language, map]);
 
+  // Обработчики для бронирования
+  const handleBookingClick = () => {
+    if (master.bookingEnabled) {
+      setShowBookingModal(true);
+    }
+  };
+
+  const handleBookingSuccess = (booking: Booking) => {
+    console.log('Booking successful:', booking);
+    // Здесь можно добавить уведомление об успешном бронировании
+    alert(t.bookingSuccess);
+  };
+
+  const handleBookingClose = () => {
+    setShowBookingModal(false);
+  };
 
   return (
     <div className="master-detail-page">
@@ -171,7 +191,13 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         
         {master.description && <p className="description">{master.description}</p>}
         
-        <button className="book-button">{t.book}</button>
+        <button 
+          className="book-button" 
+          onClick={handleBookingClick}
+          disabled={!master.bookingEnabled}
+        >
+          {master.bookingEnabled ? t.book : (language === 'cs' ? 'Rezervace nedostupná' : 'Booking unavailable')}
+        </button>
         
         <div className="master-map-section">
           <h3>{language === 'cs' ? 'Umístění' : 'Location'}</h3>
@@ -186,6 +212,16 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           masterId={master.id}
         />
       </div>
+
+      {/* Модальное окно бронирования */}
+      <BookingModal
+        master={master}
+        isOpen={showBookingModal}
+        onClose={handleBookingClose}
+        onBookingSuccess={handleBookingSuccess}
+        language={language}
+        translations={translations}
+      />
     </div>
   );
 };

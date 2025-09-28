@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Salon, Master, Language, Review } from '../types';
+import { Salon, Master, Language, Review, Booking } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
+import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
 interface SalonDetailPageProps {
@@ -44,6 +45,9 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  
+  console.log('SalonDetailPage render, showBookingModal:', showBookingModal);
 
   const handleAddReview = (newReview: Omit<Review, 'id'>) => {
     const review: Review = {
@@ -51,6 +55,24 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
       id: (Math.max(...reviews.map(r => parseInt(r.id))) + 1).toString(),
     };
     setReviews([...reviews, review]);
+  };
+
+  const handleBookingClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('Booking button clicked, salon.bookingEnabled:', salon.bookingEnabled);
+    if (salon.bookingEnabled) {
+      setShowBookingModal(true);
+      console.log('Modal should open now');
+    }
+  };
+
+  const handleBookingSuccess = (booking: Booking) => {
+    console.log('Booking successful:', booking);
+    alert(t.bookingSuccess);
+  };
+
+  const handleBookingClose = () => {
+    setShowBookingModal(false);
   };
 
   // Initialize map
@@ -178,7 +200,15 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
               ))}
             </div>
           </div>
-          <button className="book-button">{t.book}</button>
+          <div className="salon-book-button-container">
+            <button 
+              className="book-button"
+              onClick={handleBookingClick}
+              disabled={!salon.bookingEnabled}
+            >
+              {salon.bookingEnabled ? t.book : (language === 'cs' ? 'Rezervace nedostupná' : 'Booking unavailable')}
+            </button>
+          </div>
         </div>
         
         <div className="salon-map-section">
@@ -194,6 +224,16 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           salonId={salon.id}
         />
       </div>
+
+      {/* Salon Booking Modal */}
+      <SalonBookingModal
+        salon={salon}
+        isOpen={showBookingModal}
+        onClose={handleBookingClose}
+        onBookingSuccess={handleBookingSuccess}
+        language={language}
+        translations={translations}
+      />
     </div>
   );
 };

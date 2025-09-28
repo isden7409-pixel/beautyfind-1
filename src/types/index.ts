@@ -21,6 +21,11 @@ export interface Salon {
   };
   isPremium?: boolean;
   premiumUntil?: string;
+  bookingEnabled?: boolean;
+  workingHours?: WorkingHours[];
+  availableServices?: Service[];
+  unavailableDates?: string[];
+  bookings?: Booking[];
 }
 
 // Typy pro mistry
@@ -49,6 +54,12 @@ export interface Master {
   };
   isPremium?: boolean;
   premiumUntil?: string;
+  // Поля для бронирования
+  workingHours?: WorkingHours[];
+  availableServices?: Service[];
+  bookingEnabled?: boolean;
+  unavailableDates?: string[];
+  bookings?: Booking[];
 }
 
 // Типы для отзывов
@@ -127,6 +138,58 @@ export interface PremiumFeature {
   price: number;
   duration: 'day' | 'week' | 'month';
   type: 'salon' | 'master';
+}
+
+// Типы для системы бронирования
+export interface TimeSlot {
+  id: string;
+  time: string; // "09:00", "10:30", etc.
+  isAvailable: boolean;
+  duration: number; // в минутах
+}
+
+export interface WorkingHours {
+  dayOfWeek: number; // 0-6 (воскресенье-суббота)
+  startTime: string; // "09:00"
+  endTime: string; // "18:00"
+  isWorking: boolean;
+  breakStart?: string; // "12:00"
+  breakEnd?: string; // "13:00"
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  duration: number; // в минутах
+  price: number;
+  description?: string;
+}
+
+export interface Booking {
+  id: string;
+  masterId: string;
+  salonId?: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string;
+  serviceId: string;
+  serviceName: string;
+  date: string; // "2024-01-15"
+  time: string; // "14:30"
+  duration: number; // в минутах
+  price: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MasterSchedule {
+  masterId: string;
+  workingHours: WorkingHours[];
+  services: Service[];
+  unavailableDates: string[]; // ["2024-01-15", "2024-01-20"]
+  bookings: Booking[];
 }
 
 // Дополнительные поля для Firebase

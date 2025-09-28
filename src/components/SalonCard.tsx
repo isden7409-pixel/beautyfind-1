@@ -39,6 +39,8 @@ const SalonCard: React.FC<SalonCardProps> = ({
             <span key={service} className="service-tag">{service}</span>
           ))}
         </div>
+      </div>
+      <div className="salon-button-container">
         <button
           onClick={(e) => {
             e.stopPropagation();
