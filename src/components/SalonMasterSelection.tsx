@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Master, Service, Language } from '../types';
+import { translateLanguages, translateServices } from '../utils/serviceTranslations';
 
 interface SalonMasterSelectionProps {
   masters: Master[];
@@ -66,13 +67,20 @@ const SalonMasterSelection: React.FC<SalonMasterSelectionProps> = ({
                   <div className="master-info">
                     <h5>{master.name}</h5>
                     <p className="specialty">{master.specialty}</p>
-                    <p className="experience">{master.experience}</p>
+                    <p className="experience">{master.experience} {language === 'cs' ? 'zkušeností' : 'experience'}</p>
                     <div className="master-rating">
                       ⭐ {master.rating} ({master.reviews})
                     </div>
+                    {master.languages && master.languages.length > 0 && (
+                      <div className="master-languages">
+                        <span className="languages-label">
+                          🌐 {language === 'cs' ? 'Jazyky:' : 'Languages:'} {translateLanguages(master.languages, language).join(', ')}
+                        </span>
+                      </div>
+                    )}
                     <div className="master-services">
                       {master.services?.slice(0, 3).map(service => (
-                        <span key={service} className="service-tag-small">{service}</span>
+                        <span key={service} className="service-tag-small">{translateServices([service], language)[0]}</span>
                       ))}
                       {master.services && master.services.length > 3 && (
                         <span className="more-services">+{master.services.length - 3}</span>

@@ -444,9 +444,14 @@ body {
 }
 
 .master-selection-card .experience {
-  color: #888;
+  color: white;
+  background: #667eea;
+  padding: 4px 8px;
+  border-radius: 12px;
   font-size: 0.8rem;
   margin: 0 0 8px 0;
+  display: inline-block;
+  font-weight: 500;
 }
 
 .master-selection-card .master-rating {
@@ -454,6 +459,21 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   margin: 0 0 10px 0;
+}
+
+.master-selection-card .master-languages {
+  margin: 0 0 10px 0;
+}
+
+.master-selection-card .languages-label {
+  color: #333;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  display: inline-block;
 }
 
 .master-services {

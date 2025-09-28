@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Master, Salon, Service, Booking } from '../types';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface BookingFormProps {
   master: Master;
@@ -127,7 +128,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </div>
         )}
         <div className="summary-item">
-          <strong>{t.service}:</strong> {selectedService?.name}
+          <strong>{t.service}:</strong> {selectedService ? translateServices([selectedService.name], language)[0] : ''}
         </div>
         <div className="summary-item">
           <strong>{t.duration}:</strong> {selectedService?.duration} {t.minutes}

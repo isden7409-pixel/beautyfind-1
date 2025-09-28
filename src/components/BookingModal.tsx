@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Master, Service, Booking } from '../types';
+import { Master, Service, Booking, Language } from '../types';
 import BookingCalendar from './BookingCalendar';
 import BookingForm from './BookingForm';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface BookingModalProps {
   master: Master;
@@ -92,12 +93,9 @@ const BookingModal: React.FC<BookingModalProps> = ({
                     className={`service-card ${selectedService?.id === service.id ? 'selected' : ''}`}
                     onClick={() => handleServiceSelect(service)}
                   >
-                    <h4>{service.name}</h4>
+                    <h4>{translateServices([service.name], language)[0]}</h4>
                     <p className="service-duration">{service.duration} {t.minutes}</p>
                     <p className="service-price">{service.price} CZK</p>
-                    {service.description && (
-                      <p className="service-description">{service.description}</p>
-                    )}
                   </div>
                 ))}
               </div>

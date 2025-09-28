@@ -3,6 +3,7 @@ import { Salon, Master, Service, Booking, Language } from '../types';
 import SalonMasterSelection from './SalonMasterSelection';
 import BookingCalendar from './BookingCalendar';
 import BookingForm from './BookingForm';
+import { translateServices } from '../utils/serviceTranslations';
 
 interface SalonBookingModalProps {
   salon: Salon;
@@ -113,7 +114,7 @@ const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
                     className="service-card"
                     onClick={() => handleServiceSelect(service)}
                   >
-                    <h4>{service.name}</h4>
+                    <h4>{translateServices([service.name], language)[0]}</h4>
                     <p>{service.description}</p>
                     <div className="service-details">
                       <span className="duration">{service.duration} {t.minutes}</span>
