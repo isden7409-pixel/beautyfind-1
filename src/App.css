@@ -193,6 +193,17 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
+.clickable-card {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+
 .salon-image {
   width: 100%;
   height: 200px;
