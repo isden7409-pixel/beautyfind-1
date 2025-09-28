@@ -149,7 +149,6 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           </span>
           <span className="experience">{master.experience} {t.experience}</span>
         </div>
-        <p className="description">{master.description}</p>
         <div className="contact-info">
           <h3>{t.contact}</h3>
           <p>📞 {master.phone}</p>
@@ -169,6 +168,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             ))}
           </div>
         </div>
+        
+        {master.description && <p className="description">{master.description}</p>}
         
         <button className="book-button">{t.book}</button>
         

@@ -247,11 +247,13 @@ function AppContent() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('cs');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
+  const [currentViewMode, setCurrentViewMode] = useState<'salons' | 'masters'>('salons');
   const navigate = useNavigate();
 
   const handleSalonSelect = (salon: Salon) => {
     console.log('Salon selected:', salon);
     setSelectedSalon(salon);
+    setCurrentViewMode('salons');
     navigate(`/salon/${salon.id}`);
   };
 
@@ -259,12 +261,20 @@ function AppContent() {
   const handleMasterSelect = (master: Master) => {
     console.log('Master selected:', master);
     setSelectedMaster(master);
+    setCurrentViewMode('masters');
     navigate(`/master/${master.id}`);
   };
 
   const handleBack = () => {
     setSelectedSalon(null);
     setSelectedMaster(null);
+    setCurrentViewMode('salons');
+    navigate('/');
+  };
+
+  const handleBackFromMaster = () => {
+    setSelectedMaster(null);
+    setCurrentViewMode('masters');
     navigate('/');
   };
 
@@ -421,6 +431,7 @@ function AppContent() {
               currentLanguage={currentLanguage}
               onLanguageChange={setCurrentLanguage}
               translations={translations}
+              initialViewMode={currentViewMode}
             />
           }
           />
@@ -448,7 +459,7 @@ function AppContent() {
                   master={selectedMaster}
                   language={currentLanguage}
                   translations={translations}
-                  onBack={handleBack}
+                  onBack={handleBackFromMaster}
                   onSalonSelect={handleSalonSelect}
                   salons={mockSalons}
                 />

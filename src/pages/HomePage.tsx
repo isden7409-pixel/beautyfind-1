@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Salon, Master, SearchFilters, Language, ViewMode } from '../types';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import SearchAndFilters from '../components/SearchAndFilters';
@@ -39,6 +39,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Profesionální manikérka s 5 lety zkušeností. Specializuji se na gelové nehty a nail art. Vytvářím jedinečné designy pro každou příležitost.",
         phone: "+420 123 456 789",
         email: "katerina@elegancebeauty.cz",
         services: ["Manicure", "Pedicure", "Nail Art", "Gel Nails"],
@@ -57,6 +58,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Zkušená kadeřnice s 8 lety praxe. Specializuji se na moderní střihy a barvení vlasů. Vytvářím účesy pro každou příležitost s důrazem na kvalitu a spokojenost klientek.",
         phone: "+420 234 567 890",
         email: "lucie@elegancebeauty.cz",
         services: ["Haircut", "Hair Coloring", "Hair Styling", "Highlights"],
@@ -75,6 +77,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Profesionální vizážistka s 6 lety zkušeností. Specializuji se na svatební a event makeup. Vytvářím přirozené a elegantní vzhledy pro každou příležitost.",
         phone: "+420 345 678 901",
         email: "martina@elegancebeauty.cz",
         services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
@@ -114,6 +117,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        description: "Specialistka na svatební make-up s 6 lety zkušeností. Vytvářím dokonalé vzhledy pro nejdůležitější den vašeho života. Zaměřuji se na dlouhotrvající a fotograficky krásné make-upy.",
         phone: "+420 456 789 012",
         email: "eva@glamourstudio.cz",
         services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
@@ -132,6 +136,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        description: "Kreativní kadeřnice s 4 lety zkušeností. Specializuji se na svatební účesy a speciální příležitosti. Vytvářím jedinečné a elegantní účesy, které zdůrazní vaši krásu.",
         phone: "+420 567 890 123",
         email: "jana@glamourstudio.cz",
         services: ["Hair Styling", "Haircut", "Hair Coloring", "Wedding Makeup"],
@@ -171,6 +176,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
+        description: "Expertka na nail art s 7 lety zkušeností. Vytvářím jedinečné designy nehtů s použitím nejnovějších technik a prémiových materiálů. Specializuji se na složité vzory a 3D efekty.",
         phone: "+420 678 901 234",
         email: "andrea@nailartprague.cz",
         services: ["Nail Art", "Manicure", "Gel Nails", "Nail Extensions"],
@@ -189,6 +195,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
+        description: "Specialistka na gelové nehty s 3 lety zkušeností. Zaměřuji se na kvalitní a dlouhotrvající gelové nehty s moderními technikami. Vytvářím krásné a praktické nehty pro každodenní nošení.",
         phone: "+420 789 012 345",
         email: "monika@nailartprague.cz",
         services: ["Gel Nails", "Manicure", "Nail Art", "Nail Extensions"],
@@ -228,6 +235,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
+        description: "Expertka na barvení vlasů s 10 lety zkušeností. Specializuji se na moderní techniky barvení včetně balayage a ombré. Používám pouze prémiové produkty pro nejlepší výsledky.",
         phone: "+420 890 123 456",
         email: "petra@hairparadise.cz",
         services: ["Hair Coloring", "Highlights", "Balayage", "Hair Treatment"],
@@ -246,6 +254,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
+        description: "Specialistka na pánské střihy s 5 lety zkušeností. Vytvářím moderní a stylové účesy pro muže všech věkových kategorií. Zaměřuji se na precizní práci a spokojenost klientů.",
         phone: "+420 901 234 567",
         email: "lucie@hairparadise.cz",
         services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
@@ -285,6 +294,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
+        description: "Specialistka na péči o pleť s 8 lety zkušeností. Zaměřuji se na anti-aging ošetření a regeneraci pleti. Používám nejnovější technologie a prémiové kosmetické produkty.",
         phone: "+420 012 345 678",
         email: "zuzana@beautycenter.cz",
         services: ["Facial", "Skin Treatment", "Anti-aging", "Cleansing"],
@@ -303,6 +313,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
+        description: "Specialistka na úpravu obočí a řas s 4 lety zkušeností. Vytvářím přirozené a krásné obočí pomocí henny a microblading technik. Specializuji se také na prodlužování řas.",
         phone: "+420 111 222 333",
         email: "michaela@beautycenter.cz",
         services: ["Eyebrows", "Eyelashes", "Eyebrow Shaping", "Lash Extensions"],
@@ -342,6 +353,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
+        description: "Kreativní kadeřnice s 6 lety zkušeností. Specializuji se na svatební účesy a speciální příležitosti. Vytvářím jedinečné a elegantní účesy, které zdůrazní vaši krásu.",
         phone: "+420 222 333 444",
         email: "tereza@stylestudio.cz",
         services: ["Hair Styling", "Wedding Hairstyles", "Haircut", "Hair Coloring"],
@@ -360,6 +372,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
+        description: "Kombinovaná specialistka na makeup a nail art s 3 lety zkušeností. Vytvářím krásné make-upy a jedinečné designy nehtů pro každou příležitost. Zaměřuji se na moderní trendy a kreativní řešení.",
         phone: "+420 333 444 555",
         email: "nikola@stylestudio.cz",
         services: ["Makeup", "Nail Art", "Manicure", "Event Makeup"],
@@ -399,6 +412,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
+        description: "Zkušená masérka s 12 lety praxe. Specializuji se na relaxační a terapeutické masáže. Používám přírodní oleje a aromaterapii pro dokonalou relaxaci a regeneraci těla.",
         phone: "+420 444 555 666",
         email: "anna@luxuryspa.cz",
         services: ["Massage", "Relaxation", "Therapeutic Massage", "Aromatherapy"],
@@ -417,6 +431,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
+        description: "Specialistka na péči o pleť a tělo s 7 lety zkušeností. Zaměřuji se na anti-aging ošetření, detox a regeneraci. Používám nejnovější technologie a prémiové kosmetické produkty.",
         phone: "+420 555 666 777",
         email: "jana@luxuryspa.cz",
         services: ["Facial", "Body Treatment", "Anti-aging", "Detox"],
@@ -456,6 +471,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
+        description: "Specialista na pánské střihy s 9 lety zkušeností. Vytvářím moderní a stylové účesy pro muže všech věkových kategorií. Zaměřuji se na precizní práci a spokojenost klientů.",
         phone: "+420 666 777 888",
         email: "tomas@modernhair.cz",
         services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
@@ -474,6 +490,7 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
+        description: "Kadeřnice specializující se na dámské střihy a barvení s 5 lety zkušeností. Vytvářím moderní účesy a trendy barvení vlasů. Zaměřuji se na individuální přístup ke každé klientce.",
         phone: "+420 777 888 999",
         email: "veronika@modernhair.cz",
         services: ["Women's Haircut", "Hair Coloring", "Highlights", "Hair Styling"],
@@ -652,12 +669,13 @@ interface HomePageProps {
   currentLanguage: Language;
   onLanguageChange: (language: Language) => void;
   translations: any;
+  initialViewMode?: 'salons' | 'masters';
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations }) => {
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
   const [salons] = useState<Salon[]>(mockSalons);
   const [freelancers] = useState<Master[]>(freelancerMasters);
-  const [viewMode, setViewMode] = useState<ViewMode>('salons');
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     city: "All",
@@ -667,6 +685,11 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
   });
 
   const t = translations[currentLanguage];
+
+  // Обновляем viewMode при изменении initialViewMode
+  useEffect(() => {
+    setViewMode(initialViewMode);
+  }, [initialViewMode]);
 
   // Všichni mistři dohromady (ze salonů + frikanceři)
   const allMasters: Master[] = [
