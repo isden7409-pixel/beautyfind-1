@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Master, Salon, Language, Review } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
@@ -44,6 +44,9 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     }
   ]);
 
+  const [map, setMap] = useState<any>(null);
+  const [marker, setMarker] = useState<any>(null);
+
   const handleAddReview = (newReview: Omit<Review, 'id'>) => {
     const review: Review = {
       ...newReview,
@@ -51,6 +54,67 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     };
     setReviews([...reviews, review]);
   };
+
+  // Initialize map
+  useEffect(() => {
+    const initMap = () => {
+      if (typeof window !== 'undefined' && window.L) {
+        const mapElement = document.getElementById('master-detail-map');
+        if (!mapElement) return;
+
+        // Check if map is already initialized
+        if (mapElement.hasChildNodes()) return;
+
+        try {
+          const coordinates = master.coordinates || { lat: 50.0755, lng: 14.4378 }; // Default to Prague
+          
+          const mapInstance = window.L.map('master-detail-map').setView([coordinates.lat, coordinates.lng], 15);
+          
+          window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(mapInstance);
+
+          const markerInstance = window.L.marker([coordinates.lat, coordinates.lng]).addTo(mapInstance);
+          
+          // Add popup to marker
+          const salonInfo = master.isFreelancer 
+            ? (language === 'cs' ? 'Samostatný pracovník' : 'Freelancer')
+            : master.salonName || (language === 'cs' ? 'Salon' : 'Salon');
+            
+          markerInstance.bindPopup(`
+            <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${master.name}</h3>
+              <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salonInfo}</p>
+              <p style="margin: 0; color: #888; font-size: 12px;">${master.address}</p>
+            </div>
+          `);
+
+          setMap(mapInstance);
+          setMarker(markerInstance);
+        } catch (error) {
+          console.error('Error initializing map:', error);
+        }
+      }
+    };
+
+    // Wait for both Leaflet and DOM element to be ready
+    const checkAndInit = () => {
+      if (typeof window !== 'undefined' && window.L && document.getElementById('master-detail-map')) {
+        initMap();
+      } else {
+        setTimeout(checkAndInit, 100);
+      }
+    };
+
+    checkAndInit();
+
+    // Cleanup function
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
+  }, [master, language, map]);
 
 
   return (
@@ -108,6 +172,11 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         
         <button className="book-button">{t.book}</button>
         
+        <div className="master-map-section">
+          <h3>{language === 'cs' ? 'Umístění' : 'Location'}</h3>
+          <div id="master-detail-map" style={{ height: '300px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}></div>
+        </div>
+
         <ReviewsSection
           reviews={reviews}
           language={language}

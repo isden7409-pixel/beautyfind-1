@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Salon, Master, Language, SearchFilters } from '../types';
-import { translateSpecialty, translateServices, translateLanguages } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
 interface SimpleMapViewProps {
   salons: Salon[];
@@ -206,7 +206,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;">
                   <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 100%; object-fit: cover;">
-                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⭐ ${salon.rating} (${salon.reviews})
                   </div>
                 </div>
@@ -299,7 +299,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
                   <img src="${master.photo}" alt="${master.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⭐ ${master.rating} (${master.reviews})
                   </div>
                 </div>
@@ -314,7 +314,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                     <span>${master.experience} ${language === 'cs' ? 'let zkušeností' : 'experience'}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; text-align: center;">
-                    <span style="display: inline-block; background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <span style="display: inline-block; background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                       ${master.isFreelancer ? t.freelancer : t.inSalon}
                     </span>
                   </div>
