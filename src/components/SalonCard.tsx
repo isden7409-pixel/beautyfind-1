@@ -18,7 +18,10 @@ const SalonCard: React.FC<SalonCardProps> = ({
   const t = translations[language];
 
   return (
-    <div className="salon-card">
+    <div 
+      className="salon-card clickable-card" 
+      onClick={() => onViewDetails(salon)}
+    >
       {salon.isPremium && (
         <div className="premium-badge">⭐ PREMIUM</div>
       )}
@@ -36,8 +39,13 @@ const SalonCard: React.FC<SalonCardProps> = ({
             <span key={service} className="service-tag">{service}</span>
           ))}
         </div>
+      </div>
+      <div className="salon-button-container">
         <button
-          onClick={() => onViewDetails(salon)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails(salon);
+          }}
           className="view-details-btn"
         >
           {t.viewDetails}

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Salon, Master, SearchFilters, Language, ViewMode } from '../types';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
-import PremiumFeatures from '../components/PremiumFeatures';
+import { useSalons, useMasters } from '../hooks/useData';
 
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
@@ -40,8 +40,29 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Profesionální manikérka s 5 lety zkušeností. Specializuji se na gelové nehty a nail art. Vytvářím jedinečné designy pro každou příležitost.",
         phone: "+420 123 456 789",
-        email: "katerina@elegancebeauty.cz"
+        email: "katerina@elegancebeauty.cz",
+        services: ["Manicure", "Pedicure", "Nail Art", "Gel Nails"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "18:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "16:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "16:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "manicure", name: "Manicure", duration: 60, price: 800, description: "Klasická manikúra s lakováním" },
+          { id: "pedicure", name: "Pedicure", duration: 90, price: 1200, description: "Péče o nohy s lakováním" },
+          { id: "nail-art", name: "Nail Art", duration: 120, price: 1500, description: "Umělecké zdobení nehtů" },
+          { id: "gel-nails", name: "Gel Nails", duration: 90, price: 1000, description: "Gelové nehty" }
+        ]
       },
       {
         id: "102",
@@ -54,8 +75,29 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Zkušená kadeřnice s 8 lety praxe. Specializuji se na moderní střihy a barvení vlasů. Vytvářím účesy pro každou příležitost s důrazem na kvalitu a spokojenost klientek.",
         phone: "+420 234 567 890",
-        email: "lucie@elegancebeauty.cz"
+        email: "lucie@elegancebeauty.cz",
+        services: ["Haircut", "Hair Coloring", "Hair Styling", "Highlights"],
+        languages: ["Czech", "English"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "haircut", name: "Dámský střih", duration: 90, price: 1200, description: "Profesionální střih vlasů" },
+          { id: "coloring", name: "Barvení vlasů", duration: 180, price: 2500, description: "Kompletní barvení vlasů" },
+          { id: "styling", name: "Účes", duration: 60, price: 800, description: "Profesionální účes" },
+          { id: "highlights", name: "Melíry", duration: 150, price: 2000, description: "Melíry a balayage" }
+        ]
       },
       {
         id: "103",
@@ -68,11 +110,53 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Václavské náměstí 28, 110 00 Praha 1",
+        description: "Profesionální vizážistka s 6 lety zkušeností. Specializuji se na svatební a event makeup. Vytvářím přirozené a elegantní vzhledy pro každou příležitost.",
         phone: "+420 345 678 901",
-        email: "martina@elegancebeauty.cz"
+        email: "martina@elegancebeauty.cz",
+        services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
+        languages: ["Czech", "English", "French"],
+        salonName: "Elegance Beauty Prague",
+        salonId: "1",
+        bookingEnabled: true,
+        workingHours: [
+          { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+          { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+          { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+        ],
+        availableServices: [
+          { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+          { id: "wedding-makeup", name: "Svatební makeup", duration: 120, price: 2500, description: "Kompletní svatební makeup" },
+          { id: "event-makeup", name: "Event makeup", duration: 90, price: 1500, description: "Makeup pro speciální příležitosti" },
+          { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" }
+        ]
       }
     ],
-    coordinates: { lat: 50.0755, lng: 14.4378 }
+    coordinates: { lat: 50.0755, lng: 14.4378 },
+    bookingEnabled: true,
+    workingHours: [
+      { dayOfWeek: 1, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 2, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 3, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 4, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 5, startTime: "09:00", endTime: "20:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 6, startTime: "10:00", endTime: "18:00", isWorking: true },
+      { dayOfWeek: 0, startTime: "10:00", endTime: "18:00", isWorking: false }
+    ],
+    availableServices: [
+      { id: "manicure", name: "Manicure", duration: 60, price: 800, description: "Klasická manikúra s lakováním" },
+      { id: "pedicure", name: "Pedicure", duration: 90, price: 1200, description: "Péče o nohy s lakováním" },
+      { id: "nail-art", name: "Nail Art", duration: 120, price: 1500, description: "Umělecké zdobení nehtů" },
+      { id: "gel-nails", name: "Gel Nails", duration: 90, price: 1000, description: "Gelové nehty" },
+      { id: "haircut", name: "Dámský střih", duration: 90, price: 1200, description: "Profesionální střih vlasů" },
+      { id: "coloring", name: "Barvení vlasů", duration: 180, price: 2500, description: "Kompletní barvení vlasů" },
+      { id: "eyebrows", name: "Úprava obočí", duration: 30, price: 400, description: "Tvarování a barvení obočí" },
+      { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+      { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" }
+    ]
   },
   {
     id: "2",
@@ -103,8 +187,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        description: "Specialistka na svatební make-up s 6 lety zkušeností. Vytvářím dokonalé vzhledy pro nejdůležitější den vašeho života. Zaměřuji se na dlouhotrvající a fotograficky krásné make-upy.",
         phone: "+420 456 789 012",
-        email: "eva@glamourstudio.cz"
+        email: "eva@glamourstudio.cz",
+        services: ["Makeup", "Wedding Makeup", "Event Makeup", "Facial"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Glamour Studio Brno",
+        salonId: "2"
       },
       {
           id: "202",
@@ -117,11 +206,34 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Náměstí Svobody 15, 602 00 Brno-střed",
+        description: "Kreativní kadeřnice s 4 lety zkušeností. Specializuji se na svatební účesy a speciální příležitosti. Vytvářím jedinečné a elegantní účesy, které zdůrazní vaši krásu.",
         phone: "+420 567 890 123",
-        email: "jana@glamourstudio.cz"
+        email: "jana@glamourstudio.cz",
+        services: ["Hair Styling", "Haircut", "Hair Coloring", "Wedding Makeup"],
+        languages: ["Czech", "English"],
+        salonName: "Glamour Studio Brno",
+        salonId: "2"
       }
     ],
-    coordinates: { lat: 49.1951, lng: 16.6068 }
+    coordinates: { lat: 49.1951, lng: 16.6068 },
+    bookingEnabled: true,
+    workingHours: [
+      { dayOfWeek: 1, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 2, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 3, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 4, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 5, startTime: "08:00", endTime: "21:00", isWorking: true, breakStart: "12:00", breakEnd: "13:00" },
+      { dayOfWeek: 6, startTime: "09:00", endTime: "19:00", isWorking: true },
+      { dayOfWeek: 0, startTime: "09:00", endTime: "19:00", isWorking: true }
+    ],
+    availableServices: [
+      { id: "makeup", name: "Makeup", duration: 60, price: 800, description: "Profesionální makeup" },
+      { id: "wedding-makeup", name: "Svatební makeup", duration: 120, price: 2500, description: "Kompletní svatební makeup" },
+      { id: "hair-styling", name: "Účes", duration: 90, price: 1200, description: "Profesionální účes" },
+      { id: "facial", name: "Ošetření pleti", duration: 90, price: 1500, description: "Kompletní péče o pleť" },
+      { id: "massage", name: "Masáž", duration: 60, price: 1000, description: "Relaxační masáž" },
+      { id: "eyebrows", name: "Úprava obočí", duration: 30, price: 400, description: "Tvarování a barvení obočí" }
+    ]
   },
   {
     id: "3",
@@ -152,8 +264,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
+        description: "Expertka na nail art s 7 lety zkušeností. Vytvářím jedinečné designy nehtů s použitím nejnovějších technik a prémiových materiálů. Specializuji se na složité vzory a 3D efekty.",
         phone: "+420 678 901 234",
-        email: "andrea@nailartprague.cz"
+        email: "andrea@nailartprague.cz",
+        services: ["Nail Art", "Manicure", "Gel Nails", "Nail Extensions"],
+        languages: ["Czech", "English", "Italian"],
+        salonName: "Nail Art Prague",
+        salonId: "3"
       },
       {
           id: "302",
@@ -166,8 +283,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Karlova 25, 110 00 Praha 1",
+        description: "Specialistka na gelové nehty s 3 lety zkušeností. Zaměřuji se na kvalitní a dlouhotrvající gelové nehty s moderními technikami. Vytvářím krásné a praktické nehty pro každodenní nošení.",
         phone: "+420 789 012 345",
-        email: "monika@nailartprague.cz"
+        email: "monika@nailartprague.cz",
+        services: ["Gel Nails", "Manicure", "Nail Art", "Nail Extensions"],
+        languages: ["Czech", "English", "Spanish"],
+        salonName: "Nail Art Prague",
+        salonId: "3"
       }
     ],
     coordinates: { lat: 50.0865, lng: 14.4206 }
@@ -201,8 +323,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
+        description: "Expertka na barvení vlasů s 10 lety zkušeností. Specializuji se na moderní techniky barvení včetně balayage a ombré. Používám pouze prémiové produkty pro nejlepší výsledky.",
         phone: "+420 890 123 456",
-        email: "petra@hairparadise.cz"
+        email: "petra@hairparadise.cz",
+        services: ["Hair Coloring", "Highlights", "Balayage", "Hair Treatment"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Hair Paradise Brno",
+        salonId: "4"
       },
       {
           id: "402",
@@ -215,8 +342,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Joštova 8, 602 00 Brno-střed",
+        description: "Specialistka na pánské střihy s 5 lety zkušeností. Vytvářím moderní a stylové účesy pro muže všech věkových kategorií. Zaměřuji se na precizní práci a spokojenost klientů.",
         phone: "+420 901 234 567",
-        email: "lucie@hairparadise.cz"
+        email: "lucie@hairparadise.cz",
+        services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
+        languages: ["Czech", "English"],
+        salonName: "Hair Paradise Brno",
+        salonId: "4"
       }
     ],
     coordinates: { lat: 49.2000, lng: 16.6100 }
@@ -250,8 +382,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
+        description: "Specialistka na péči o pleť s 8 lety zkušeností. Zaměřuji se na anti-aging ošetření a regeneraci pleti. Používám nejnovější technologie a prémiové kosmetické produkty.",
         phone: "+420 012 345 678",
-        email: "zuzana@beautycenter.cz"
+        email: "zuzana@beautycenter.cz",
+        services: ["Facial", "Skin Treatment", "Anti-aging", "Cleansing"],
+        languages: ["Czech", "English", "Russian"],
+        salonName: "Beauty Center Prague",
+        salonId: "5"
       },
       {
           id: "502",
@@ -264,8 +401,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Wenceslas Square 47, 110 00 Praha 1",
+        description: "Specialistka na úpravu obočí a řas s 4 lety zkušeností. Vytvářím přirozené a krásné obočí pomocí henny a microblading technik. Specializuji se také na prodlužování řas.",
         phone: "+420 111 222 333",
-        email: "michaela@beautycenter.cz"
+        email: "michaela@beautycenter.cz",
+        services: ["Eyebrows", "Eyelashes", "Eyebrow Shaping", "Lash Extensions"],
+        languages: ["Czech", "English", "Russian"],
+        salonName: "Beauty Center Prague",
+        salonId: "5"
       }
     ],
     coordinates: { lat: 50.0810, lng: 14.4270 }
@@ -299,8 +441,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
+        description: "Kreativní kadeřnice s 6 lety zkušeností. Specializuji se na svatební účesy a speciální příležitosti. Vytvářím jedinečné a elegantní účesy, které zdůrazní vaši krásu.",
         phone: "+420 222 333 444",
-        email: "tereza@stylestudio.cz"
+        email: "tereza@stylestudio.cz",
+        services: ["Hair Styling", "Wedding Hairstyles", "Haircut", "Hair Coloring"],
+        languages: ["Czech", "English", "Slovak"],
+        salonName: "Style Studio Brno",
+        salonId: "6"
       },
       {
         id: "602",
@@ -313,8 +460,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Masarykova 15, 602 00 Brno-střed",
+        description: "Kombinovaná specialistka na makeup a nail art s 3 lety zkušeností. Vytvářím krásné make-upy a jedinečné designy nehtů pro každou příležitost. Zaměřuji se na moderní trendy a kreativní řešení.",
         phone: "+420 333 444 555",
-        email: "nikola@stylestudio.cz"
+        email: "nikola@stylestudio.cz",
+        services: ["Makeup", "Nail Art", "Manicure", "Event Makeup"],
+        languages: ["Czech", "English"],
+        salonName: "Style Studio Brno",
+        salonId: "6"
       }
     ],
     coordinates: { lat: 49.1900, lng: 16.6100 }
@@ -348,8 +500,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
+        description: "Zkušená masérka s 12 lety praxe. Specializuji se na relaxační a terapeutické masáže. Používám přírodní oleje a aromaterapii pro dokonalou relaxaci a regeneraci těla.",
         phone: "+420 444 555 666",
-        email: "anna@luxuryspa.cz"
+        email: "anna@luxuryspa.cz",
+        services: ["Massage", "Relaxation", "Therapeutic Massage", "Aromatherapy"],
+        languages: ["Czech", "English", "German", "French"],
+        salonName: "Luxury Spa Prague",
+        salonId: "7"
       },
       {
         id: "702",
@@ -362,8 +519,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Národní třída 25, 110 00 Praha 1",
+        description: "Specialistka na péči o pleť a tělo s 7 lety zkušeností. Zaměřuji se na anti-aging ošetření, detox a regeneraci. Používám nejnovější technologie a prémiové kosmetické produkty.",
         phone: "+420 555 666 777",
-        email: "jana@luxuryspa.cz"
+        email: "jana@luxuryspa.cz",
+        services: ["Facial", "Body Treatment", "Anti-aging", "Detox"],
+        languages: ["Czech", "English", "Italian"],
+        salonName: "Luxury Spa Prague",
+        salonId: "7"
       }
     ],
     coordinates: { lat: 50.0820, lng: 14.4200 }
@@ -397,8 +559,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
+        description: "Specialista na pánské střihy s 9 lety zkušeností. Vytvářím moderní a stylové účesy pro muže všech věkových kategorií. Zaměřuji se na precizní práci a spokojenost klientů.",
         phone: "+420 666 777 888",
-        email: "tomas@modernhair.cz"
+        email: "tomas@modernhair.cz",
+        services: ["Men's Haircut", "Beard Trim", "Hair Styling", "Hair Wash"],
+        languages: ["Czech", "English", "German"],
+        salonName: "Modern Hair Brno",
+        salonId: "8"
       },
       {
         id: "802",
@@ -411,8 +578,13 @@ const mockSalons: Salon[] = [
         worksInSalon: true,
         isFreelancer: false,
         address: "Kobližná 3, 602 00 Brno-střed",
+        description: "Kadeřnice specializující se na dámské střihy a barvení s 5 lety zkušeností. Vytvářím moderní účesy a trendy barvení vlasů. Zaměřuji se na individuální přístup ke každé klientce.",
         phone: "+420 777 888 999",
-        email: "veronika@modernhair.cz"
+        email: "veronika@modernhair.cz",
+        services: ["Women's Haircut", "Hair Coloring", "Highlights", "Hair Styling"],
+        languages: ["Czech", "English", "Slovak"],
+        salonName: "Modern Hair Brno",
+        salonId: "8"
       }
     ],
     coordinates: { lat: 49.1950, lng: 16.6080 }
@@ -437,6 +609,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 987 654 321",
     email: "anna@nailart.cz",
     services: ["Manicure", "Nail Art", "Gel Nails"],
+    languages: ["Czech", "English", "Russian"],
     coordinates: { lat: 50.0750, lng: 14.4500 }
   },
   {
@@ -455,6 +628,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 555 444 333",
     email: "petr@hairmaster.cz",
     services: ["Haircut", "Beard Trim", "Hair Coloring"],
+    languages: ["Czech", "English", "German"],
     coordinates: { lat: 49.2000, lng: 16.6100 }
   },
   {
@@ -473,6 +647,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 123 456 789",
     email: "marie@makeup.cz",
     services: ["Wedding Makeup", "Event Makeup", "Bridal Makeup"],
+    languages: ["Czech", "English", "French"],
     coordinates: { lat: 50.0800, lng: 14.4300 }
   },
   {
@@ -491,6 +666,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 234 567 890",
     email: "tomas@masaz.cz",
     services: ["Relaxation Massage", "Sports Massage", "Lymphatic Massage"],
+    languages: ["Czech", "English", "Slovak"],
     coordinates: { lat: 49.1900, lng: 16.6000 }
   },
   {
@@ -509,6 +685,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 345 678 901",
     email: "lucie@hair.cz",
     services: ["Women's Haircuts", "Hair Coloring", "Highlights"],
+    languages: ["Czech", "English", "Italian"],
     coordinates: { lat: 50.0820, lng: 14.4200 }
   },
   {
@@ -527,6 +704,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 456 789 012",
     email: "jana@kosmetika.cz",
     services: ["Facial", "Anti-aging", "Skin Cleansing"],
+    languages: ["Czech", "English", "German"],
     coordinates: { lat: 49.1950, lng: 16.6050 }
   },
   {
@@ -545,6 +723,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 567 890 123",
     email: "pavel@barber.cz",
     services: ["Men's Haircuts", "Beard Trim", "Hot Towel"],
+    languages: ["Czech", "English", "Russian"],
     coordinates: { lat: 50.0755, lng: 14.4378 }
   },
   {
@@ -563,6 +742,7 @@ const freelancerMasters: Master[] = [
     phone: "+420 678 901 234",
     email: "eva@manikura.cz",
     services: ["Manicure", "Pedicure", "Gel Nails"],
+    languages: ["Czech", "English", "Spanish"],
     coordinates: { lat: 49.2000, lng: 16.6100 }
   }
 ];
@@ -573,15 +753,17 @@ interface HomePageProps {
   onSalonSelect: (salon: Salon) => void;
   onMasterSelect: (master: Master) => void;
   onAdminPanel: () => void;
+  onPremiumFeatures: () => void;
   currentLanguage: Language;
   onLanguageChange: (language: Language) => void;
   translations: any;
+  initialViewMode?: 'salons' | 'masters';
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, currentLanguage, onLanguageChange, translations }) => {
-  const [salons] = useState<Salon[]>(mockSalons);
-  const [freelancers] = useState<Master[]>(freelancerMasters);
-  const [viewMode, setViewMode] = useState<ViewMode>('salons');
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
+  const { salons, loading: salonsLoading } = useSalons();
+  const { masters, loading: mastersLoading } = useMasters();
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     city: "All",
@@ -592,18 +774,13 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
 
   const t = translations[currentLanguage];
 
-  // Všichni mistři dohromady (ze salonů + frikanceři)
-  const allMasters: Master[] = [
-    ...salons.flatMap(salon => salon.masters.map(master => ({
-      ...master,
-      salonName: salon.name,
-      salonId: salon.id,
-      city: salon.city,
-      address: salon.address,
-      coordinates: salon.coordinates
-    }))),
-    ...freelancers
-  ];
+  // Обновляем viewMode при изменении initialViewMode
+  useEffect(() => {
+    setViewMode(initialViewMode);
+  }, [initialViewMode]);
+
+  // Все мастера из Firestore
+  const allMasters: Master[] = masters;
 
   // Фильтрация салонов
   const filteredSalons = salons.filter(salon => {
@@ -626,13 +803,20 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     return matchesCity && matchesService && matchesSearch && matchesRating;
   });
 
+  const isLoading = salonsLoading || mastersLoading;
+
   return (
     <div className="App">
       <header className="App-header">
         <div className="header-top">
-          <button onClick={onAdminPanel} className="admin-btn">
-            {t.adminPanel}
-          </button>
+          <div className="header-buttons">
+            <button onClick={onAdminPanel} className="admin-btn">
+              {t.adminPanel}
+            </button>
+            <button onClick={onPremiumFeatures} className="admin-btn">
+              {currentLanguage === 'cs' ? 'Prémiové funkce' : 'Premium Features'}
+            </button>
+          </div>
           <LanguageSwitcher
             currentLanguage={currentLanguage}
             onLanguageChange={onLanguageChange}
@@ -664,6 +848,9 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         </div>
       </header>
       <main className="main-content">
+        {isLoading && (
+          <div className="loading">{t.loading}...</div>
+        )}
         <div className="view-toggle">
           <button
             className={`view-toggle-btn ${displayMode === 'list' ? 'active' : ''}`}
@@ -739,17 +926,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             </div>
           )
         )}
-        
-        {/* Premium packages */}
-        <PremiumFeatures
-          language={currentLanguage}
-          translations={translations}
-          onPurchase={(feature) => {
-            console.log('Premium feature purchased:', feature);
-          }}
-          type={viewMode === 'salons' ? 'salon' : 'master'}
-          itemId={0}
-        />
 
       </main>
     </div>

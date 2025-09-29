@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { MasterRegistration, Language } from '../types';
-import { translateServices } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
+import { masterService } from '../firebase/services';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -84,6 +85,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     email: '',
     description: '',
     services: [],
+    languages: [],
     photo: new File([], ''),
     isFreelancer: true,
     city: '',
@@ -91,6 +93,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
 
   const t = translations[language];
@@ -101,10 +104,18 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber',
     'Gel Nails', 'Nail Extensions', 'Coloring', 'Styling', 'Beard Trim',
     'Event Makeup', 'Bridal Makeup', 'Relaxation Massage', 'Sports Massage',
-    'Lymphatic Massage', 'Women\'s Haircuts', 'Highlights', 'Anti-aging',
+    'Lymphatic Massage', 'Women\'s Haircuts', 'Women\'s Haircut', 'Highlights', 'Anti-aging',
     'Skin Cleansing', 'Men\'s Haircuts and Beards', 'Hot Towel',
     'Women\'s Haircuts and Coloring', 'Body Treatment', 'Sauna',
-    'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts'
+    'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts',
+    'Eyebrow Shaping', 'Eyebrow Shaping & Tinting', 'Balayage', 'Hair Wash',
+    'Skin Treatment', 'Cleansing', 'Lash Extensions', 'Wedding Hairstyles',
+    'Relaxation', 'Therapeutic Massage', 'Aromatherapy', 'Detox'
+  ];
+
+  const availableLanguages = [
+    'Czech', 'English', 'German', 'French', 'Spanish', 'Italian', 
+    'Russian', 'Slovak', 'Polish', 'Ukrainian', 'Portuguese', 'Dutch'
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -136,6 +147,18 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     }));
   };
 
+  const handleLanguageToggle = (language: string) => {
+    const newLanguages = selectedLanguages.includes(language)
+      ? selectedLanguages.filter(l => l !== language)
+      : [...selectedLanguages, language];
+    
+    setSelectedLanguages(newLanguages);
+    setFormData(prev => ({
+      ...prev,
+      languages: newLanguages
+    }));
+  };
+
   const handlePhotoChange = (files: FileList | null) => {
     setPhotoFile(files);
     if (files && files[0]) {
@@ -151,9 +174,40 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    try {
+      setSubmitting(true);
+      const id = await masterService.createFromRegistration(formData);
+      console.log('Master created with id', id);
+      alert(t.registrationSuccess);
+      setFormData({
+        name: '',
+        specialty: '',
+        experience: '',
+        phone: '',
+        email: '',
+        description: '',
+        services: [],
+        languages: [],
+        photo: new File([], ''),
+        isFreelancer: true,
+        city: '',
+        address: ''
+      });
+      setSelectedServices([]);
+      setSelectedLanguages([]);
+      setPhotoFile(null);
+      onSubmit(formData);
+    } catch (error) {
+      console.error('Failed to create master', error);
+      const message = (error as Error)?.message || 'Failed to create master';
+      alert(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -328,6 +382,22 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         </div>
 
         <div className="form-group">
+          <label>{language === 'cs' ? 'Jazyky *' : 'Languages *'}</label>
+          <div className="services-grid">
+            {availableLanguages.map(languageItem => (
+              <label key={languageItem} className="service-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedLanguages.includes(languageItem)}
+                  onChange={() => handleLanguageToggle(languageItem)}
+                />
+                <span className="service-label">{translateLanguages([languageItem], language)[0]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
           <label htmlFor="photo">{t.photo} *</label>
           <FileUpload
             id="photo"
@@ -349,8 +419,8 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t.cancel}
           </button>
-          <button type="submit" className="btn btn-primary">
-            {t.register}
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? `${(t.loading || (language === 'cs' ? 'Načítání' : 'Loading'))}...` : t.register}
           </button>
         </div>
       </form>

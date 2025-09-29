@@ -1,6 +1,6 @@
 import React from 'react';
 import { Master, Language } from '../types';
-import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
 interface MasterCardProps {
   master: Master;
@@ -45,7 +45,6 @@ const MasterCard: React.FC<MasterCardProps> = ({
             </span>
           )}
         </div>
-        <p className="specialty-main">{translateSpecialty(master.specialty, language)}</p>
         <p className="experience-main">{master.experience} {t.experience}</p>
         {master.services && master.services.length > 0 && (
           <div className="master-services">
@@ -55,6 +54,14 @@ const MasterCard: React.FC<MasterCardProps> = ({
             {master.services.length > 3 && (
               <span className="service-tag-small">+{master.services.length - 3}</span>
             )}
+          </div>
+        )}
+        {master.languages && master.languages.length > 0 && (
+          <div className="master-languages">
+            <span className="languages-label">
+              🌐 {language === 'cs' ? 'Jazyky:' : 'Languages:'} {translateLanguages(master.languages, language).slice(0, 3).join(', ')}
+              {master.languages.length > 3 && ` +${master.languages.length - 3}`}
+            </span>
           </div>
         )}
         <div className="master-rating-main">

@@ -6,12 +6,13 @@ import { getStorage } from 'firebase/storage';
 // Firebase configuration
 // В реальном проекте эти данные должны быть в .env файле
 const firebaseConfig = {
-  apiKey: "demo-api-key",
-  authDomain: "beautyfind-demo.firebaseapp.com",
-  projectId: "beautyfind-demo",
-  storageBucket: "beautyfind-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyD0s0yw7SItY66TtI3b_oLpYpzDvQAJXMs",
+  authDomain: "beautyfind-8c466.firebaseapp.com",
+  projectId: "beautyfind-8c466",
+  storageBucket: "beautyfind-8c466.firebasestorage.app",
+  messagingSenderId: "861512568251",
+  appId: "1:861512568251:web:ebe42ff86825efe25d489e",
+  measurementId: "G-LDQRZ3M63T"
 };
 
 // Initialize Firebase

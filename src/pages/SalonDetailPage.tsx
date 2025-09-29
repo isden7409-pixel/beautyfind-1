@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Salon, Master, Language, Review, PremiumFeature } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Salon, Master, Language, Review, Booking } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
-import PremiumFeatures from '../components/PremiumFeatures';
+import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
 interface SalonDetailPageProps {
@@ -43,6 +43,12 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
     }
   ]);
 
+  const [map, setMap] = useState<any>(null);
+  const [marker, setMarker] = useState<any>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  
+  console.log('SalonDetailPage render, showBookingModal:', showBookingModal);
+
   const handleAddReview = (newReview: Omit<Review, 'id'>) => {
     const review: Review = {
       ...newReview,
@@ -51,10 +57,81 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
     setReviews([...reviews, review]);
   };
 
-  const handlePurchasePremium = (feature: PremiumFeature) => {
-    console.log('Premium feature purchased:', feature);
-    // В реальном приложении здесь будет логика покупки
+  const handleBookingClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('Booking button clicked, salon.bookingEnabled:', salon.bookingEnabled);
+    if (salon.bookingEnabled) {
+      setShowBookingModal(true);
+      console.log('Modal should open now');
+    }
   };
+
+  const handleBookingSuccess = (booking: Booking) => {
+    console.log('Booking successful:', booking);
+    alert(t.bookingSuccess);
+  };
+
+  const handleBookingClose = () => {
+    setShowBookingModal(false);
+  };
+
+  // Initialize map
+  useEffect(() => {
+    const initMap = () => {
+      if (typeof window !== 'undefined' && window.L) {
+        const mapElement = document.getElementById('salon-detail-map');
+        if (!mapElement) return;
+
+        // Check if map is already initialized
+        if (mapElement.hasChildNodes()) return;
+
+        try {
+          const coordinates = salon.coordinates || { lat: 50.0755, lng: 14.4378 }; // Default to Prague
+          
+          const mapInstance = window.L.map('salon-detail-map').setView([coordinates.lat, coordinates.lng], 15);
+          
+          window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(mapInstance);
+
+          const markerInstance = window.L.marker([coordinates.lat, coordinates.lng]).addTo(mapInstance);
+          
+          // Add popup to marker
+          markerInstance.bindPopup(`
+            <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${salon.name}</h3>
+              <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salon.address}</p>
+              <p style="margin: 0; color: #888; font-size: 12px;">${salon.city === 'Prague' ? 'Praha' : salon.city}</p>
+            </div>
+          `);
+
+          setMap(mapInstance);
+          setMarker(markerInstance);
+        } catch (error) {
+          console.error('Error initializing map:', error);
+        }
+      }
+    };
+
+    // Wait for both Leaflet and DOM element to be ready
+    const checkAndInit = () => {
+      if (typeof window !== 'undefined' && window.L && document.getElementById('salon-detail-map')) {
+        initMap();
+      } else {
+        setTimeout(checkAndInit, 100);
+      }
+    };
+
+    checkAndInit();
+
+    // Cleanup function
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
+  }, [salon, map]);
+
 
   return (
     <div className="salon-detail-page">
@@ -123,9 +200,22 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
               ))}
             </div>
           </div>
-          <button className="book-button">{t.book}</button>
+          <div className="salon-book-button-container">
+            <button 
+              className="book-button"
+              onClick={handleBookingClick}
+              disabled={!salon.bookingEnabled}
+            >
+              {salon.bookingEnabled ? t.book : (language === 'cs' ? 'Rezervace nedostupná' : 'Booking unavailable')}
+            </button>
+          </div>
         </div>
         
+        <div className="salon-map-section">
+          <h3>{language === 'cs' ? 'Umístění' : 'Location'}</h3>
+          <div id="salon-detail-map" style={{ height: '300px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}></div>
+        </div>
+
         <ReviewsSection
           reviews={reviews}
           language={language}
@@ -133,15 +223,17 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           onAddReview={handleAddReview}
           salonId={salon.id}
         />
-        
-        <PremiumFeatures
-          language={language}
-          translations={translations}
-          onPurchase={handlePurchasePremium}
-          type="salon"
-          itemId={parseInt(salon.id)}
-        />
       </div>
+
+      {/* Salon Booking Modal */}
+      <SalonBookingModal
+        salon={salon}
+        isOpen={showBookingModal}
+        onClose={handleBookingClose}
+        onBookingSuccess={handleBookingSuccess}
+        language={language}
+        translations={translations}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Salon, Master, Language, SearchFilters } from '../types';
-import { translateSpecialty } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
 interface SimpleMapViewProps {
   salons: Salon[];
@@ -107,8 +107,6 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       const newCenter = getCityCoordinates(filters.city);
       console.log('Changing map center to:', filters.city, newCenter);
       map.setView([newCenter.lat, newCenter.lng], newCenter.zoom);
-    } else {
-      console.log('Map not ready yet. Map:', !!map, 'isLoaded:', isLoaded);
     }
   }, [map, isLoaded, filters.city]);
 
@@ -136,24 +134,43 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       });
     };
 
+    let createdMap: any = null;
     loadLeaflet().then(() => {
-      if (mapRef.current && (window as any).L) {
+      if (mapRef.current && (window as any).L && !createdMap) {
         const L = (window as any).L;
         const initialCenter = getCityCoordinates(filters.city);
         console.log('Initializing map with center:', filters.city, initialCenter);
         console.log('Current filters:', filters);
-        
-        const mapInstance = L.map(mapRef.current).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
-        
+
+        // Защита от повторной инициализации при HMR/повторном монтировании
+        const container: any = mapRef.current;
+        if (container._leaflet_id) {
+          try {
+            // Если внезапно осталась ссылка на старую карту — удалим её
+            if (createdMap && createdMap.remove) createdMap.remove();
+          } catch {}
+          container._leaflet_id = undefined;
+          container.innerHTML = '';
+        }
+
+        createdMap = L.map(container).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(mapInstance);
-        
-        setMap(mapInstance);
+        }).addTo(createdMap);
+
+        setMap(createdMap);
         setIsLoaded(true);
       }
     });
-  }, [filters]);
+
+    return () => {
+      if (createdMap) {
+        createdMap.remove();
+        createdMap = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!map || !isLoaded) return;
@@ -206,7 +223,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;">
                   <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 100%; object-fit: cover;">
-                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⭐ ${salon.rating} (${salon.reviews})
                   </div>
                 </div>
@@ -217,14 +234,14 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                     <span>${salon.address}, ${salon.city === 'Prague' ? 'Praha' : salon.city}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px;">
-                    ${salon.services.slice(0, 3).map(service => 
+                    ${translateServices(salon.services, language).slice(0, 3).map(service => 
                       `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
                     ).join('')}
-                    ${salon.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${salon.services.length - 3} more</span>` : ''}
+                    ${salon.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${salon.services.length - 3} ${language === 'cs' ? 'další' : 'more'}</span>` : ''}
                   </div>
                   <div style="margin: 0 0 16px 0; display: flex; align-items: center; color: #666; font-size: 13px;">
                     <span style="margin-right: 6px;">👥</span>
-                    <span>${salon.masters.length} ${salon.masters.length === 1 ? 'master' : 'masters'}</span>
+                    <span>${salon.masters.length} ${salon.masters.length === 1 ? (language === 'cs' ? 'mistr' : 'master') : (language === 'cs' ? 'mistrů' : 'masters')}</span>
                   </div>
                   <button onclick="window.selectSalon('${salon.id}')" style="
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
@@ -299,24 +316,23 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
                   <img src="${master.photo}" alt="${master.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                  <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⭐ ${master.rating} (${master.reviews})
                   </div>
                 </div>
                 <div style="padding: 16px; background: white;">
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3; text-align: center;">${master.name}</h3>
-                  <div style="margin: 0 0 12px 0; color: #667eea; font-size: 14px; text-align: center; font-weight: 500;">${translateSpecialty(master.specialty, language)}</div>
                   <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center; justify-content: center;">
                     <span style="margin-right: 6px;">📍</span>
                     <span>${master.address}, ${master.city === 'Prague' ? 'Praha' : master.city}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px;">
                     <span style="margin-right: 6px;">⏱️</span>
-                    <span>${master.experience} experience</span>
+                    <span>${master.experience} ${language === 'cs' ? 'let zkušeností' : 'experience'}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; text-align: center;">
-                    <span style="display: inline-block; background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                      ${master.isFreelancer ? '🏠 ' + t.freelancer : '🏢 ' + t.inSalon}
+                    <span style="display: inline-block; background: ${master.isFreelancer ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)' : 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      ${master.isFreelancer ? t.freelancer : t.inSalon}
                     </span>
                   </div>
                   ${master.salonName ? `
@@ -325,7 +341,38 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                         🏢 ${master.salonName}
                       </span>
                     </div>
-                  ` : ''}
+                    <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                      ${master.services ? translateServices(master.services, language).slice(0, 3).map(service => 
+                        `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
+                      ).join('') : ''}
+                      ${master.services && master.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${master.services.length - 3} ${language === 'cs' ? 'další' : 'more'}</span>` : ''}
+                    </div>
+                    ${master.languages && master.languages.length > 0 ? `
+                      <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                        <span style="font-size: 11px; color: #666; margin-right: 4px;">🌐 ${language === 'cs' ? 'Jazyky:' : 'Languages:'}</span>
+                        ${translateLanguages(master.languages, language).slice(0, 3).map(lang => 
+                          `<span style="display: inline-block; background: #e8f5e8; color: #2e7d32; padding: 2px 6px; border-radius: 12px; font-size: 10px; font-weight: 500;">${lang}</span>`
+                        ).join('')}
+                        ${master.languages.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 2px 6px; border-radius: 12px; font-size: 10px;">+${master.languages.length - 3}</span>` : ''}
+                      </div>
+                    ` : ''}
+                  ` : `
+                    <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                      ${master.services ? translateServices(master.services, language).slice(0, 3).map(service => 
+                        `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
+                      ).join('') : ''}
+                      ${master.services && master.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${master.services.length - 3} ${language === 'cs' ? 'další' : 'more'}</span>` : ''}
+                    </div>
+                    ${master.languages && master.languages.length > 0 ? `
+                      <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                        <span style="font-size: 11px; color: #666; margin-right: 4px;">🌐 ${language === 'cs' ? 'Jazyky:' : 'Languages:'}</span>
+                        ${translateLanguages(master.languages, language).slice(0, 3).map(lang => 
+                          `<span style="display: inline-block; background: #e8f5e8; color: #2e7d32; padding: 2px 6px; border-radius: 12px; font-size: 10px; font-weight: 500;">${lang}</span>`
+                        ).join('')}
+                        ${master.languages.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 2px 6px; border-radius: 12px; font-size: 10px;">+${master.languages.length - 3}</span>` : ''}
+                      </div>
+                    ` : ''}
+                  `}
                   <button onclick="window.selectMaster('${master.id}')" style="
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                     color: white; 

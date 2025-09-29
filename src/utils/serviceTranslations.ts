@@ -26,6 +26,7 @@ export const serviceTranslations: Record<string, Record<string, string>> = {
     'Sports Massage': 'Sportovní masáž',
     'Lymphatic Massage': 'Lymfatická masáž',
     "Women's Haircuts": 'Dámské střihy',
+    "Women's Haircut": 'Dámský střih',
     'Highlights': 'Melírování',
     'Anti-aging': 'Anti-aging',
     'Skin Cleansing': 'Čištění pleti',
@@ -36,7 +37,19 @@ export const serviceTranslations: Record<string, Record<string, string>> = {
     'Sauna': 'Sauna',
     'Massage Therapy': 'Masážní terapie',
     'Facial & Body Treatments': 'Ošetření obličeje a těla',
-    "Men's Haircuts": 'Pánské střihy'
+    "Men's Haircuts": 'Pánské střihy',
+    'Eyebrow Shaping': 'Úprava obočí',
+    'Eyebrow Shaping & Tinting': 'Úprava a barvení obočí',
+    'Balayage': 'Balayage',
+    'Hair Wash': 'Mytí vlasů',
+    'Skin Treatment': 'Ošetření pleti',
+    'Cleansing': 'Čištění',
+    'Lash Extensions': 'Prodloužení řas',
+    'Wedding Hairstyles': 'Svatební účesy',
+    'Relaxation': 'Relaxace',
+    'Therapeutic Massage': 'Terapeutická masáž',
+    'Aromatherapy': 'Aromaterapie',
+    'Detox': 'Detox'
   },
   en: {
     'Manicure': 'Manicure',
@@ -64,6 +77,7 @@ export const serviceTranslations: Record<string, Record<string, string>> = {
     'Sports Massage': 'Sports Massage',
     'Lymphatic Massage': 'Lymphatic Massage',
     "Women's Haircuts": "Women's Haircuts",
+    "Women's Haircut": "Women's Haircut",
     'Highlights': 'Highlights',
     'Anti-aging': 'Anti-aging',
     'Skin Cleansing': 'Skin Cleansing',
@@ -74,7 +88,19 @@ export const serviceTranslations: Record<string, Record<string, string>> = {
     'Sauna': 'Sauna',
     'Massage Therapy': 'Massage Therapy',
     'Facial & Body Treatments': 'Facial & Body Treatments',
-    "Men's Haircuts": "Men's Haircuts"
+    "Men's Haircuts": "Men's Haircuts",
+    'Eyebrow Shaping': 'Eyebrow Shaping',
+    'Eyebrow Shaping & Tinting': 'Eyebrow Shaping & Tinting',
+    'Balayage': 'Balayage',
+    'Hair Wash': 'Hair Wash',
+    'Skin Treatment': 'Skin Treatment',
+    'Cleansing': 'Cleansing',
+    'Lash Extensions': 'Lash Extensions',
+    'Wedding Hairstyles': 'Wedding Hairstyles',
+    'Relaxation': 'Relaxation',
+    'Therapeutic Massage': 'Therapeutic Massage',
+    'Aromatherapy': 'Aromatherapy',
+    'Detox': 'Detox'
   }
 };
 
@@ -142,4 +168,43 @@ export const translateServices = (services: string[], language: 'cs' | 'en'): st
 // Функция для перевода специальностей
 export const translateSpecialty = (specialty: string, language: 'cs' | 'en'): string => {
   return specialtyTranslations[language][specialty] || specialty;
+};
+
+// Переводы для языков
+export const languageTranslations: Record<string, Record<string, string>> = {
+  cs: {
+    'Czech': 'Čeština',
+    'English': 'Angličtina',
+    'German': 'Němčina',
+    'French': 'Francouzština',
+    'Spanish': 'Španělština',
+    'Italian': 'Italština',
+    'Russian': 'Ruština',
+    'Slovak': 'Slovenština',
+    'Polish': 'Polština',
+    'Ukrainian': 'Ukrajinština',
+    'Portuguese': 'Portugalština',
+    'Dutch': 'Holandština'
+  },
+  en: {
+    'Czech': 'Czech',
+    'English': 'English',
+    'German': 'German',
+    'French': 'French',
+    'Spanish': 'Spanish',
+    'Italian': 'Italian',
+    'Russian': 'Russian',
+    'Slovak': 'Slovak',
+    'Polish': 'Polish',
+    'Ukrainian': 'Ukrainian',
+    'Portuguese': 'Portuguese',
+    'Dutch': 'Dutch'
+  }
+};
+
+// Функция для перевода языков
+export const translateLanguages = (languages: string[], language: 'cs' | 'en'): string[] => {
+  return languages.map(lang => 
+    languageTranslations[language][lang] || lang
+  );
 };

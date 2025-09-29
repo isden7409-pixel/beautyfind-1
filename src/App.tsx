@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import SalonDetailPage from './pages/SalonDetailPage';
 import MasterDetailPage from './pages/MasterDetailPage';
 import AdminPanel from './pages/AdminPanel';
+import PremiumFeaturesPage from './pages/PremiumFeaturesPage';
 import './App.css';
 
 // Импортируем mock данные
@@ -116,6 +117,41 @@ const translations = {
     contact: "Kontakt",
     services: "Služby",
     book: "Rezervovat termín",
+    // Booking translations
+    bookWith: "Rezervovat u",
+    selectService: "Vyberte službu",
+    selectDateAndTime: "Vyberte datum a čas",
+    selectTime: "Vyberte čas",
+    contactDetails: "Kontaktní údaje",
+    bookingSummary: "Shrnutí rezervace",
+    master: "Mistr",
+    salon: "Salon",
+    service: "Služba",
+    selectMaster: "Vyberte mistra",
+    selectMasterForService: "Vyberte mistra pro službu",
+    selectedService: "Vybraná služba",
+    availableMasters: "Dostupní mistři",
+    noMastersAvailable: "Pro tuto službu nejsou dostupní žádní mistři",
+    duration: "Doba trvání",
+    date: "Datum",
+    time: "Čas",
+    price: "Cena",
+    minutes: "minut",
+    fullName: "Celé jméno",
+    phoneNumber: "Telefonní číslo",
+    emailAddress: "Emailová adresa",
+    additionalNotes: "Dodatečné poznámky",
+    enterFullName: "Zadejte celé jméno",
+    enterPhoneNumber: "Zadejte telefonní číslo",
+    enterEmailAddress: "Zadejte emailovou adresu",
+    enterAdditionalNotes: "Zadejte dodatečné poznámky",
+    confirmBooking: "Potvrdit rezervaci",
+    bookingSuccess: "Rezervace byla úspěšně vytvořena!",
+    bookingError: "Chyba při vytváření rezervace",
+    pleaseEnterName: "Prosím zadejte jméno",
+    pleaseEnterPhone: "Prosím zadejte telefonní číslo",
+    pleaseEnterEmail: "Prosím zadejte emailovou adresu",
+    loading: "Načítání",
     addReview: "Přidat recenzi",
     writeReview: "Napsat recenzi",
     yourName: "Vaše jméno",
@@ -202,6 +238,41 @@ const translations = {
     contact: "Contact",
     services: "Services",
     book: "Book Appointment",
+    // Booking translations
+    bookWith: "Book with",
+    selectService: "Select Service",
+    selectDateAndTime: "Select Date and Time",
+    selectTime: "Select Time",
+    contactDetails: "Contact Details",
+    bookingSummary: "Booking Summary",
+    master: "Master",
+    salon: "Salon",
+    service: "Service",
+    selectMaster: "Select Master",
+    selectMasterForService: "Select Master for Service",
+    selectedService: "Selected Service",
+    availableMasters: "Available Masters",
+    noMastersAvailable: "No masters available for this service",
+    duration: "Duration",
+    date: "Date",
+    time: "Time",
+    price: "Price",
+    minutes: "minutes",
+    fullName: "Full Name",
+    phoneNumber: "Phone Number",
+    emailAddress: "Email Address",
+    additionalNotes: "Additional Notes",
+    enterFullName: "Enter full name",
+    enterPhoneNumber: "Enter phone number",
+    enterEmailAddress: "Enter email address",
+    enterAdditionalNotes: "Enter additional notes",
+    confirmBooking: "Confirm Booking",
+    bookingSuccess: "Booking created successfully!",
+    bookingError: "Error creating booking",
+    pleaseEnterName: "Please enter name",
+    pleaseEnterPhone: "Please enter phone number",
+    pleaseEnterEmail: "Please enter email address",
+    loading: "Loading",
     addReview: "Add Review",
     writeReview: "Write Review",
     yourName: "Your Name",
@@ -245,11 +316,14 @@ function AppContent() {
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('cs');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
+  const [currentViewMode, setCurrentViewMode] = useState<'salons' | 'masters'>('salons');
   const navigate = useNavigate();
 
   const handleSalonSelect = (salon: Salon) => {
     console.log('Salon selected:', salon);
     setSelectedSalon(salon);
+    setCurrentViewMode('salons');
     navigate(`/salon/${salon.id}`);
   };
 
@@ -257,12 +331,20 @@ function AppContent() {
   const handleMasterSelect = (master: Master) => {
     console.log('Master selected:', master);
     setSelectedMaster(master);
+    setCurrentViewMode('masters');
     navigate(`/master/${master.id}`);
   };
 
   const handleBack = () => {
     setSelectedSalon(null);
     setSelectedMaster(null);
+    setCurrentViewMode('salons');
+    navigate('/');
+  };
+
+  const handleBackFromMaster = () => {
+    setSelectedMaster(null);
+    setCurrentViewMode('masters');
     navigate('/');
   };
 
@@ -272,6 +354,14 @@ function AppContent() {
 
   const handleBackFromAdmin = () => {
     setShowAdminPanel(false);
+  };
+
+  const handlePremiumFeatures = () => {
+    setShowPremiumFeatures(true);
+  };
+
+  const handleBackFromPremium = () => {
+    setShowPremiumFeatures(false);
   };
 
   if (showAdminPanel) {
@@ -387,6 +477,16 @@ function AppContent() {
     );
   }
 
+  if (showPremiumFeatures) {
+    return (
+      <PremiumFeaturesPage
+        language={currentLanguage}
+        translations={translations}
+        onBack={handleBackFromPremium}
+      />
+    );
+  }
+
   return (
     <div className="App">
       <Routes>
@@ -397,9 +497,11 @@ function AppContent() {
               onSalonSelect={handleSalonSelect}
               onMasterSelect={handleMasterSelect}
               onAdminPanel={handleAdminPanel}
+              onPremiumFeatures={handlePremiumFeatures}
               currentLanguage={currentLanguage}
               onLanguageChange={setCurrentLanguage}
               translations={translations}
+              initialViewMode={currentViewMode}
             />
           }
           />
@@ -427,7 +529,7 @@ function AppContent() {
                   master={selectedMaster}
                   language={currentLanguage}
                   translations={translations}
-                  onBack={handleBack}
+                  onBack={handleBackFromMaster}
                   onSalonSelect={handleSalonSelect}
                   salons={mockSalons}
                 />

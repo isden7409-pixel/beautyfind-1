@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SalonRegistration, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
+import { salonService } from '../firebase/services';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -140,9 +141,36 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    try {
+      setSubmitting(true);
+      const id = await salonService.createFromRegistration(formData);
+      console.log('Salon created with id', id);
+      alert(t.registrationSuccess);
+      setFormData({
+        name: '',
+        city: '',
+        address: '',
+        phone: '',
+        email: '',
+        website: '',
+        description: '',
+        openHours: '',
+        services: [],
+        photos: []
+      });
+      setSelectedServices([]);
+      setPhotoFiles(null);
+      onSubmit(formData);
+    } catch (error) {
+      console.error('Failed to create salon', error);
+      alert('Failed to create salon');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -302,8 +330,8 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t.cancel}
           </button>
-          <button type="submit" className="btn btn-primary">
-            {t.register}
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? `${(t.loading || (language === 'cs' ? 'Načítání' : 'Loading'))}...` : t.register}
           </button>
         </div>
       </form>
