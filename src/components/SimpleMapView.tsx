@@ -107,8 +107,6 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       const newCenter = getCityCoordinates(filters.city);
       console.log('Changing map center to:', filters.city, newCenter);
       map.setView([newCenter.lat, newCenter.lng], newCenter.zoom);
-    } else {
-      console.log('Map not ready yet. Map:', !!map, 'isLoaded:', isLoaded);
     }
   }, [map, isLoaded, filters.city]);
 
@@ -136,24 +134,43 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       });
     };
 
+    let createdMap: any = null;
     loadLeaflet().then(() => {
-      if (mapRef.current && (window as any).L) {
+      if (mapRef.current && (window as any).L && !createdMap) {
         const L = (window as any).L;
         const initialCenter = getCityCoordinates(filters.city);
         console.log('Initializing map with center:', filters.city, initialCenter);
         console.log('Current filters:', filters);
-        
-        const mapInstance = L.map(mapRef.current).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
-        
+
+        // Защита от повторной инициализации при HMR/повторном монтировании
+        const container: any = mapRef.current;
+        if (container._leaflet_id) {
+          try {
+            // Если внезапно осталась ссылка на старую карту — удалим её
+            if (createdMap && createdMap.remove) createdMap.remove();
+          } catch {}
+          container._leaflet_id = undefined;
+          container.innerHTML = '';
+        }
+
+        createdMap = L.map(container).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(mapInstance);
-        
-        setMap(mapInstance);
+        }).addTo(createdMap);
+
+        setMap(createdMap);
         setIsLoaded(true);
       }
     });
-  }, [filters]);
+
+    return () => {
+      if (createdMap) {
+        createdMap.remove();
+        createdMap = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!map || !isLoaded) return;

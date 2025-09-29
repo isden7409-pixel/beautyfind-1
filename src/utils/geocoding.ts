@@ -11,72 +11,47 @@ const geocodingCache = new Map<string, Coordinates>();
 // Функция для геокодирования адреса
 export async function geocodeAddress(address: string): Promise<Coordinates | null> {
   console.log(`geocodeAddress вызвана с адресом: ${address}`);
-  
+
   // Проверяем кэш
   if (geocodingCache.has(address)) {
     console.log(`Адрес ${address} найден в кэше`);
     return geocodingCache.get(address)!;
   }
 
-  // Временная заглушка для тестирования - возвращаем случайные координаты в Праге
-  console.log(`Геокодирование адреса: ${address}`);
-  
-  // Генерируем случайные координаты в пределах Праги
-  const pragueBounds = {
-    lat: { min: 50.0, max: 50.1 },
-    lng: { min: 14.3, max: 14.6 }
-  };
-  
-  const coordinates: Coordinates = {
-    lat: pragueBounds.lat.min + Math.random() * (pragueBounds.lat.max - pragueBounds.lat.min),
-    lng: pragueBounds.lng.min + Math.random() * (pragueBounds.lng.max - pragueBounds.lng.min)
-  };
-  
-  // Сохраняем в кэш
-  geocodingCache.set(address, coordinates);
-  
-  console.log(`Геокодирование (заглушка): ${address} -> ${coordinates.lat}, ${coordinates.lng}`);
-  return coordinates;
-
-  /* Реальный код геокодирования (закомментирован из-за CORS проблем)
   try {
-    // Используем Nominatim API (бесплатный сервис OpenStreetMap)
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=cz`;
+    // Используем публичный Nominatim (OpenStreetMap)
+    // Примечание: браузер не позволяет задавать кастомный User-Agent, поэтому без него
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=cz&addressdetails=0`;
     console.log(`Запрос геокодирования: ${url}`);
-    
+
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'BeautyFind-CZ/1.0'
+        'Accept': 'application/json'
       }
     });
-    
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Geocoding HTTP error ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
-    if (data && data.length > 0) {
+    if (Array.isArray(data) && data.length > 0) {
       const result = data[0];
       const coordinates: Coordinates = {
         lat: parseFloat(result.lat),
         lng: parseFloat(result.lon)
       };
-      
-      // Сохраняем в кэш
       geocodingCache.set(address, coordinates);
-      
       console.log(`Геокодирование успешно: ${address} -> ${coordinates.lat}, ${coordinates.lng}`);
       return coordinates;
-    } else {
-      console.warn(`Не удалось найти координаты для адреса: ${address}`);
-      return null;
     }
+
+    console.warn(`Не удалось найти координаты для адреса: ${address}`);
+    return null;
   } catch (error) {
     console.error(`Ошибка геокодирования для адреса ${address}:`, error);
     return null;
   }
-  */
 }
 
 // Функция для геокодирования массива адресов

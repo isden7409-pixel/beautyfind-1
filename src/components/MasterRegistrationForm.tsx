@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MasterRegistration, Language } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
+import { masterService } from '../firebase/services';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -173,9 +174,40 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    try {
+      setSubmitting(true);
+      const id = await masterService.createFromRegistration(formData);
+      console.log('Master created with id', id);
+      alert(t.registrationSuccess);
+      setFormData({
+        name: '',
+        specialty: '',
+        experience: '',
+        phone: '',
+        email: '',
+        description: '',
+        services: [],
+        languages: [],
+        photo: new File([], ''),
+        isFreelancer: true,
+        city: '',
+        address: ''
+      });
+      setSelectedServices([]);
+      setSelectedLanguages([]);
+      setPhotoFile(null);
+      onSubmit(formData);
+    } catch (error) {
+      console.error('Failed to create master', error);
+      const message = (error as Error)?.message || 'Failed to create master';
+      alert(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -387,8 +419,8 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t.cancel}
           </button>
-          <button type="submit" className="btn btn-primary">
-            {t.register}
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? `${(t.loading || (language === 'cs' ? 'Načítání' : 'Loading'))}...` : t.register}
           </button>
         </div>
       </form>

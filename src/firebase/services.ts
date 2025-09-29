@@ -8,11 +8,12 @@ import {
   deleteDoc, 
   query, 
   where, 
-  orderBy,
-  limit 
+  orderBy
 } from 'firebase/firestore';
 import { db } from './config';
-import { Salon, Master, Review } from '../types';
+import { Salon, Master, Review, SalonRegistration, MasterRegistration } from '../types';
+import { uploadMultipleFiles } from './upload';
+import { geocodeAddress } from '../utils/geocoding';
 
 // Collections
 const SALONS_COLLECTION = 'salons';
@@ -72,6 +73,37 @@ export const salonService = {
   async create(salon: Omit<Salon, 'id'>): Promise<string> {
     const docRef = await addDoc(collection(db, SALONS_COLLECTION), salon);
     return docRef.id;
+  },
+
+  // Create salon from registration form (handles photo upload)
+  async createFromRegistration(data: SalonRegistration): Promise<string> {
+    const photoUrls = data.photos && data.photos.length
+      ? await uploadMultipleFiles(data.photos, 'salon_photos')
+      : [];
+
+    // Геокодируем адрес
+    const coordinates = await geocodeAddress(`${data.address}, ${data.city}`);
+
+    const salon: Omit<Salon, 'id'> = {
+      name: data.name,
+      city: data.city,
+      address: data.address,
+      services: data.services,
+      rating: 0,
+      reviews: 0,
+      image: photoUrls[0] || '',
+      description: data.description,
+      phone: data.phone,
+      email: data.email,
+      website: data.website,
+      openHours: data.openHours,
+      photos: photoUrls,
+      masters: [],
+      coordinates: coordinates || undefined,
+    };
+
+    const id = await this.create(salon);
+    return id;
   },
 
   // Update salon
@@ -153,6 +185,48 @@ export const masterService = {
   async create(master: Omit<Master, 'id'>): Promise<string> {
     const docRef = await addDoc(collection(db, MASTERS_COLLECTION), master);
     return docRef.id;
+  },
+
+  // Create master from registration form (handles photo upload)
+  async createFromRegistration(data: MasterRegistration): Promise<string> {
+    let photoUrl = '';
+    // MasterRegistration.photo в форме мы храним как File (один файл)
+    if (data.photo && (data.photo as File).size !== undefined) {
+      const urls = await uploadMultipleFiles([data.photo], 'master_photos');
+      photoUrl = urls[0] || '';
+    }
+
+    // Геокодируем адрес мастера (если есть)
+    let coords = undefined as any;
+    if (data.address) {
+      coords = await geocodeAddress(`${data.address}${data.city ? ', ' + data.city : ''}`);
+    }
+
+    const masterBase = {
+      name: data.name,
+      specialty: data.specialty,
+      experience: data.experience,
+      rating: 0,
+      reviews: 0,
+      photo: photoUrl,
+      worksInSalon: !!data.salonId,
+      isFreelancer: data.isFreelancer,
+      description: data.description,
+      phone: data.phone,
+      email: data.email,
+      services: data.services,
+      languages: data.languages,
+      coordinates: coords || undefined,
+    } as Partial<Master>;
+
+    if (data.city) masterBase.city = data.city;
+    if (data.address) masterBase.address = data.address;
+    if (data.salonId) masterBase.salonId = data.salonId;
+
+    const master = masterBase as Omit<Master, 'id'>;
+
+    const id = await this.create(master);
+    return id;
   },
 
   // Update master

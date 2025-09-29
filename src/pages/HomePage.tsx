@@ -5,6 +5,7 @@ import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
+import { useSalons, useMasters } from '../hooks/useData';
 
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
@@ -760,8 +761,8 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
-  const [salons] = useState<Salon[]>(mockSalons);
-  const [freelancers] = useState<Master[]>(freelancerMasters);
+  const { salons, loading: salonsLoading } = useSalons();
+  const { masters, loading: mastersLoading } = useMasters();
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
   const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
@@ -778,18 +779,8 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     setViewMode(initialViewMode);
   }, [initialViewMode]);
 
-  // Všichni mistři dohromady (ze salonů + frikanceři)
-  const allMasters: Master[] = [
-    ...salons.flatMap(salon => salon.masters.map(master => ({
-      ...master,
-      salonName: salon.name,
-      salonId: salon.id,
-      city: salon.city,
-      address: salon.address,
-      coordinates: salon.coordinates
-    }))),
-    ...freelancers
-  ];
+  // Все мастера из Firestore
+  const allMasters: Master[] = masters;
 
   // Фильтрация салонов
   const filteredSalons = salons.filter(salon => {
@@ -811,6 +802,8 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     const matchesRating = !filters.minRating || master.rating >= filters.minRating;
     return matchesCity && matchesService && matchesSearch && matchesRating;
   });
+
+  const isLoading = salonsLoading || mastersLoading;
 
   return (
     <div className="App">
@@ -855,6 +848,9 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         </div>
       </header>
       <main className="main-content">
+        {isLoading && (
+          <div className="loading">{t.loading}...</div>
+        )}
         <div className="view-toggle">
           <button
             className={`view-toggle-btn ${displayMode === 'list' ? 'active' : ''}`}
