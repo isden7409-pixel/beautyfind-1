@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Review, Language } from '../types';
+import { reviewService } from '../firebase/services';
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -27,18 +28,19 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
 
   const t = translations[language];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newReview.userName.trim() && newReview.comment.trim()) {
-      onAddReview({
-        userId: Math.random().toString(), // В реальном приложении это будет ID пользователя
+      const payload: any = {
+        userId: Math.random().toString(),
         userName: newReview.userName,
         rating: newReview.rating,
         comment: newReview.comment,
         date: new Date().toISOString(),
-        salonId,
-        masterId,
-      });
+      };
+      if (salonId) payload.salonId = salonId;
+      if (masterId) payload.masterId = masterId;
+      await onAddReview(payload);
       setNewReview({ userName: '', rating: 5, comment: '' });
       setShowAddForm(false);
     }

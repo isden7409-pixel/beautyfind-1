@@ -779,7 +779,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
     setViewMode(initialViewMode);
   }, [initialViewMode]);
 
-  // Все мастера из Firestore
+  // Все мастера из Firestore (включая фрилансеров и мастеров из салонов)
   const allMasters: Master[] = masters;
 
   // Фильтрация салонов

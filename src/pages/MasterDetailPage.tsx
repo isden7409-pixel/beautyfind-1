@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Master, Salon, Language, Review, Booking } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
+import { reviewService } from '../firebase/services';
 import BookingModal from '../components/BookingModal';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 
@@ -26,51 +27,78 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   // Состояние для бронирования
   const [showBookingModal, setShowBookingModal] = useState(false);
   
-  // Mock recenze pro mistra
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: "1",
-      userId: "1",
-      userName: "Marie Krásná",
-      rating: 5,
-      comment: "Výborná práce! Kateřina je velmi zkušená a pečlivá. Určitě se vrátím.",
-      date: "2024-01-12T16:45:00Z",
-      masterId: master.id
-    },
-    {
-      id: "2",
-      userId: "2",
-      userName: "Jana Svobodová",
-      rating: 4,
-      comment: "Kvalitní služby za rozumnou cenu. Doporučuji!",
-      date: "2024-01-08T11:20:00Z",
-      masterId: master.id
-    }
-  ]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  useEffect(() => {
+    (async () => {
+      const data = await reviewService.getByMaster(master.id);
+      setReviews(data);
+    })();
+  }, [master.id]);
 
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
 
-  const handleAddReview = (newReview: Omit<Review, 'id'>) => {
-    const review: Review = {
-      ...newReview,
-      id: (Math.max(...reviews.map(r => parseInt(r.id))) + 1).toString(),
-    };
-    setReviews([...reviews, review]);
+  const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
+    const id = await reviewService.create(newReview);
+    const updated = await reviewService.getByMaster(master.id);
+    setReviews(updated);
   };
 
   // Initialize map
   useEffect(() => {
-    const initMap = () => {
+    const initMap = async () => {
       if (typeof window !== 'undefined' && window.L) {
         const mapElement = document.getElementById('master-detail-map');
         if (!mapElement) return;
 
         // Check if map is already initialized
         if (mapElement.hasChildNodes()) return;
+        const el = mapElement as HTMLDivElement;
+        if (!el.offsetWidth || !el.offsetHeight) {
+          setTimeout(initMap, 100);
+          return;
+        }
 
         try {
-          const coordinates = master.coordinates || { lat: 50.0755, lng: 14.4378 }; // Default to Prague
+          // Отладочная информация
+          console.log('Master data for map:', {
+            name: master.name,
+            address: master.address,
+            city: master.city,
+            coordinates: master.coordinates,
+            isFreelancer: master.isFreelancer
+          });
+          
+          let coordinates = master.coordinates;
+          
+          // Если координат нет, но есть адрес - попробуем геокодировать
+          if (!coordinates && master.address && master.city) {
+            try {
+              const { geocodeAddress } = await import('../utils/geocoding');
+              // Пробуем только полный адрес для скорости
+              const geocoded = await geocodeAddress(`${master.address}, ${master.city}`);
+              if (geocoded) {
+                coordinates = geocoded;
+                console.log('Successfully geocoded master:', geocoded);
+              }
+            } catch (error) {
+              console.log('Geocoding failed for master:', error);
+            }
+          }
+          
+          // Если всё ещё нет координат, используем центр города
+          if (!coordinates) {
+            const cityCoords: { [key: string]: { lat: number; lng: number } } = {
+              'Prague': { lat: 50.0755, lng: 14.4378 },
+              'Brno': { lat: 49.1951, lng: 16.6068 },
+              'Ostrava': { lat: 49.8206, lng: 18.2625 },
+              'Plzen': { lat: 49.7475, lng: 13.3776 },
+              'Liberec': { lat: 50.7671, lng: 15.0562 },
+              'Olomouc': { lat: 49.5938, lng: 17.2509 }
+            };
+            coordinates = cityCoords[master.city || 'Prague'] || { lat: 50.0755, lng: 14.4378 };
+            console.log('Using city center coordinates:', coordinates);
+          }
           
           const mapInstance = window.L.map('master-detail-map').setView([coordinates.lat, coordinates.lng], 15);
           
@@ -89,11 +117,14 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${master.name}</h3>
               <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salonInfo}</p>
-              <p style="margin: 0; color: #888; font-size: 12px;">${master.address}</p>
+              <p style="margin: 0; color: #888; font-size: 12px;">${master.address}${master.address ? ', ' : ''}${master.city === 'Prague' ? 'Praha' : master.city}</p>
             </div>
           `);
 
           setMap(mapInstance);
+          setTimeout(() => {
+            try { mapInstance.invalidateSize(); } catch {}
+          }, 0);
           setMarker(markerInstance);
         } catch (error) {
           console.error('Error initializing map:', error);
@@ -103,7 +134,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
 
     // Wait for both Leaflet and DOM element to be ready
     const checkAndInit = () => {
-      if (typeof window !== 'undefined' && window.L && document.getElementById('master-detail-map')) {
+      const el = document.getElementById('master-detail-map') as HTMLDivElement | null;
+      if (typeof window !== 'undefined' && window.L && el && el.offsetWidth && el.offsetHeight) {
         initMap();
       } else {
         setTimeout(checkAndInit, 100);
@@ -115,7 +147,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     // Cleanup function
     return () => {
       if (map) {
-        map.remove();
+        try { map.remove(); } catch {}
       }
     };
   }, [master, language, map]);
@@ -173,7 +205,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           <h3>{t.contact}</h3>
           <p>📞 {master.phone}</p>
           <p>✉️ {master.email}</p>
-          <p>📍 {master.address}, {master.city === 'Prague' ? 'Praha' : master.city}</p>
+          <p>📍 {master.address}{master.address ? ', ' : ''}{master.city === 'Prague' ? 'Praha' : master.city}</p>
           {master.languages && master.languages.length > 0 && (
             <div className="languages-in-contact">
               <p>🌐 <strong>{language === 'cs' ? 'Jazyky:' : 'Languages:'}</strong> {translateLanguages(master.languages, language).join(', ')}</p>

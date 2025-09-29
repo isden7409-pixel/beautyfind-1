@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { MasterRegistration, Language } from '../types';
+import { MasterRegistration, Language, StructuredAddress, Salon } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
+import WorkingHoursInput from './WorkingHoursInput';
+import StructuredAddressInput from './StructuredAddressInput';
 import { masterService } from '../firebase/services';
 
 // Список всех чешских городов
@@ -67,7 +69,7 @@ interface MasterRegistrationFormProps {
   translations: any;
   onSubmit: (data: MasterRegistration) => void;
   onCancel: () => void;
-  salons?: Array<{ id: number; name: string; }>;
+  salons?: Salon[];
 }
 
 const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
@@ -89,7 +91,9 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     photo: new File([], ''),
     isFreelancer: true,
     city: '',
-    address: ''
+    address: '',
+    structuredAddress: undefined,
+    workingHours: undefined
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -195,7 +199,9 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         photo: new File([], ''),
         isFreelancer: true,
         city: '',
-        address: ''
+        address: '',
+        structuredAddress: undefined,
+        workingHours: undefined
       });
       setSelectedServices([]);
       setSelectedLanguages([]);
@@ -286,70 +292,129 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         </div>
 
         <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="isFreelancer"
-              checked={formData.isFreelancer}
-              onChange={handleInputChange}
-            />
-            <span className="checkbox-text">{t.freelancer}</span>
-          </label>
+          <div className="work-type-selection">
+            <div className="work-type-option">
+              <input
+                type="radio"
+                name="workType"
+                value="freelancer"
+                checked={formData.isFreelancer}
+                onChange={() => setFormData(prev => ({ ...prev, isFreelancer: true, salonId: undefined }))}
+                id="freelancer"
+              />
+              <label htmlFor="freelancer" className="work-type-label">{t.freelancer}</label>
+            </div>
+            <div className="work-type-option">
+              <input
+                type="radio"
+                name="workType"
+                value="salon"
+                checked={!formData.isFreelancer}
+                onChange={() => setFormData(prev => ({ ...prev, isFreelancer: false }))}
+                id="salon"
+              />
+              <label htmlFor="salon" className="work-type-label">{language === 'cs' ? 'Pracuje v salonu' : 'Works in salon'}</label>
+            </div>
+          </div>
         </div>
 
         {formData.isFreelancer ? (
-          <div className="form-row">
+          <>
+          <div className="form-group city-field">
+            <label htmlFor="city">{t.city} *</label>
+            <select
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              required
+              className="form-select"
+            >
+              <option value="">{t.selectCity}</option>
+              {CZECH_CITIES.map(city => (
+                <option key={city.value} value={city.value}>
+                  {city.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+            <div className="form-group address-group">
+              <StructuredAddressInput
+                language={language}
+                translations={translations}
+                value={formData.structuredAddress}
+                city={formData.city}
+                onChange={(structuredAddress) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    structuredAddress,
+                    address: structuredAddress?.fullAddress || ''
+                  }));
+                }}
+                required
+              />
+            </div>
+          </>
+        ) : (
+          <div>
             <div className="form-group">
-              <label htmlFor="city">{t.city} *</label>
+              <label htmlFor="salonId">{t.salon}</label>
               <select
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
+                id="salonId"
+                name="salonId"
+                value={formData.salonId || ''}
+                onChange={(e) => {
+                  const selectedSalonId = e.target.value;
+                  const selectedSalon = salons.find(s => s.id === selectedSalonId);
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    salonId: selectedSalonId,
+                    // Автоматически копируем адрес салона
+                    address: selectedSalon?.address || '',
+                    city: selectedSalon?.city || '',
+                    structuredAddress: selectedSalon?.structuredAddress
+                  }));
+                }}
                 required
                 className="form-select"
               >
-                <option value="">{t.selectCity}</option>
-                {CZECH_CITIES.map(city => (
-                  <option key={city.value} value={city.value}>
-                    {city.label}
+                <option value="">{t.selectSalon} *</option>
+                {salons.map(salon => (
+                  <option key={salon.id} value={salon.id}>
+                    {salon.name} - {salon.address}, {salon.city}
                   </option>
                 ))}
               </select>
             </div>
-
-            <div className="form-group">
-              <label htmlFor="address">{t.address} *</label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-                className="form-input"
-                placeholder="Např. Domácí salon, Vinohrady"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="form-group">
-            <label htmlFor="salonId">{t.salon} *</label>
-            <select
-              id="salonId"
-              name="salonId"
-              value={formData.salonId || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, salonId: e.target.value }))}
-              required
-              className="form-select"
-            >
-              <option value="">{t.selectSalon}</option>
-              {salons.map(salon => (
-                <option key={salon.id} value={salon.id}>{salon.name}</option>
-              ))}
-            </select>
+            
+            {formData.salonId && (
+              <div className="salon-info">
+                <h4>{language === 'cs' ? 'Informace o salonu' : 'Salon Information'}</h4>
+                {(() => {
+                  const selectedSalon = salons.find(s => s.id === formData.salonId);
+                  return selectedSalon ? (
+                    <div className="salon-details">
+                      <p><strong>{language === 'cs' ? 'Název:' : 'Name:'}</strong> {selectedSalon.name}</p>
+                      <p><strong>{language === 'cs' ? 'Adresa:' : 'Address:'}</strong> {selectedSalon.address}, {selectedSalon.city}</p>
+                      <p><strong>{language === 'cs' ? 'Telefon:' : 'Phone:'}</strong> {selectedSalon.phone}</p>
+                      <p><strong>{language === 'cs' ? 'Email:' : 'Email:'}</strong> {selectedSalon.email}</p>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            )}
           </div>
         )}
+
+        <div className="form-group">
+          <label htmlFor="openHours">{t.openHours} *</label>
+          <WorkingHoursInput
+            language={language}
+            value={formData.workingHours || []}
+            onChange={(wh) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+          />
+        </div>
 
         <div className="form-group">
           <label htmlFor="description">{t.description} *</label>
@@ -415,7 +480,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           <p className="form-help">{t.photoHelp}</p>
         </div>
 
-        <div className="form-actions">
+        <div className="form-buttons">
           <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t.cancel}
           </button>

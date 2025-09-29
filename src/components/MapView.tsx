@@ -125,7 +125,7 @@ const MapView: React.FC<MapViewProps> = ({
                   />
                   <h3>{salon.name}</h3>
                   <p className="popup-address">
-                    📍 {salon.address}, {salon.city === 'Prague' ? 'Praha' : salon.city}
+                    📍 {salon.address}
                   </p>
                   <p className="popup-rating">
                     ⭐ {salon.rating} ({salon.reviews} {t.reviews})

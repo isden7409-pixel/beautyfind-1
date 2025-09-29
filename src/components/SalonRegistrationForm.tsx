@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { SalonRegistration, Language } from '../types';
+import { SalonRegistration, Language, StructuredAddress } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
+import WorkingHoursInput from './WorkingHoursInput';
+import StructuredAddressInput from './StructuredAddressInput';
 import { salonService } from '../firebase/services';
 
 // Список всех чешских городов
@@ -79,11 +81,13 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     name: '',
     city: '',
     address: '',
+    structuredAddress: undefined,
     phone: '',
     email: '',
     website: '',
     description: '',
     openHours: '',
+    workingHours: undefined,
     services: [],
     photos: []
   });
@@ -154,11 +158,13 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         name: '',
         city: '',
         address: '',
+        structuredAddress: undefined,
         phone: '',
         email: '',
         website: '',
         description: '',
         openHours: '',
+        workingHours: undefined,
         services: [],
         photos: []
       });
@@ -190,38 +196,49 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           />
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="city">{t.city} *</label>
-            <select
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              required
-              className="form-select"
-            >
-              <option value="">{t.selectCity}</option>
-              {CZECH_CITIES.map(city => (
-                <option key={city.value} value={city.value}>
-                  {city.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="form-group city-field">
+          <label htmlFor="city">{t.city} *</label>
+          <select
+            id="city"
+            name="city"
+            value={formData.city}
+            onChange={handleInputChange}
+            required
+            className="form-select"
+          >
+            <option value="">{t.selectCity}</option>
+            {CZECH_CITIES.map(city => (
+              <option key={city.value} value={city.value}>
+                {city.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="address">{t.address} *</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-            />
-          </div>
+        <div className="form-group address-group">
+          <StructuredAddressInput
+            language={language}
+            translations={translations}
+            value={formData.structuredAddress}
+            city={formData.city}
+            onChange={(structuredAddress) => {
+              setFormData(prev => ({
+                ...prev,
+                structuredAddress,
+                address: structuredAddress?.fullAddress || ''
+              }));
+            }}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="openHours">{t.openHours} *</label>
+          <WorkingHoursInput
+            language={language}
+            value={formData.workingHours || []}
+            onChange={(wh) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+          />
         </div>
 
         <div className="form-row">
@@ -265,19 +282,6 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="openHours">{t.openHours} *</label>
-          <input
-            type="text"
-            id="openHours"
-            name="openHours"
-            value={formData.openHours}
-            onChange={handleInputChange}
-            required
-            className="form-input"
-            placeholder={t.openHoursPlaceholder}
-          />
-        </div>
 
         <div className="form-group">
           <label htmlFor="description">{t.description} *</label>
@@ -326,7 +330,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           <p className="form-help">{t.photosHelp}</p>
         </div>
 
-        <div className="form-actions">
+        <div className="form-buttons">
           <button type="button" onClick={onCancel} className="btn btn-secondary">
             {t.cancel}
           </button>

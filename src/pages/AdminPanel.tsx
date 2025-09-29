@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SalonRegistration, MasterRegistration, Language } from '../types';
 import SalonRegistrationForm from '../components/SalonRegistrationForm';
 import MasterRegistrationForm from '../components/MasterRegistrationForm';
+import { useSalons } from '../hooks/useData';
 
 interface AdminPanelProps {
   language: Language;
@@ -16,16 +17,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'salon' | 'master'>('salon');
   const [showForm, setShowForm] = useState(false);
+  const { salons } = useSalons();
 
   const t = translations[language];
 
-  // Mock data salonů pro výběr ve formuláři mistra
-  const mockSalons = [
-    { id: 1, name: "Elegance Beauty Prague" },
-    { id: 2, name: "Glamour Studio Brno" },
-    { id: 3, name: "Nail Art Prague" },
-    { id: 4, name: "Hair Paradise Brno" }
-  ];
 
   const handleSalonSubmit = (data: SalonRegistration) => {
     console.log('Salon registration data:', data);
@@ -68,7 +63,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             translations={translations}
             onSubmit={handleMasterSubmit}
             onCancel={handleCancel}
-            salons={mockSalons}
+            salons={salons}
           />
         )}
       </div>

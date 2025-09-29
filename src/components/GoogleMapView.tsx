@@ -239,7 +239,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
                 <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
                 <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${salon.name}</h3>
                 <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">
-                  📍 ${salon.address}, ${salon.city === 'Prague' ? 'Praha' : salon.city}
+                  📍 ${salon.address}
                 </p>
                 <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
                   ⭐ ${salon.rating} (${salon.reviews} ${t.reviews})

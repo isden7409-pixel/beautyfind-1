@@ -1,9 +1,20 @@
+// Структурированный адрес для Чехии
+export interface StructuredAddress {
+  street: string; // název ulice
+  houseNumber: string; // číslo popisné
+  orientationNumber?: string; // číslo orientační (opcionalne)
+  postalCode: string; // PSČ
+  city: string; // město
+  fullAddress: string; // полный адрес для отображения
+}
+
 // Типы для салонов красоты
 export interface Salon {
   id: string;
   name: string;
   city: string;
-  address: string;
+  address: string; // для обратной совместимости
+  structuredAddress?: StructuredAddress; // новый структурированный адрес
   services: string[];
   rating: number;
   reviews: number;
@@ -40,7 +51,8 @@ export interface Master {
   worksInSalon: boolean;
   isFreelancer: boolean;
   city?: string;
-  address?: string;
+  address?: string; // для обратной совместимости
+  structuredAddress?: StructuredAddress; // новый структурированный адрес
   description?: string;
   phone?: string;
   email?: string;
@@ -88,12 +100,14 @@ export interface User {
 export interface SalonRegistration {
   name: string;
   city: string;
-  address: string;
+  address: string; // для обратной совместимости
+  structuredAddress?: StructuredAddress; // новый структурированный адрес
   phone: string;
   email: string;
   website?: string;
   description: string;
   openHours: string;
+  workingHours?: WorkingHours[];
   services: string[];
   photos: File[];
 }
@@ -112,7 +126,9 @@ export interface MasterRegistration {
   isFreelancer: boolean;
   salonId?: string;
   city?: string;
-  address?: string;
+  address?: string; // для обратной совместимости
+  structuredAddress?: StructuredAddress; // новый структурированный адрес
+  workingHours?: WorkingHours[];
 }
 
 // Типы для поиска и фильтров

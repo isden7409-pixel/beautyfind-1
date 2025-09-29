@@ -1,6 +1,7 @@
 import React from 'react';
 import { Master, Language } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
+import { useReviewSummary } from '../hooks/useReviewSummary';
 
 interface MasterCardProps {
   master: Master;
@@ -18,6 +19,7 @@ const MasterCard: React.FC<MasterCardProps> = ({
   onSalonSelect,
 }) => {
   const t = translations[language];
+  const { count, average } = useReviewSummary('master', master.id);
 
   return (
     <div className="master-card-main" onClick={() => onViewDetails(master)}>
@@ -65,7 +67,7 @@ const MasterCard: React.FC<MasterCardProps> = ({
           </div>
         )}
         <div className="master-rating-main">
-          ⭐ {master.rating} ({master.reviews} {t.reviews})
+          ⭐ {average} ({count} {t.reviews})
         </div>
         <button className="view-details-btn">{t.viewDetails}</button>
       </div>

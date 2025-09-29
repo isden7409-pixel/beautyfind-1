@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Salon, Master, Language, Review, Booking } from '../types';
 import ReviewsSection from '../components/ReviewsSection';
+import { reviewService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 
@@ -21,27 +22,16 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 }) => {
   const t = translations[language];
   
-  // Моковые отзывы для салона
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: "1",
-      userId: "1",
-      userName: "Anna Nováková",
-      rating: 5,
-      comment: "Výborný salon s profesionálním přístupem. Manikúra byla perfektní a personál velmi milý.",
-      date: "2024-01-15T10:30:00Z",
-      salonId: salon.id
-    },
-    {
-      id: "2",
-      userId: "2",
-      userName: "Petra Svobodová",
-      rating: 4,
-      comment: "Krásný interiér a kvalitní služby. Jediné mínus je delší čekací doba.",
-      date: "2024-01-10T14:20:00Z",
-      salonId: salon.id
-    }
-  ]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  useEffect(() => {
+    (async () => {
+      const data = await reviewService.getBySalon(salon.id);
+      setReviews(data);
+    })();
+  }, [salon.id]);
+
+  const reviewsCount = reviews.length;
+  const averageRating = reviewsCount > 0 ? Number((reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviewsCount).toFixed(1)) : 0;
 
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
@@ -49,12 +39,10 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   
   console.log('SalonDetailPage render, showBookingModal:', showBookingModal);
 
-  const handleAddReview = (newReview: Omit<Review, 'id'>) => {
-    const review: Review = {
-      ...newReview,
-      id: (Math.max(...reviews.map(r => parseInt(r.id))) + 1).toString(),
-    };
-    setReviews([...reviews, review]);
+  const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
+    const id = await reviewService.create(newReview);
+    const updated = await reviewService.getBySalon(salon.id);
+    setReviews(updated);
   };
 
   const handleBookingClick = (e: React.MouseEvent) => {
@@ -77,16 +65,49 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   // Initialize map
   useEffect(() => {
-    const initMap = () => {
+    const initMap = async () => {
       if (typeof window !== 'undefined' && window.L) {
         const mapElement = document.getElementById('salon-detail-map');
         if (!mapElement) return;
 
         // Check if map is already initialized
-        if (mapElement.hasChildNodes()) return;
+        if (mapElement.hasChildNodes() || (mapElement as any)._leaflet_id) return;
+        // Avoid initializing on hidden/zero-size container
+        const el = mapElement as HTMLDivElement;
+        if (!el.offsetWidth || !el.offsetHeight) {
+          setTimeout(initMap, 100);
+          return;
+        }
 
         try {
-          const coordinates = salon.coordinates || { lat: 50.0755, lng: 14.4378 }; // Default to Prague
+          // Попробуем получить координаты: 1) сохраненные 2) геокодирование адреса 3) центр города
+          let coordinates = salon.coordinates as any;
+          console.log('Salon coordinates from DB:', coordinates);
+          
+          if (!coordinates && salon.address && salon.city) {
+            try {
+              const { geocodeAddress } = await import('../utils/geocoding');
+              // Пробуем только полный адрес для скорости
+              const geocoded = await geocodeAddress(salon.address);
+              if (geocoded) {
+                coordinates = geocoded;
+                console.log('Successfully geocoded salon:', geocoded);
+              }
+            } catch (error) {
+              console.log('Geocoding error:', error);
+            }
+          }
+          if (!coordinates) {
+            const cityCoords: { [key: string]: { lat: number; lng: number } } = {
+              'Prague': { lat: 50.0755, lng: 14.4378 },
+              'Brno': { lat: 49.1951, lng: 16.6068 },
+              'Ostrava': { lat: 49.8206, lng: 18.2625 },
+              'Plzen': { lat: 49.7475, lng: 13.3776 },
+              'Liberec': { lat: 50.7671, lng: 15.0562 },
+              'Olomouc': { lat: 49.5938, lng: 17.2509 }
+            };
+            coordinates = cityCoords[salon.city || 'Prague'] || { lat: 50.0755, lng: 14.4378 };
+          }
           
           const mapInstance = window.L.map('salon-detail-map').setView([coordinates.lat, coordinates.lng], 15);
           
@@ -100,12 +121,15 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           markerInstance.bindPopup(`
             <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${salon.name}</h3>
-              <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salon.address}</p>
-              <p style="margin: 0; color: #888; font-size: 12px;">${salon.city === 'Prague' ? 'Praha' : salon.city}</p>
+              <p style="margin: 0; color: #666; font-size: 14px;">${salon.address}</p>
             </div>
           `);
 
           setMap(mapInstance);
+          // ensure proper sizing after render
+          setTimeout(() => {
+            try { mapInstance.invalidateSize(); } catch {}
+          }, 0);
           setMarker(markerInstance);
         } catch (error) {
           console.error('Error initializing map:', error);
@@ -115,7 +139,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
     // Wait for both Leaflet and DOM element to be ready
     const checkAndInit = () => {
-      if (typeof window !== 'undefined' && window.L && document.getElementById('salon-detail-map')) {
+      const el = document.getElementById('salon-detail-map') as HTMLDivElement | null;
+      if (typeof window !== 'undefined' && window.L && el && el.offsetWidth && el.offsetHeight) {
         initMap();
       } else {
         setTimeout(checkAndInit, 100);
@@ -127,7 +152,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
     // Cleanup function
     return () => {
       if (map) {
-        map.remove();
+        try { map.remove(); } catch {}
       }
     };
   }, [salon, map]);
@@ -156,10 +181,10 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           <h1>{salon.name}</h1>
           <div className="salon-meta">
             <span className="rating">
-              ⭐ {salon.rating} ({salon.reviews} {t.reviews})
+              ⭐ {averageRating} ({reviewsCount} {t.reviews})
             </span>
             <span className="address">
-              📍 {salon.address}, {salon.city === 'Prague' ? 'Praha' : salon.city}
+              📍 {salon.address}
             </span>
           </div>
           <p className="description">{salon.description}</p>

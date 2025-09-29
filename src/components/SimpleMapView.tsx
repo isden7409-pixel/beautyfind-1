@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Salon, Master, Language, SearchFilters } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
+import { geocodeAddress, geocodeStructuredAddress } from '../utils/geocoding';
 
 interface SimpleMapViewProps {
   salons: Salon[];
@@ -27,8 +28,80 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
   const [map, setMap] = useState<any>(null);
   const [markers, setMarkers] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [geoSalons, setGeoSalons] = useState<Salon[]>([]);
+  const [geoMasters, setGeoMasters] = useState<Master[]>([]);
 
   const t = translations[language];
+  // Геокодируем элементы без координат (с задержкой между запросами)
+  useEffect(() => {
+    (async () => {
+      // Собираем всех мастеров: фрилансеры + мастера из салонов
+      const allMasters = [
+        ...masters.filter(m => m.isFreelancer), // Только фрилансеры из отдельной коллекции
+        ...salons.flatMap(salon => 
+          salon.masters.map(master => ({
+            ...master,
+            salonName: salon.name,
+            salonId: salon.id,
+            city: salon.city,
+            address: salon.address,
+            coordinates: salon.coordinates,
+            structuredAddress: salon.structuredAddress
+          }))
+        ) // Мастера из салонов
+      ];
+      
+      // Сначала показываем элементы с существующими координатами
+      setGeoSalons(salons);
+      setGeoMasters(allMasters);
+      
+      // Затем постепенно геокодируем остальные
+      const enrichSalons = [...salons];
+      const enrichMasters = [...allMasters];
+      
+      // Геокодируем салоны с задержкой
+      for (let i = 0; i < salons.length; i++) {
+        const s = salons[i];
+        if (!s.coordinates && s.address) {
+          // Приоритет структурированному адресу
+          let coords = undefined;
+          if (s.structuredAddress) {
+            coords = await geocodeStructuredAddress(s.structuredAddress);
+          } else {
+            coords = await geocodeAddress(`${s.address}${s.city ? ', ' + s.city : ''}`);
+          }
+          
+          if (coords) {
+            enrichSalons[i] = { ...s, coordinates: coords } as Salon;
+            setGeoSalons([...enrichSalons]);
+          }
+          // Задержка между запросами
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+      
+      // Геокодируем мастеров с задержкой
+      for (let i = 0; i < allMasters.length; i++) {
+        const m = allMasters[i];
+        if (!m.coordinates && m.address) {
+          // Приоритет структурированному адресу
+          let coords = undefined;
+          if (m.structuredAddress) {
+            coords = await geocodeStructuredAddress(m.structuredAddress);
+          } else {
+            coords = await geocodeAddress(`${m.address}${m.city ? ', ' + m.city : ''}`);
+          }
+          
+          if (coords) {
+            enrichMasters[i] = { ...m, coordinates: coords } as Master;
+            setGeoMasters([...enrichMasters]);
+          }
+          // Задержка между запросами
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+    })();
+  }, [salons, masters]);
 
   // Функция для получения координат города
   const getCityCoordinates = (city: string) => {
@@ -144,29 +217,53 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
 
         // Защита от повторной инициализации при HMR/повторном монтировании
         const container: any = mapRef.current;
+        // Убедимся, что контейнер уже имеет размеры
+        if (!container.offsetWidth || !container.offsetHeight) {
+          setTimeout(() => {
+            // повторная попытка, если компонент всё ещё в DOM
+            if (mapRef.current) {
+              const evt = new Event('resize');
+              window.dispatchEvent(evt);
+            }
+          }, 100);
+          return;
+        }
+        // Если карта уже инициализирована Leaflet-ом, не пересоздаём её
         if (container._leaflet_id) {
-          try {
-            // Если внезапно осталась ссылка на старую карту — удалим её
-            if (createdMap && createdMap.remove) createdMap.remove();
-          } catch {}
-          container._leaflet_id = undefined;
-          container.innerHTML = '';
+          setIsLoaded(true);
+          return;
         }
 
-        createdMap = L.map(container).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
+        createdMap = L.map(container, { tap: false }).setView([initialCenter.lat, initialCenter.lng], initialCenter.zoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(createdMap);
 
+        // Явно включаем интерактивность на случай, если Leaflet её отключил
+        try {
+          createdMap.dragging.enable();
+          createdMap.scrollWheelZoom.enable();
+          createdMap.doubleClickZoom.enable();
+          createdMap.boxZoom.enable();
+          createdMap.keyboard.enable();
+        } catch {}
+
         setMap(createdMap);
+        // На всякий случай скорректировать размер после рендера
+        setTimeout(() => {
+          try { createdMap.invalidateSize(); } catch {}
+        }, 0);
         setIsLoaded(true);
       }
     });
 
     return () => {
       if (createdMap) {
-        createdMap.remove();
+        try {
+          createdMap.off();
+          createdMap.remove();
+        } catch {}
         createdMap = null;
       }
     };
@@ -179,9 +276,36 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
     markers.forEach(marker => map.removeLayer(marker));
     const newMarkers: any[] = [];
 
+    const translateCity = (city?: string) => {
+      const map: Record<string, string> = {
+        Prague: 'Praha',
+        Brno: 'Brno',
+        Ostrava: 'Ostrava',
+        Plzen: 'Plzeň',
+        Liberec: 'Liberec',
+        Olomouc: 'Olomouc',
+        Budweis: 'České Budějovice',
+        Hradec: 'Hradec Králové',
+        Pardubice: 'Pardubice',
+        Zlín: 'Zlín',
+      };
+      return city && map[city] ? map[city] : (city || '');
+    };
+
     if (selectedType === 'salons') {
-      salons.forEach((salon) => {
+      geoSalons.forEach((salon) => {
+        // Вычисляем координаты: сначала точные, затем центр города как фолбэк
+        let lat: number | null = null;
+        let lng: number | null = null;
         if (salon.coordinates) {
+          lat = salon.coordinates.lat;
+          lng = salon.coordinates.lng;
+        } else if (salon.city) {
+          const c = getCityCoordinates(salon.city);
+          lat = c.lat;
+          lng = c.lng;
+        }
+        if (lat !== null && lng !== null) {
           const L = (window as any).L;
           
           // Создаем кастомную иконку для салона
@@ -211,7 +335,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             popupAnchor: [0, -20]
           });
           
-          const marker = L.marker([salon.coordinates.lat, salon.coordinates.lng], { icon: salonIcon })
+          const marker = L.marker([lat, lng], { icon: salonIcon })
             .addTo(map);
           
           // Добавляем отладочную информацию
@@ -231,7 +355,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${salon.name}</h3>
                   <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center;">
                     <span style="margin-right: 6px;">📍</span>
-                    <span>${salon.address}, ${salon.city === 'Prague' ? 'Praha' : salon.city}</span>
+                    <span>${salon.address || ''}, ${translateCity(salon.city)}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px;">
                     ${translateServices(salon.services, language).slice(0, 3).map(service => 
@@ -273,8 +397,19 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
         }
       });
     } else if (selectedType === 'masters') {
-      masters.forEach((master) => {
+      geoMasters.forEach((master) => {
+        // Вычислим координаты: сначала точные, затем центр города как фолбэк
+        let lat: number | null = null;
+        let lng: number | null = null;
         if (master.coordinates) {
+          lat = master.coordinates.lat;
+          lng = master.coordinates.lng;
+        } else if (master.city) {
+          const c = getCityCoordinates(master.city);
+          lat = c.lat;
+          lng = c.lng;
+        }
+        if (lat !== null && lng !== null) {
           const L = (window as any).L;
           
           // Создаем кастомную иконку для мастера
@@ -304,7 +439,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             popupAnchor: [0, -17.5]
           });
           
-          const marker = L.marker([master.coordinates.lat, master.coordinates.lng], { icon: masterIcon })
+          const marker = L.marker([lat, lng], { icon: masterIcon })
             .addTo(map);
           
           // Добавляем отладочную информацию
@@ -324,7 +459,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3; text-align: center;">${master.name}</h3>
                   <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center; justify-content: center;">
                     <span style="margin-right: 6px;">📍</span>
-                    <span>${master.address}, ${master.city === 'Prague' ? 'Praha' : master.city}</span>
+                    <span>${master.address || ''}, ${translateCity(master.city)}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px;">
                     <span style="margin-right: 6px;">⏱️</span>
@@ -417,7 +552,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       if (master) onMasterSelect(master);
     };
 
-  }, [map, isLoaded, salons, masters, selectedType, t, onSalonSelect, onMasterSelect, language]);
+  }, [map, isLoaded, geoSalons, geoMasters, selectedType, t, onSalonSelect, onMasterSelect, language]);
 
   return (
     <div className="map-container">

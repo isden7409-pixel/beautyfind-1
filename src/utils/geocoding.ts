@@ -1,5 +1,8 @@
 // Утилиты для геокодирования адресов в координаты
 
+import { StructuredAddress } from '../types';
+import { createGeocodingAddress } from './addressUtils';
+
 export interface Coordinates {
   lat: number;
   lng: number;
@@ -7,6 +10,14 @@ export interface Coordinates {
 
 // Кэш для хранения уже геокодированных адресов
 const geocodingCache = new Map<string, Coordinates>();
+
+// Функция для геокодирования структурированного адреса
+export async function geocodeStructuredAddress(structuredAddress: StructuredAddress): Promise<Coordinates | null> {
+  const geocodingAddress = createGeocodingAddress(structuredAddress);
+  console.log(`geocodeStructuredAddress вызвана с адресом: ${geocodingAddress}`);
+  
+  return await geocodeAddress(geocodingAddress);
+}
 
 // Функция для геокодирования адреса
 export async function geocodeAddress(address: string): Promise<Coordinates | null> {

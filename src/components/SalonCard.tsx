@@ -1,6 +1,7 @@
 import React from 'react';
 import { Salon, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
+import { useReviewSummary } from '../hooks/useReviewSummary';
 
 interface SalonCardProps {
   salon: Salon;
@@ -16,6 +17,7 @@ const SalonCard: React.FC<SalonCardProps> = ({
   onViewDetails,
 }) => {
   const t = translations[language];
+  const { count, average } = useReviewSummary('salon', salon.id);
 
   return (
     <div 
@@ -29,10 +31,10 @@ const SalonCard: React.FC<SalonCardProps> = ({
       <div className="salon-info">
         <h3>{salon.name}</h3>
         <p className="salon-address">
-          {t.address} {salon.address}, {salon.city === 'Prague' ? 'Praha' : salon.city}
+          {t.address}: {salon.address}
         </p>
         <div className="salon-rating">
-          {t.rating} {salon.rating} ({salon.reviews} {t.reviews})
+          ⭐ {average} ({count} {t.reviews})
         </div>
         <div className="salon-services">
           {translateServices(salon.services, language).map(service => (
