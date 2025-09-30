@@ -1,6 +1,7 @@
 import React from 'react';
 import { Salon, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
+import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
 
 interface SalonCardProps {
@@ -18,6 +19,9 @@ const SalonCard: React.FC<SalonCardProps> = ({
 }) => {
   const t = translations[language];
   const { count, average } = useReviewSummary('salon', salon.id);
+  const displayAddress = salon.structuredAddress
+    ? formatStructuredAddressCzech(salon.structuredAddress)
+    : translateAddressToCzech(salon.address || '', salon.city);
 
   return (
     <div 
@@ -30,9 +34,11 @@ const SalonCard: React.FC<SalonCardProps> = ({
       <img src={salon.image} alt={salon.name} className="salon-image" />
       <div className="salon-info">
         <h3>{salon.name}</h3>
-        <p className="salon-address">
-          {t.address}: {salon.address}
-        </p>
+        {displayAddress && (
+          <p className="salon-address">
+            📍 {t.address}: {displayAddress}
+          </p>
+        )}
         <div className="salon-rating">
           ⭐ {average} ({count} {t.reviews})
         </div>

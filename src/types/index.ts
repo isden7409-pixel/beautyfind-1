@@ -37,6 +37,7 @@ export interface Salon {
   availableServices?: Service[];
   unavailableDates?: string[];
   bookings?: Booking[];
+  byAppointment?: boolean;
 }
 
 // Typy pro mistry
@@ -72,6 +73,7 @@ export interface Master {
   bookingEnabled?: boolean;
   unavailableDates?: string[];
   bookings?: Booking[];
+  byAppointment?: boolean;
 }
 
 // Типы для отзывов
@@ -110,6 +112,7 @@ export interface SalonRegistration {
   workingHours?: WorkingHours[];
   services: string[];
   photos: File[];
+  byAppointment?: boolean;
 }
 
 // Typy pro mistra (registrace)
@@ -129,6 +132,7 @@ export interface MasterRegistration {
   address?: string; // для обратной совместимости
   structuredAddress?: StructuredAddress; // новый структурированный адрес
   workingHours?: WorkingHours[];
+  byAppointment?: boolean;
 }
 
 // Типы для поиска и фильтров

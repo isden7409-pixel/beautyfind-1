@@ -1,4 +1,5 @@
 import { StructuredAddress } from '../types';
+import { translateCityToCzech } from './cities';
 
 // Функция для создания полного адреса из структурированных данных
 export function createFullAddress(structuredAddress: StructuredAddress): string {
@@ -8,7 +9,7 @@ export function createFullAddress(structuredAddress: StructuredAddress): string 
   if (orientationNumber) {
     address += `/${orientationNumber}`;
   }
-  address += `, ${postalCode} ${city}`;
+  address += `, ${postalCode} ${translateCityToCzech(city)}`;
   
   return address;
 }

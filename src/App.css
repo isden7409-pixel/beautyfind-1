@@ -34,6 +34,20 @@
   font-weight: 500;
 }
 
+.address-preview.ok {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+}
+
+.address-preview.error {
+  background-color: #fdecec;
+  border-left-color: #e74c3c;
+}
+
+.address-preview.error p {
+  color: #b00020;
+}
+
 .form-errors {
   margin-top: 10px;
 }
@@ -89,7 +103,7 @@
 }
 
 /* Стили для информации о салоне в форме мастера */
-.salon-info {
+.admin-panel .salon-info {
   margin: 20px 0;
   padding: 15px;
   background-color: #f0f8ff;
@@ -97,20 +111,20 @@
   border-radius: 8px;
 }
 
-.salon-info h4 {
+.admin-panel .salon-info h4 {
   margin: 0 0 10px 0;
   color: #1976d2;
   font-size: 16px;
   font-weight: 600;
 }
 
-.salon-details p {
+.admin-panel .salon-details p {
   margin: 5px 0;
   color: #333;
   font-size: 14px;
 }
 
-.salon-details strong {
+.admin-panel .salon-details strong {
   color: #1976d2;
   font-weight: 600;
 }
@@ -134,7 +148,22 @@
 }
 
 .admin-panel .registration-form .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 2px; /* почти вплотную */
+}
+
+/* Более плотный отступ для группы выбора салона под переключателями */
+.form-group-tight {
+  margin-top: -18px;
+  margin-bottom: 54px;
+}
+
+/* Повышенная специфичность, чтобы переопределить правило .admin-panel .registration-form .form-group */
+.admin-panel .registration-form .form-group.form-group-tight {
+  margin-top: -14px;
+  margin-bottom: 26px; /* по требованию: 26px от Vyberte salon до Otevírací doba */
+}
+.form-group-tight label {
+  margin-bottom: 2px; /* минимизируем отступ под лейблом */
 }
 
 .admin-panel .registration-form .city-field {
@@ -147,6 +176,11 @@
   font-weight: 600;
   color: #333;
   font-size: 14px;
+}
+
+/* увеличиваем зазор между описанием и блоком услуг */
+.admin-panel .registration-form .description-group {
+  margin-bottom: 24px;
 }
 
 .admin-panel .registration-form .form-input,
@@ -212,7 +246,8 @@
 .work-type-selection {
   display: flex;
   gap: 20px;
-  margin-top: 10px;
+  margin-top: 6px; /* чуть ближе к предыдущей строке */
+  margin-bottom: 0; /* минимальный отступ вниз от переключателей */
 }
 
 .work-type-option {
@@ -226,6 +261,8 @@
   height: 18px;
   accent-color: #667eea;
   margin: 0;
+  position: relative;
+  top: -4px; /* поднято ещё на 1px */
 }
 
 .work-type-label {
@@ -278,7 +315,18 @@
 .working-hours-input {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 3px; /* ещё чуть меньше */
+}
+
+/* больший отступ после расписания до следующего блока (Popis) */
+.working-hours-group + .form-group {
+  margin-top: 24px; /* надёжно увеличиваем отступ после блока расписания */
+}
+
+/* Убираем внешние отступы у обёртки с чекбоксом, чтобы gap работал точно */
+.working-hours-input .form-group {
+  margin: 0;
+  padding: 0;
 }
 .wh-row {
   display: grid;
@@ -556,6 +604,30 @@ body {
   font-size: 0.9rem;
 }
 
+/* Единый вертикальный ритм в карточке мастера */
+.master-card-main .salon-address {
+  margin: 0 0 8px 0;
+}
+
+/* Убираем верхний margin у блока языков внутри карточки мастера, чтобы не удваивался отступ с адресом */
+.master-card-main .master-languages {
+  margin: 0 0 8px 0;
+}
+
+/* Ещё уменьшаем зазор между адресом и услугами внутри карточки мастера (вид список) */
+.master-card-main .master-services {
+  margin: 0 0 8px 0; /* единый отступ между блоками */
+  gap: 3px;
+}
+
+/* Компактнее плашки услуг именно в карточке мастера (список) */
+.master-card-main .service-tag-small {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  border-radius: 12px;
+}
+
 .salon-rating {
   color: #ff6b6b;
   font-weight: bold;
@@ -597,6 +669,8 @@ body {
   color: #333;
   text-align: left;
   position: relative;
+  display: flex;
+  flex-direction: column; /* чтобы кнопка была прижата вниз */
 }
 
 .master-card-main:hover {
@@ -618,11 +692,18 @@ body {
   font-size: 1.3rem;
 }
 
+/* Делаем контейнер информации растягиваемым, чтобы кнопка всегда внизу */
+.master-info-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .master-meta-main {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .master-type, .salon-name {
@@ -657,15 +738,15 @@ body {
 }
 
 .experience-main {
-  color: white;
-  margin: 5px 0;
+  color: #666; /* как у адреса */
+  margin: 0 0 8px 0; /* единый отступ */
   font-size: 0.9rem;
 }
 
 .master-rating-main {
   color: #ff6b6b;
   font-weight: bold;
-  margin: 10px 0;
+  margin: 0 0 15px 0; /* единый отступ сверху от услуг, фиксированный вниз до кнопки */
   font-size: 1rem;
 }
 
@@ -694,6 +775,11 @@ body {
   padding: 15px 20px;
   background: #f8f9fa;
   border-top: 1px solid #e9ecef;
+}
+
+/* Прижимаем кнопку внизу карточки мастера, как у салона */
+.master-card-main .view-details-btn {
+  margin-top: auto;
 }
 
 .salon-button-container .view-details-btn {
@@ -1063,8 +1149,56 @@ body {
 }
 
 .contact-info h3 {
-  color: #667eea;
+  color: #333; /* делаем чёрным как у Otevírací doba */
   margin-bottom: 15px;
+}
+
+/* Working hours display to look like contact rows */
+.working-hours-display .whd-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 6px;
+}
+
+/* By appointment toggle in working hours input */
+.wh-by-appointment {
+  display: inline-flex;
+  align-items: center; /* вертикальное выравнивание */
+  column-gap: 18px; /* увеличенный отступ между чекбоксом и текстом */
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.2;
+  margin-top: 18px; /* больше пространства от заголовка Otevírací doba */
+}
+
+.wh-by-appointment input[type="checkbox"] {
+  width: 16px; /* уменьшенный размер */
+  height: 16px;
+  margin: 0; /* убираем лишние отступы браузера */
+  position: relative;
+  top: -1px; /* слегка выше, чтобы совпадал с серединой текста */
+  vertical-align: middle;
+}
+
+/* Дополнительная страховка от плотного прилипания текста */
+.wh-by-appointment span {
+  margin-left: 6px;
+  font-weight: 400; /* не жирным */
+}
+
+.working-hours-display .whd-inline {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 1rem; /* как текст контактов */
+  color: #333;
+}
+
+.working-hours-display .whd-day {
+  font-weight: 600;
+}
+
+.working-hours-display .whd-time {
+  font-weight: 500;
 }
 
 .services-section {
@@ -1411,6 +1545,16 @@ body {
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.form-error {
+  background: #ffecec;
+  border: 1px solid #ffb3b3;
+  color: #c53030;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
 .form-file {

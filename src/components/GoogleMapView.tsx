@@ -297,7 +297,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
                 <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333; text-align: center;">${master.name}</h3>
                 <p style="margin: 0 0 5px 0; color: #666; font-size: 14px; text-align: center;">${translateSpecialty(master.specialty, language)}</p>
                 <p style="margin: 0 0 5px 0; color: #666; font-size: 14px;">
-                  📍 ${master.address}, ${master.city === 'Prague' ? 'Praha' : master.city}
+                  📍 ${master.address}${master.address ? ', ' : ''}${require('../utils/cities').translateCityToCzech(master.city)}
                 </p>
                 <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
                   ⭐ ${master.rating} (${master.reviews} ${t.reviews})

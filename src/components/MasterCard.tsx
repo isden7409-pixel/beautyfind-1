@@ -1,6 +1,7 @@
 import React from 'react';
 import { Master, Language } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
+import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
 
 interface MasterCardProps {
@@ -20,6 +21,9 @@ const MasterCard: React.FC<MasterCardProps> = ({
 }) => {
   const t = translations[language];
   const { count, average } = useReviewSummary('master', master.id);
+  const displayAddress = master.structuredAddress
+    ? formatStructuredAddressCzech(master.structuredAddress)
+    : translateAddressToCzech(master.address || '', master.city);
 
   return (
     <div className="master-card-main" onClick={() => onViewDetails(master)}>
@@ -47,16 +51,8 @@ const MasterCard: React.FC<MasterCardProps> = ({
             </span>
           )}
         </div>
-        <p className="experience-main">{master.experience} {t.experience}</p>
-        {master.services && master.services.length > 0 && (
-          <div className="master-services">
-            {translateServices(master.services, language).slice(0, 3).map((service, index) => (
-              <span key={service} className="service-tag-small">{service}</span>
-            ))}
-            {master.services.length > 3 && (
-              <span className="service-tag-small">+{master.services.length - 3}</span>
-            )}
-          </div>
+        {displayAddress && (
+          <p className="salon-address">📍 {t.address}: {displayAddress}</p>
         )}
         {master.languages && master.languages.length > 0 && (
           <div className="master-languages">
@@ -64,6 +60,20 @@ const MasterCard: React.FC<MasterCardProps> = ({
               🌐 {language === 'cs' ? 'Jazyky:' : 'Languages:'} {translateLanguages(master.languages, language).slice(0, 3).join(', ')}
               {master.languages.length > 3 && ` +${master.languages.length - 3}`}
             </span>
+          </div>
+        )}
+        {/* Experience directly under languages */}
+        {typeof master.experience !== 'undefined' && (
+          <p className="experience-main">💼 {master.experience} {t.experience}</p>
+        )}
+        {master.services && master.services.length > 0 && (
+          <div className="master-services">
+            {translateServices(master.services, language).slice(0, 3).map((service) => (
+              <span key={service} className="service-tag-small">{service}</span>
+            ))}
+            {master.services.length > 3 && (
+              <span className="service-tag-small">+{master.services.length - 3}</span>
+            )}
           </div>
         )}
         <div className="master-rating-main">

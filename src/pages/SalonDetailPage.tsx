@@ -4,6 +4,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
+import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 
 interface SalonDetailPageProps {
   salon: Salon;
@@ -84,11 +85,12 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           let coordinates = salon.coordinates as any;
           console.log('Salon coordinates from DB:', coordinates);
           
-          if (!coordinates && salon.address && salon.city) {
+          if (!coordinates && (salon.structuredAddress || salon.address)) {
             try {
-              const { geocodeAddress } = await import('../utils/geocoding');
-              // Пробуем только полный адрес для скорости
-              const geocoded = await geocodeAddress(salon.address);
+              const { geocodeAddress, geocodeStructuredAddress } = await import('../utils/geocoding');
+              const geocoded = salon.structuredAddress
+                ? await geocodeStructuredAddress(salon.structuredAddress)
+                : (salon.address ? await geocodeAddress(salon.address) : undefined);
               if (geocoded) {
                 coordinates = geocoded;
                 console.log('Successfully geocoded salon:', geocoded);
@@ -121,7 +123,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           markerInstance.bindPopup(`
             <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${salon.name}</h3>
-              <p style="margin: 0; color: #666; font-size: 14px;">${salon.address}</p>
+              <p style="margin: 0; color: #666; font-size: 14px;">${salon.structuredAddress ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress) : (require('../utils/cities').translateAddressToCzech(salon.address || '', salon.city))}</p>
             </div>
           `);
 
@@ -183,18 +185,34 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
             <span className="rating">
               ⭐ {averageRating} ({reviewsCount} {t.reviews})
             </span>
-            <span className="address">
-              📍 {salon.address}
-            </span>
+            {(salon.structuredAddress || salon.address) && (
+              <span className="address">
+                📍 {salon.structuredAddress
+                  ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
+                  : require('../utils/cities').translateAddressToCzech(salon.address, salon.city)}
+              </span>
+            )}
           </div>
           <p className="description">{salon.description}</p>
           <div className="contact-info">
-            <h3>{t.contact}</h3>
+            <h3 className="contact-title">{t.contact}</h3>
             <p>📞 {salon.phone}</p>
             <p>✉️ {salon.email}</p>
             {salon.website && <p>🌐 {salon.website}</p>}
-            <p>🕒 {salon.openHours}</p>
           </div>
+          {/* Working hours before services, in same gray box style */}
+          <div className="contact-info">
+            <h3 className="contact-title">{language === 'cs' ? 'Otevírací doba' : 'Opening hours'}</h3>
+            {salon.byAppointment
+              ? (<p>{language === 'cs' ? 'Po domluvě' : 'By appointment'}</p>)
+              : (
+                <WorkingHoursDisplay
+                  workingHours={salon.workingHours}
+                  language={language}
+                />
+              )}
+          </div>
+
           <div className="services-section">
             <h3>{t.services}</h3>
             <div className="services-grid">

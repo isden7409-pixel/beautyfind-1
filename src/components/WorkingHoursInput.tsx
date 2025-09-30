@@ -5,6 +5,8 @@ interface WorkingHoursInputProps {
   language: Language;
   value: WorkingHours[];
   onChange: (value: WorkingHours[]) => void;
+  byAppointment?: boolean;
+  onByAppointmentChange?: (value: boolean) => void;
 }
 
 const DAY_LABELS_CS = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
@@ -14,7 +16,7 @@ function formatTime(value: string): string {
   return value || '';
 }
 
-const WorkingHoursInput: React.FC<WorkingHoursInputProps> = ({ language, value, onChange }) => {
+const WorkingHoursInput: React.FC<WorkingHoursInputProps> = ({ language, value, onChange, byAppointment, onByAppointmentChange }) => {
   const hoursByDay: Record<number, WorkingHours> = {};
   value.forEach(h => { hoursByDay[h.dayOfWeek] = h; });
 
@@ -31,7 +33,17 @@ const WorkingHoursInput: React.FC<WorkingHoursInputProps> = ({ language, value, 
 
   return (
     <div className="working-hours-input">
-      {ORDER.map((day) => {
+      <div className="form-group">
+        <label className="wh-by-appointment">
+          <input
+            type="checkbox"
+            checked={!!byAppointment}
+            onChange={(e) => onByAppointmentChange && onByAppointmentChange(e.target.checked)}
+          />
+          <span>{language === 'cs' ? 'Po domluvě' : 'By appointment'}</span>
+        </label>
+      </div>
+      {!byAppointment && ORDER.map((day: number) => {
         const h = getDay(day);
         const disabled = !h.isWorking;
         return (

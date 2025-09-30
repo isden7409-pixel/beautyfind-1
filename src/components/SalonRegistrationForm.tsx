@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SalonRegistration, Language, StructuredAddress } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
+import { getRequiredMessage } from '../utils/form';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
@@ -88,6 +89,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     description: '',
     openHours: '',
     workingHours: undefined,
+    byAppointment: false,
     services: [],
     photos: []
   });
@@ -151,6 +153,22 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     e.preventDefault();
     try {
       setSubmitting(true);
+      // Validate address via geocoding if structuredAddress present
+      if (formData.structuredAddress) {
+        try {
+          const { geocodeStructuredAddress } = await import('../utils/geocoding');
+          const coords = await geocodeStructuredAddress(formData.structuredAddress);
+          if (!coords) {
+            alert(language === 'cs' ? 'Zadaná adresa nebyla nalezena na mapě. Zkontrolujte prosím údaje.' : 'The entered address could not be found on the map. Please check the details.');
+            setSubmitting(false);
+            return;
+          }
+        } catch {
+          alert(language === 'cs' ? 'Nepodařilo se ověřit adresu.' : 'Failed to validate address.');
+          setSubmitting(false);
+          return;
+        }
+      }
       const id = await salonService.createFromRegistration(formData);
       console.log('Salon created with id', id);
       alert(t.registrationSuccess);
@@ -193,7 +211,10 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             onChange={handleInputChange}
             required
             className="form-input"
-          />
+            placeholder={language === 'cs' ? 'Např. Můj salon' : 'e.g. My Salon'}
+          onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+          onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+        />
         </div>
 
         <div className="form-group city-field">
@@ -216,7 +237,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         </div>
 
         <div className="form-group address-group">
-          <StructuredAddressInput
+            <StructuredAddressInput
             language={language}
             translations={translations}
             value={formData.structuredAddress}
@@ -228,7 +249,8 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
                 address: structuredAddress?.fullAddress || ''
               }));
             }}
-            required
+              required
+              showErrors={false}
           />
         </div>
 
@@ -237,7 +259,9 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           <WorkingHoursInput
             language={language}
             value={formData.workingHours || []}
-            onChange={(wh) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+            onChange={(wh: any) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+            byAppointment={formData.byAppointment || false}
+            onByAppointmentChange={(val: boolean) => setFormData(prev => ({ ...prev, byAppointment: val }))}
           />
         </div>
 
@@ -252,7 +276,10 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-            />
+              placeholder={language === 'cs' ? 'Např. +420 123 456 789' : 'e.g. +420 123 456 789'}
+            onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity('')}
+          />
           </div>
 
           <div className="form-group">
@@ -265,7 +292,10 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-            />
+              placeholder={language === 'cs' ? 'Např. mujmail@seznam.cz' : 'e.g. mymail@gmail.com'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+          />
           </div>
         </div>
 
@@ -278,19 +308,20 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             value={formData.website}
             onChange={handleInputChange}
             className="form-input"
-            placeholder="https://www.example.com"
+            placeholder={language === 'cs' ? 'https://www.vzor.cz' : 'https://www.example.com'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
 
         <div className="form-group">
-          <label htmlFor="description">{t.description} *</label>
+          <label htmlFor="description">{t.description}</label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            required
             className="form-textarea"
             rows={4}
             placeholder={t.descriptionPlaceholder}
@@ -306,6 +337,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
                   type="checkbox"
                   checked={selectedServices.includes(service)}
                   onChange={() => handleServiceToggle(service)}
+                  required
                 />
                 <span className="service-label">{translateServices([service], language)[0]}</span>
               </label>

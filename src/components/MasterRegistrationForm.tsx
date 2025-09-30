@@ -5,6 +5,7 @@ import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { masterService } from '../firebase/services';
+import { getRequiredMessage } from '../utils/form';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -179,10 +180,56 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   };
 
   const [submitting, setSubmitting] = useState(false);
+  const [hoursError, setHoursError] = useState<string | null>(null);
+  const [servicesError, setServicesError] = useState<string | null>(null);
+  const [languagesError, setLanguagesError] = useState<string | null>(null);
+
+  const isWorkingHoursFilled = (wh?: any[]): boolean => {
+    if (!wh || wh.length === 0) return false;
+    // At least one working day or at least one entry provided
+    return wh.some((d: any) => typeof d.isWorking === 'boolean');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate services
+      if (selectedServices.length === 0) {
+        setServicesError(language === 'cs' ? 'Vyberte prosím alespoň jednu službu' : 'Please select at least one service');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setServicesError(null);
+      }
+      // Validate languages
+      if (selectedLanguages.length === 0) {
+        setLanguagesError(language === 'cs' ? 'Vyberte prosím alespoň jeden jazyk' : 'Please select at least one language');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setLanguagesError(null);
+      }
+      // Validate working hours for all masters (freelancer or in salon)
+      if (!isWorkingHoursFilled(formData.workingHours)) {
+        setHoursError(language === 'cs' ? 'Vyplňte prosím otevírací dobu' : 'Please fill in working hours');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      // Validate geocoding if structuredAddress present
+      if (formData.structuredAddress) {
+        try {
+          const { geocodeStructuredAddress } = await import('../utils/geocoding');
+          const coords = await geocodeStructuredAddress(formData.structuredAddress);
+          if (!coords) {
+            alert(language === 'cs' ? 'Zadaná adresa nebyla nalezena na mapě. Zkontrolujte prosím údaje.' : 'The entered address could not be found on the map. Please check the details.');
+            return;
+          }
+        } catch {
+          alert(language === 'cs' ? 'Nepodařilo se ověřit adresu.' : 'Failed to validate address.');
+          return;
+        }
+      }
+      setHoursError(null);
       setSubmitting(true);
       const id = await masterService.createFromRegistration(formData);
       console.log('Master created with id', id);
@@ -220,6 +267,9 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     <div className="registration-form">
       <h2>{t.registerMaster}</h2>
       <form onSubmit={handleSubmit} className="form">
+        {hoursError && (
+          <div className="form-error" role="alert">{hoursError}</div>
+        )}
         <div className="form-group">
           <label htmlFor="name">{t.masterName} *</label>
           <input
@@ -230,6 +280,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
             onChange={handleInputChange}
             required
             className="form-input"
+            placeholder={language === 'cs' ? 'Např. Marie Nováková' : 'e.g. Mary Smith'}
           />
         </div>
 
@@ -244,22 +295,28 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-              placeholder="Např. Manicure and Pedicure"
-            />
+              placeholder={language === 'cs' ? 'Např. Manikúra a pedikúra' : 'e.g. Manicure and pedicure'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+          />
           </div>
 
           <div className="form-group">
-            <label htmlFor="experience">{t.experience} *</label>
+            <label htmlFor="experience">{language === 'cs' ? 'Počet let praxe' : 'Years of experience'} *</label>
             <input
-              type="text"
+              type="number"
               id="experience"
               name="experience"
-              value={formData.experience}
-              onChange={handleInputChange}
+              min={0}
+              max={55}
+              value={Number(formData.experience) || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
               required
               className="form-input"
-              placeholder="Např. 5 let"
-            />
+              placeholder={language === 'cs' ? 'Např. 5' : 'e.g. 5'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+          />
           </div>
         </div>
 
@@ -274,7 +331,10 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-            />
+              placeholder={language === 'cs' ? 'Např. +420 123 456 789' : 'e.g. +420 123 456 789'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+          />
           </div>
 
           <div className="form-group">
@@ -287,7 +347,10 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-            />
+              placeholder={language === 'cs' ? 'Např. mujmail@seznam.cz' : 'e.g. mymail@gmail.com'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+          />
           </div>
         </div>
 
@@ -353,12 +416,13 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
                   }));
                 }}
                 required
+                showErrors={false}
               />
             </div>
           </>
         ) : (
           <div>
-            <div className="form-group">
+            <div className="form-group form-group-tight">
               <label htmlFor="salonId">{t.salon}</label>
               <select
                 id="salonId"
@@ -407,23 +471,24 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           </div>
         )}
 
-        <div className="form-group">
+        <div className="form-group working-hours-group">
           <label htmlFor="openHours">{t.openHours} *</label>
           <WorkingHoursInput
             language={language}
             value={formData.workingHours || []}
-            onChange={(wh) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+            onChange={(wh: any) => setFormData(prev => ({ ...prev, workingHours: wh }))}
+            byAppointment={formData.byAppointment || false}
+            onByAppointmentChange={(val: boolean) => setFormData(prev => ({ ...prev, byAppointment: val }))}
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="description">{t.description} *</label>
+        <div className="form-group description-group">
+          <label htmlFor="description">{t.description}</label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            required
             className="form-textarea"
             rows={4}
             placeholder={t.descriptionPlaceholder}
@@ -444,6 +509,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               </label>
             ))}
           </div>
+          {servicesError && <div className="form-error" role="alert">{servicesError}</div>}
         </div>
 
         <div className="form-group">
@@ -460,10 +526,11 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               </label>
             ))}
           </div>
+          {languagesError && <div className="form-error" role="alert">{languagesError}</div>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="photo">{t.photo} *</label>
+          <label htmlFor="photo">{t.photo}</label>
           <FileUpload
             id="photo"
             multiple={false}
@@ -475,7 +542,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
             filesSelectedText={t.filesSelected}
             fileSelectedText={t.fileSelected}
             className="form-file"
-            required={true}
+            required={false}
           />
           <p className="form-help">{t.photoHelp}</p>
         </div>

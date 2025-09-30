@@ -4,6 +4,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import BookingModal from '../components/BookingModal';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
+import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 
 interface MasterDetailPageProps {
   master: Master;
@@ -72,11 +73,12 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           let coordinates = master.coordinates;
           
           // Если координат нет, но есть адрес - попробуем геокодировать
-          if (!coordinates && master.address && master.city) {
+          if (!coordinates && (master.structuredAddress || (master.address && master.city))) {
             try {
-              const { geocodeAddress } = await import('../utils/geocoding');
-              // Пробуем только полный адрес для скорости
-              const geocoded = await geocodeAddress(`${master.address}, ${master.city}`);
+              const { geocodeAddress, geocodeStructuredAddress } = await import('../utils/geocoding');
+              const geocoded = master.structuredAddress
+                ? await geocodeStructuredAddress(master.structuredAddress)
+                : await geocodeAddress(`${master.address}, ${master.city}`);
               if (geocoded) {
                 coordinates = geocoded;
                 console.log('Successfully geocoded master:', geocoded);
@@ -113,11 +115,13 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             ? (language === 'cs' ? 'Samostatný pracovník' : 'Freelancer')
             : master.salonName || (language === 'cs' ? 'Salon' : 'Salon');
             
+          const { translateCityToCzech } = await import('../utils/cities');
+
           markerInstance.bindPopup(`
             <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${master.name}</h3>
               <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salonInfo}</p>
-              <p style="margin: 0; color: #888; font-size: 12px;">${master.address}${master.address ? ', ' : ''}${master.city === 'Prague' ? 'Praha' : master.city}</p>
+              <p style="margin: 0; color: #888; font-size: 12px;">${master.structuredAddress ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress) : `${master.address || ''}${master.address ? ', ' : ''}${require('../utils/cities').translateCityToCzech(master.city)}`}</p>
             </div>
           `);
 
@@ -199,19 +203,14 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           <span className="rating">
             ⭐ {master.rating} ({master.reviews} {t.reviews})
           </span>
-          <span className="experience">{master.experience} {t.experience}</span>
+          <span className="experience">{require('../utils/formatters').formatExperienceYears(master.experience, language, true)}</span>
         </div>
-        <div className="contact-info">
-          <h3>{t.contact}</h3>
-          <p>📞 {master.phone}</p>
-          <p>✉️ {master.email}</p>
-          <p>📍 {master.address}{master.address ? ', ' : ''}{master.city === 'Prague' ? 'Praha' : master.city}</p>
-          {master.languages && master.languages.length > 0 && (
-            <div className="languages-in-contact">
-              <p>🌐 <strong>{language === 'cs' ? 'Jazyky:' : 'Languages:'}</strong> {translateLanguages(master.languages, language).join(', ')}</p>
-            </div>
-          )}
-        </div>
+        {master.description && (
+          <div className="description-block">
+            <p className="description">{master.description}</p>
+          </div>
+        )}
+
         <div className="services-section">
           <h3>{t.services}</h3>
           <div className="services-grid">
@@ -220,8 +219,35 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
             ))}
           </div>
         </div>
+
+        <div className="contact-info">
+          <h3>{t.contact}</h3>
+          <p>📞 {master.phone}</p>
+          <p>✉️ {master.email}</p>
+          <p>📍 {master.structuredAddress ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress) : `${master.address || ''}${master.address ? ', ' : ''}${require('../utils/cities').translateCityToCzech(master.city)}`}</p>
+          {master.languages && master.languages.length > 0 && (
+            <div className="languages-in-contact">
+              <p>🌐 <strong>{language === 'cs' ? 'Jazyky:' : 'Languages:'}</strong> {translateLanguages(master.languages, language).join(', ')}</p>
+            </div>
+          )}
+        </div>
+        {/* Working hours before services. For masters in salon, show salon hours */}
+        <div className="contact-info">
+          <h3 className="contact-title">{language === 'cs' ? 'Otevírací doba' : 'Opening hours'}</h3>
+          {master.byAppointment
+            ? (<p>{language === 'cs' ? 'Po domluvě' : 'By appointment'}</p>)
+            : (
+              <WorkingHoursDisplay
+                workingHours={(master.workingHours && master.workingHours.length > 0)
+                  ? master.workingHours
+                  : (salons.find(s => s.id === master.salonId)?.workingHours)}
+                language={language}
+              />
+            )}
+        </div>
+
         
-        {master.description && <p className="description">{master.description}</p>}
+
         
         <button 
           className="book-button" 

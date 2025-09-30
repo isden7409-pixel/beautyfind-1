@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Salon, Master, Language, SearchFilters } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import { geocodeAddress, geocodeStructuredAddress } from '../utils/geocoding';
+import { translateCityToCzech } from '../utils/cities';
 
 interface SimpleMapViewProps {
   salons: Salon[];
@@ -62,12 +63,12 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       // Геокодируем салоны с задержкой
       for (let i = 0; i < salons.length; i++) {
         const s = salons[i];
-        if (!s.coordinates && s.address) {
+        if (!s.coordinates && (s.structuredAddress || s.address)) {
           // Приоритет структурированному адресу
           let coords = undefined;
           if (s.structuredAddress) {
             coords = await geocodeStructuredAddress(s.structuredAddress);
-          } else {
+          } else if (s.address) {
             coords = await geocodeAddress(`${s.address}${s.city ? ', ' + s.city : ''}`);
           }
           
@@ -83,12 +84,12 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       // Геокодируем мастеров с задержкой
       for (let i = 0; i < allMasters.length; i++) {
         const m = allMasters[i];
-        if (!m.coordinates && m.address) {
+        if (!m.coordinates && (m.structuredAddress || m.address)) {
           // Приоритет структурированному адресу
           let coords = undefined;
           if (m.structuredAddress) {
             coords = await geocodeStructuredAddress(m.structuredAddress);
-          } else {
+          } else if (m.address) {
             coords = await geocodeAddress(`${m.address}${m.city ? ', ' + m.city : ''}`);
           }
           
@@ -276,21 +277,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
     markers.forEach(marker => map.removeLayer(marker));
     const newMarkers: any[] = [];
 
-    const translateCity = (city?: string) => {
-      const map: Record<string, string> = {
-        Prague: 'Praha',
-        Brno: 'Brno',
-        Ostrava: 'Ostrava',
-        Plzen: 'Plzeň',
-        Liberec: 'Liberec',
-        Olomouc: 'Olomouc',
-        Budweis: 'České Budějovice',
-        Hradec: 'Hradec Králové',
-        Pardubice: 'Pardubice',
-        Zlín: 'Zlín',
-      };
-      return city && map[city] ? map[city] : (city || '');
-    };
+    const translateCity = (city?: string) => translateCityToCzech(city);
 
     if (selectedType === 'salons') {
       geoSalons.forEach((salon) => {
@@ -343,6 +330,10 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             console.log('Salon marker clicked:', salon.name);
           });
           
+          const addressText = salon.structuredAddress
+            ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
+            : (require('../utils/cities').translateAddressToCzech(salon.address || '', salon.city) || translateCity(salon.city));
+
           const popupContent = `
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;">
@@ -355,7 +346,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${salon.name}</h3>
                   <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center;">
                     <span style="margin-right: 6px;">📍</span>
-                    <span>${salon.address || ''}, ${translateCity(salon.city)}</span>
+                    <span>${addressText || ''}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px;">
                     ${translateServices(salon.services, language).slice(0, 3).map(service => 
@@ -447,6 +438,10 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             console.log('Master marker clicked:', master.name);
           });
           
+          const masterAddressText = master.structuredAddress
+            ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
+            : (require('../utils/cities').translateAddressToCzech(master.address || '', master.city) || translateCity(master.city));
+
           const popupContent = `
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
@@ -459,7 +454,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3; text-align: center;">${master.name}</h3>
                   <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center; justify-content: center;">
                     <span style="margin-right: 6px;">📍</span>
-                    <span>${master.address || ''}, ${translateCity(master.city)}</span>
+                    <span>${masterAddressText || ''}</span>
                   </div>
                   <div style="margin: 0 0 12px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px;">
                     <span style="margin-right: 6px;">⏱️</span>

@@ -9,6 +9,7 @@ interface StructuredAddressInputProps {
   city?: string;
   onChange: (address: StructuredAddress | undefined) => void;
   required?: boolean;
+  showErrors?: boolean; // показывать ошибки только по запросу (на submit)
 }
 
 const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
@@ -17,7 +18,8 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
   value,
   city,
   onChange,
-  required = false
+  required = false,
+  showErrors = true
 }) => {
   const [structuredAddress, setStructuredAddress] = useState<StructuredAddress>({
     street: '',
@@ -29,8 +31,20 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
   });
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [geoValid, setGeoValid] = useState<'unknown'|'valid'|'invalid'>('unknown');
 
   const t = translations[language];
+
+  // Helper: recompute fullAddress when mandatory parts are present
+  const recomputeFullAddress = (addr: StructuredAddress): StructuredAddress => {
+    const hasMandatory = Boolean(addr.street && addr.houseNumber && addr.postalCode && addr.city);
+    if (hasMandatory) {
+      addr.fullAddress = createFullAddress(addr);
+    } else {
+      addr.fullAddress = '';
+    }
+    return addr;
+  };
 
   useEffect(() => {
     if (value) {
@@ -42,16 +56,10 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
   useEffect(() => {
     if (city) {
       setStructuredAddress(prev => {
-        const updated = { ...prev, city };
+        const updated = recomputeFullAddress({ ...prev, city });
         // Валидируем после обновления города
         const validationErrors = validateStructuredAddress(updated);
         setErrors(validationErrors);
-        
-        // Создаем полный адрес если все поля заполнены
-        if (updated.street && updated.houseNumber && updated.postalCode && updated.city) {
-          updated.fullAddress = createFullAddress(updated);
-        }
-        
         return updated;
       });
     }
@@ -64,12 +72,37 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
     onChange(validationErrors.length === 0 ? structuredAddress : undefined);
   }, [structuredAddress, onChange]);
 
+  // Геопроверка адреса для подсветки (дебаунс)
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      const hasMandatory = Boolean(structuredAddress.street && structuredAddress.houseNumber && structuredAddress.postalCode && (city || structuredAddress.city));
+      if (!hasMandatory) {
+        if (!cancelled) setGeoValid('unknown');
+        return;
+      }
+      try {
+        const { geocodeStructuredAddress } = await import('../utils/geocoding');
+        const coords = await geocodeStructuredAddress({
+          ...structuredAddress,
+          city: city || structuredAddress.city,
+        } as StructuredAddress);
+        if (!cancelled) setGeoValid(coords ? 'valid' : 'invalid');
+      } catch {
+        if (!cancelled) setGeoValid('invalid');
+      }
+    };
+    const id = setTimeout(check, 250);
+    return () => { cancelled = true; clearTimeout(id); };
+  }, [structuredAddress, city]);
+
   const handleFieldChange = (field: keyof StructuredAddress, newValue: string) => {
-    const updated = { ...structuredAddress, [field]: newValue };
+    let updated = { ...structuredAddress, [field]: newValue } as StructuredAddress;
     // Используем переданный город или город из structuredAddress
     if (city) {
       updated.city = city;
     }
+    updated = recomputeFullAddress(updated);
     setStructuredAddress(updated);
   };
 
@@ -141,7 +174,7 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
         </div>
       </div>
 
-      {errors.length > 0 && (
+      {showErrors && errors.length > 0 && (
         <div className="form-errors">
           {errors.map((error, index) => (
             <div key={index} className="error-message">{error}</div>
@@ -149,8 +182,8 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
         </div>
       )}
 
-      {structuredAddress.fullAddress && (
-        <div className="address-preview">
+      {(structuredAddress.fullAddress || geoValid !== 'unknown') && (
+        <div className={`address-preview ${geoValid === 'valid' ? 'ok' : geoValid === 'invalid' ? 'error' : ''}`}>
           <strong>{language === 'cs' ? 'Plná adresa:' : 'Full address:'}</strong>
           <p>{structuredAddress.fullAddress}</p>
         </div>

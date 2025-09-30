@@ -170,7 +170,7 @@ const MapView: React.FC<MapViewProps> = ({
                   <h3>{master.name}</h3>
                   <p className="popup-specialty">{translateSpecialty(master.specialty, language)}</p>
                   <p className="popup-address">
-                    📍 {master.address}, {master.city === 'Prague' ? 'Praha' : master.city}
+                    📍 {master.address}{master.address ? ', ' : ''}{require('../utils/cities').translateCityToCzech(master.city)}
                   </p>
                   <p className="popup-rating">
                     ⭐ {master.rating} ({master.reviews} {t.reviews})
