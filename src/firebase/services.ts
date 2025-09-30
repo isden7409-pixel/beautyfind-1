@@ -89,13 +89,16 @@ export const salonService = {
       coordinates = await geocodeAddress(`${data.address}, ${data.city}`);
     }
 
+    // Нормализуем workingHours: Firestore не принимает undefined
+    const normalizedSalonWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
+
     const salonBase = {
       name: data.name,
       city: data.city,
       address: data.address,
       structuredAddress: data.structuredAddress,
       byAppointment: data.byAppointment,
-      workingHours: data.workingHours,
+      workingHours: normalizedSalonWorkingHours,
       services: data.services,
       rating: 0,
       reviews: 0,
@@ -240,6 +243,9 @@ export const masterService = {
       }
     }
 
+    // Нормализуем workingHours: Firestore не принимает undefined
+    const normalizedMasterWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
+
     const masterBase = {
       name: data.name,
       specialty: data.specialty,
@@ -250,7 +256,7 @@ export const masterService = {
       worksInSalon: !!data.salonId,
       isFreelancer: data.isFreelancer,
       byAppointment: data.byAppointment,
-      workingHours: data.workingHours,
+      workingHours: normalizedMasterWorkingHours,
       description: data.description,
       phone: data.phone,
       email: data.email,

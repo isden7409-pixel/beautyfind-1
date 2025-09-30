@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { MasterRegistration, Language, StructuredAddress, Salon } from '../types';
+import { MasterRegistration, Language, Salon } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { masterService } from '../firebase/services';
-import { getRequiredMessage } from '../utils/form';
+import { getRequiredMessage, getValidationMessages } from '../utils/form';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -94,7 +94,8 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     city: '',
     address: '',
     structuredAddress: undefined,
-    workingHours: undefined
+    workingHours: undefined,
+    byAppointment: false
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -102,6 +103,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
 
   const t = translations[language];
+  const validationMessages = getValidationMessages(language);
 
   const availableServices = [
     'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial', 
@@ -195,7 +197,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     try {
       // Validate services
       if (selectedServices.length === 0) {
-        setServicesError(language === 'cs' ? 'Vyberte prosím alespoň jednu službu' : 'Please select at least one service');
+        setServicesError(validationMessages.servicesRequired);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       } else {
@@ -203,7 +205,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       }
       // Validate languages
       if (selectedLanguages.length === 0) {
-        setLanguagesError(language === 'cs' ? 'Vyberte prosím alespoň jeden jazyk' : 'Please select at least one language');
+        setLanguagesError(validationMessages.languagesRequired);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       } else {
@@ -211,9 +213,13 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       }
       // Validate working hours unless "by appointment" selected
       if (!formData.byAppointment && !isWorkingHoursFilled(formData.workingHours)) {
-        setHoursError(language === 'cs' ? 'Vyplňte prosím otevírací dobu' : 'Please fill in working hours');
+        setHoursError(validationMessages.workingHoursRequired);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
+      }
+      // Clear possible old error if byAppointment is active
+      if (formData.byAppointment) {
+        setHoursError(null);
       }
       // Validate geocoding if structuredAddress present
       if (formData.structuredAddress) {
@@ -221,11 +227,11 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           const { geocodeStructuredAddress } = await import('../utils/geocoding');
           const coords = await geocodeStructuredAddress(formData.structuredAddress);
           if (!coords) {
-            alert(language === 'cs' ? 'Zadaná adresa nebyla nalezena na mapě. Zkontrolujte prosím údaje.' : 'The entered address could not be found on the map. Please check the details.');
+            alert(validationMessages.addressNotFound);
             return;
           }
         } catch {
-          alert(language === 'cs' ? 'Nepodařilo se ověřit adresu.' : 'Failed to validate address.');
+          alert(validationMessages.addressValidationFailed);
           return;
         }
       }
@@ -233,7 +239,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       setSubmitting(true);
       const id = await masterService.createFromRegistration(formData);
       console.log('Master created with id', id);
-      alert(t.registrationSuccess);
+      alert(validationMessages.registrationSuccess);
       setFormData({
         name: '',
         specialty: '',
@@ -248,7 +254,8 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         city: '',
         address: '',
         structuredAddress: undefined,
-        workingHours: undefined
+        workingHours: undefined,
+        byAppointment: false
       });
       setSelectedServices([]);
       setSelectedLanguages([]);
@@ -256,7 +263,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       onSubmit(formData);
     } catch (error) {
       console.error('Failed to create master', error);
-      const message = (error as Error)?.message || 'Failed to create master';
+      const message = (error as Error)?.message || validationMessages.registrationFailed;
       alert(message);
     } finally {
       setSubmitting(false);
@@ -267,7 +274,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     <div className="registration-form">
       <h2>{t.registerMaster}</h2>
       <form onSubmit={handleSubmit} className="form">
-        {hoursError && (
+        {hoursError && !formData.byAppointment && (
           <div className="form-error" role="alert">{hoursError}</div>
         )}
         <div className="form-group">
@@ -478,7 +485,10 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
             value={formData.workingHours || []}
             onChange={(wh: any) => setFormData(prev => ({ ...prev, workingHours: wh }))}
             byAppointment={formData.byAppointment || false}
-            onByAppointmentChange={(val: boolean) => setFormData(prev => ({ ...prev, byAppointment: val }))}
+            onByAppointmentChange={(val: boolean) => {
+              if (val) setHoursError(null);
+              setFormData(prev => ({ ...prev, byAppointment: val }));
+            }}
           />
         </div>
 

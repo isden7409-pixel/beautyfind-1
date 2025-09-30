@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { SalonRegistration, Language, StructuredAddress } from '../types';
+import { SalonRegistration, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
-import { getRequiredMessage } from '../utils/form';
+import { getRequiredMessage, getValidationMessages } from '../utils/form';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
@@ -98,6 +98,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
 
   const t = translations[language];
+  const validationMessages = getValidationMessages(language);
 
   const availableServices = [
     'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial', 
@@ -148,15 +149,24 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   };
 
   const [submitting, setSubmitting] = useState(false);
+  const [servicesError, setServicesError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate services
+      if (selectedServices.length === 0) {
+        setServicesError(validationMessages.servicesRequired);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setServicesError(null);
+      }
       // If not by appointment, require working hours to be provided
       if (!formData.byAppointment) {
         const hasHours = Array.isArray(formData.workingHours) && (formData.workingHours as any[]).some((d: any) => typeof d.isWorking === 'boolean');
         if (!hasHours) {
-          alert(language === 'cs' ? 'Vyplňte prosím otevírací dobu' : 'Please fill in working hours');
+          alert(validationMessages.workingHoursRequired);
           return;
         }
       }
@@ -167,19 +177,19 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           const { geocodeStructuredAddress } = await import('../utils/geocoding');
           const coords = await geocodeStructuredAddress(formData.structuredAddress);
           if (!coords) {
-            alert(language === 'cs' ? 'Zadaná adresa nebyla nalezena na mapě. Zkontrolujte prosím údaje.' : 'The entered address could not be found on the map. Please check the details.');
+            alert(validationMessages.addressNotFound);
             setSubmitting(false);
             return;
           }
         } catch {
-          alert(language === 'cs' ? 'Nepodařilo se ověřit adresu.' : 'Failed to validate address.');
+          alert(validationMessages.addressValidationFailed);
           setSubmitting(false);
           return;
         }
       }
       const id = await salonService.createFromRegistration(formData);
       console.log('Salon created with id', id);
-      alert(t.registrationSuccess);
+      alert(validationMessages.registrationSuccess);
       setFormData({
         name: '',
         city: '',
@@ -199,7 +209,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
       onSubmit(formData);
     } catch (error) {
       console.error('Failed to create salon', error);
-      alert('Failed to create salon');
+      alert(validationMessages.registrationFailed);
     } finally {
       setSubmitting(false);
     }
@@ -345,12 +355,12 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
                   type="checkbox"
                   checked={selectedServices.includes(service)}
                   onChange={() => handleServiceToggle(service)}
-                  required
                 />
                 <span className="service-label">{translateServices([service], language)[0]}</span>
               </label>
             ))}
           </div>
+          {servicesError && <div className="form-error" role="alert">{servicesError}</div>}
         </div>
 
         <div className="form-group">
