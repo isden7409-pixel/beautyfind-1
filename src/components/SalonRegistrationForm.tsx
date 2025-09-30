@@ -152,6 +152,14 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // If not by appointment, require working hours to be provided
+      if (!formData.byAppointment) {
+        const hasHours = Array.isArray(formData.workingHours) && (formData.workingHours as any[]).some((d: any) => typeof d.isWorking === 'boolean');
+        if (!hasHours) {
+          alert(language === 'cs' ? 'Vyplňte prosím otevírací dobu' : 'Please fill in working hours');
+          return;
+        }
+      }
       setSubmitting(true);
       // Validate address via geocoding if structuredAddress present
       if (formData.structuredAddress) {

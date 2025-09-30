@@ -209,8 +209,8 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       } else {
         setLanguagesError(null);
       }
-      // Validate working hours for all masters (freelancer or in salon)
-      if (!isWorkingHoursFilled(formData.workingHours)) {
+      // Validate working hours unless "by appointment" selected
+      if (!formData.byAppointment && !isWorkingHoursFilled(formData.workingHours)) {
         setHoursError(language === 'cs' ? 'Vyplňte prosím otevírací dobu' : 'Please fill in working hours');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
