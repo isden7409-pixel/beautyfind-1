@@ -442,10 +442,24 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
             : (require('../utils/cities').translateAddressToCzech(master.address || '', master.city) || translateCity(master.city));
 
+          console.log('Master photo debug:', {
+            name: master.name,
+            photo: master.photo,
+            hasPhoto: master.photo && master.photo.trim() !== '',
+            photoType: typeof master.photo
+          });
+
+          // Создаем HTML для фото или заглушки заранее
+          const placeholderHtml = '<div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.9); border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; flex-direction: column;"><div style="font-size: 24px; margin-bottom: 2px;">👤</div><div style="font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;">' + (language === 'cs' ? 'MISTR' : 'MASTER') + '</div></div>';
+          
+          const photoHtml = master.photo && master.photo.trim() !== '' 
+            ? '<img src="' + master.photo + '" alt="' + master.name + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' + '<div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.9); border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; align-items: center; justify-content: center; flex-direction: column;"><div style="font-size: 24px; margin-bottom: 2px;">👤</div><div style="font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;">' + (language === 'cs' ? 'MISTR' : 'MASTER') + '</div></div>'
+            : placeholderHtml;
+
           const popupContent = `
               <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
                 <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
-                  <img src="${master.photo}" alt="${master.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                  ${photoHtml}
                   <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                     ⭐ ${master.rating} (${master.reviews})
                   </div>
