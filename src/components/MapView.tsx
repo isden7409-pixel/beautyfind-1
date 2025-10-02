@@ -180,7 +180,7 @@ const MapView: React.FC<MapViewProps> = ({
                       {master.isFreelancer ? t.freelancer : t.inSalon}
                     </span>
                     {master.salonName && (
-                      <span className="popup-salon">🏢 {master.salonName}</span>
+                      <span className="popup-salon">{master.salonName}</span>
                     )}
                   </div>
                   <button 

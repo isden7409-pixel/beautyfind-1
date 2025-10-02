@@ -1,8 +1,8 @@
 // Структурированный адрес для Чехии
 export interface StructuredAddress {
   street: string; // název ulice
-  houseNumber: string; // číslo popisné
-  orientationNumber?: string; // číslo orientační (opcionalne)
+  houseNumber: string; // číslo popisné (обязательное, основной номер здания)
+  orientationNumber?: string; // číslo orientační (опциональное, для навигации на улице)
   postalCode: string; // PSČ
   city: string; // město
   fullAddress: string; // полный адрес для отображения

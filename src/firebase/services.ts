@@ -92,6 +92,16 @@ export const salonService = {
     // Нормализуем workingHours: Firestore не принимает undefined
     const normalizedSalonWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
 
+    // Создаем заглушку для салонов без фото
+    const defaultImage = 'data:image/svg+xml;base64,' + btoa(`
+      <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="300" fill="#f8f9fa"/>
+        <text x="200" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#6c757d">
+          BeautyFind.cz
+        </text>
+      </svg>
+    `);
+
     const salonBase = {
       name: data.name,
       city: data.city,
@@ -102,7 +112,7 @@ export const salonService = {
       services: data.services,
       rating: 0,
       reviews: 0,
-      image: photoUrls[0] || '',
+      image: photoUrls[0] || defaultImage,
       description: data.description,
       phone: data.phone,
       email: data.email,
@@ -182,6 +192,37 @@ export const masterService = {
       id: doc.id,
       ...doc.data()
     })) as Master[];
+  },
+
+  // Update existing masters to add salonName
+  async updateMastersWithSalonName(): Promise<void> {
+    try {
+      const mastersSnapshot = await getDocs(collection(db, MASTERS_COLLECTION));
+      const salonsSnapshot = await getDocs(collection(db, SALONS_COLLECTION));
+      
+      const salonsMap = new Map<string, string>();
+      salonsSnapshot.docs.forEach(doc => {
+        const salon = { id: doc.id, ...doc.data() } as Salon;
+        salonsMap.set(salon.id, salon.name);
+      });
+
+      const updatePromises: Promise<void>[] = [];
+      mastersSnapshot.docs.forEach(doc => {
+        const master = doc.data() as Master;
+        if (master.salonId && !master.salonName) {
+          const salonName = salonsMap.get(master.salonId);
+          if (salonName) {
+            updatePromises.push(
+              updateDoc(doc.ref, { salonName })
+            );
+          }
+        }
+      });
+      await Promise.all(updatePromises);
+      console.log('Updated masters with salon names');
+    } catch (error) {
+      console.error('Error updating masters with salon names:', error);
+    }
   },
 
   // Search masters
@@ -272,7 +313,18 @@ export const masterService = {
     if (finalCity) masterBase.city = finalCity;
     if (finalAddress) masterBase.address = finalAddress;
     if (finalStructuredAddress) masterBase.structuredAddress = finalStructuredAddress;
-    if (data.salonId) masterBase.salonId = data.salonId;
+    if (data.salonId) {
+      masterBase.salonId = data.salonId;
+      // Получаем название салона
+      try {
+        const salon = await salonService.getById(data.salonId);
+        if (salon) {
+          masterBase.salonName = salon.name;
+        }
+      } catch (error) {
+        console.error('Error getting salon name:', error);
+      }
+    }
 
     const master = masterBase as Omit<Master, 'id'>;
 

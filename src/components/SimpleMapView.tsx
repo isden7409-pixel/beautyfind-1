@@ -468,7 +468,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                   ${master.salonName ? `
                     <div style="margin: 0 0 16px 0; text-align: center;">
                       <span style="display: inline-block; background: #e8f4fd; color: #1976d2; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid #bbdefb;" onclick="window.selectSalon('${master.salonId}')">
-                        🏢 ${master.salonName}
+${master.salonName}
                       </span>
                     </div>
                     <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">

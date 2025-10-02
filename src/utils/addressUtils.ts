@@ -5,9 +5,11 @@ import { translateCityToCzech } from './cities';
 export function createFullAddress(structuredAddress: StructuredAddress): string {
   const { street, houseNumber, orientationNumber, postalCode, city } = structuredAddress;
   
-  let address = `${street} ${houseNumber}`;
+  let address = `${street} `;
   if (orientationNumber) {
-    address += `/${orientationNumber}`;
+    address += `${houseNumber}/${orientationNumber}`;
+  } else {
+    address += houseNumber;
   }
   address += `, ${postalCode} ${translateCityToCzech(city)}`;
   
@@ -19,9 +21,10 @@ export function createGeocodingAddress(structuredAddress: StructuredAddress): st
   const { street, houseNumber, orientationNumber, postalCode, city } = structuredAddress;
   
   // Пробуем разные варианты для лучшего геокодирования
+  const numberPart = orientationNumber ? `${houseNumber}/${orientationNumber}` : houseNumber;
   const variants = [
-    `${street} ${houseNumber}${orientationNumber ? `/${orientationNumber}` : ''}, ${postalCode} ${city}, Czech Republic`,
-    `${street} ${houseNumber}${orientationNumber ? `/${orientationNumber}` : ''}, ${city}, Czech Republic`,
+    `${street} ${numberPart}, ${postalCode} ${city}, Czech Republic`,
+    `${street} ${numberPart}, ${city}, Czech Republic`,
     `${street} ${houseNumber}, ${city}, Czech Republic`,
     `${street}, ${city}, Czech Republic`
   ];

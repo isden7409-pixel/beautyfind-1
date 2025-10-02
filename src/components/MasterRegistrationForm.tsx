@@ -453,7 +453,9 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
                 <option value="">{t.selectSalon} *</option>
                 {salons.map(salon => (
                   <option key={salon.id} value={salon.id}>
-                    {salon.name} - {salon.address}, {salon.city}
+                    {salon.name} - {salon.structuredAddress 
+                      ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress, language)
+                      : `${salon.address}, ${salon.city}`}
                   </option>
                 ))}
               </select>
@@ -467,7 +469,9 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
                   return selectedSalon ? (
                     <div className="salon-details">
                       <p><strong>{language === 'cs' ? 'Název:' : 'Name:'}</strong> {selectedSalon.name}</p>
-                      <p><strong>{language === 'cs' ? 'Adresa:' : 'Address:'}</strong> {selectedSalon.address}, {selectedSalon.city}</p>
+                      <p><strong>{language === 'cs' ? 'Adresa:' : 'Address:'}</strong> {selectedSalon.structuredAddress 
+                        ? require('../utils/cities').formatStructuredAddressCzech(selectedSalon.structuredAddress, language)
+                        : `${selectedSalon.address}, ${selectedSalon.city}`}</p>
                       <p><strong>{language === 'cs' ? 'Telefon:' : 'Phone:'}</strong> {selectedSalon.phone}</p>
                       <p><strong>{language === 'cs' ? 'Email:' : 'Email:'}</strong> {selectedSalon.email}</p>
                     </div>

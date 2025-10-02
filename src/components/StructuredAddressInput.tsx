@@ -141,7 +141,7 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
             onChange={(e) => handleFieldChange('houseNumber', e.target.value)}
             required={required}
             className="form-input"
-            placeholder={language === 'cs' ? 'Např. 28' : 'e.g. 28'}
+            placeholder={language === 'cs' ? 'Např. 791' : 'e.g. 791'}
           />
         </div>
       </div>
@@ -155,7 +155,7 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
             value={structuredAddress.orientationNumber || ''}
             onChange={(e) => handleFieldChange('orientationNumber', e.target.value)}
             className="form-input"
-            placeholder={language === 'cs' ? 'Např. 1234' : 'e.g. 1234'}
+            placeholder={language === 'cs' ? 'Např. 32' : 'e.g. 32'}
           />
         </div>
 

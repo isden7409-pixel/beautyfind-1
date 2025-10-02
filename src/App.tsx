@@ -6,6 +6,7 @@ import SalonDetailPage from './pages/SalonDetailPage';
 import MasterDetailPage from './pages/MasterDetailPage';
 import AdminPanel from './pages/AdminPanel';
 import PremiumFeaturesPage from './pages/PremiumFeaturesPage';
+import { useSalons } from './hooks/useData';
 import './App.css';
 
 // Импортируем mock данные
@@ -155,6 +156,7 @@ const translations = {
     addReview: "Přidat recenzi",
     writeReview: "Napsat recenzi",
     yourName: "Vaše jméno",
+    rating: "Hodnocení",
     comment: "Komentář",
     commentPlaceholder: "Napište svůj komentář...",
     submitReview: "Odeslat recenzi",
@@ -276,6 +278,7 @@ const translations = {
     addReview: "Add Review",
     writeReview: "Write Review",
     yourName: "Your Name",
+    rating: "Rating",
     comment: "Comment",
     commentPlaceholder: "Write your comment...",
     submitReview: "Submit Review",
@@ -319,6 +322,9 @@ function AppContent() {
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
   const [currentViewMode, setCurrentViewMode] = useState<'salons' | 'masters'>('salons');
   const navigate = useNavigate();
+  
+  // Загружаем реальные данные салонов
+  const { salons } = useSalons();
 
   const handleSalonSelect = (salon: Salon) => {
     console.log('Salon selected:', salon);
@@ -531,7 +537,7 @@ function AppContent() {
                   translations={translations}
                   onBack={handleBackFromMaster}
                   onSalonSelect={handleSalonSelect}
-                  salons={mockSalons}
+                  salons={salons}
                 />
               ) : (
                 <div>Master not found</div>

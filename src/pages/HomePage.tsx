@@ -6,6 +6,7 @@ import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
 import { useSalons, useMasters } from '../hooks/useData';
+import { masterService } from '../firebase/services';
 
 // Тестовые данные салонов
 const mockSalons: Salon[] = [
@@ -764,6 +765,13 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
   const { salons, loading: salonsLoading } = useSalons();
   const { masters, loading: mastersLoading } = useMasters();
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
+
+  // Update existing masters with salon names
+  useEffect(() => {
+    if (!mastersLoading && masters.length > 0) {
+      masterService.updateMastersWithSalonName();
+    }
+  }, [mastersLoading, masters.length]);
   const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     city: "All",

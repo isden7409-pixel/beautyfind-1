@@ -3,6 +3,7 @@ import { Salon, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
 import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
+import PhotoCarousel from './PhotoCarousel';
 
 interface SalonCardProps {
   salon: Salon;
@@ -31,7 +32,13 @@ const SalonCard: React.FC<SalonCardProps> = ({
       {salon.isPremium && (
         <div className="premium-badge">⭐ PREMIUM</div>
       )}
-      <img src={salon.image} alt={salon.name} className="salon-image" />
+      <PhotoCarousel
+        images={salon.photos || []}
+        mainImage={salon.image || ''}
+        altText={salon.name}
+        className="salon-image-container"
+        language={language}
+      />
       <div className="salon-info">
         <h3>{salon.name}</h3>
         {displayAddress && (

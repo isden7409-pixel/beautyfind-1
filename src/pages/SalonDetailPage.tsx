@@ -5,6 +5,7 @@ import { reviewService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
+import PhotoCarousel from '../components/PhotoCarousel';
 
 interface SalonDetailPageProps {
   salon: Salon;
@@ -167,17 +168,13 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
       </button>
       <div className="salon-detail">
         <div className="salon-gallery">
-          <img src={salon.image} alt={salon.name} className="main-image" />
-          <div className="thumbnail-grid">
-            {salon.photos.map((photo: string, index: number) => (
-              <img
-                key={index}
-                src={photo}
-                alt={`${salon.name} ${index + 1}`}
-                className="thumbnail"
-              />
-            ))}
-          </div>
+          <PhotoCarousel
+            images={salon.photos || []}
+            mainImage={salon.image || ''}
+            altText={salon.name}
+            className="salon-detail-carousel"
+            language={language}
+          />
         </div>
         <div className="salon-info">
           <h1>{salon.name}</h1>
@@ -230,7 +227,29 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                   className="master-card"
                   onClick={() => onMasterSelect(master)}
                 >
-                  <img src={master.photo} alt={master.name} className="master-photo" />
+                  <div className="master-photo-container">
+                    {master.photo && master.photo.trim() !== '' && master.photo !== 'undefined' && master.photo !== 'null' ? (
+                      <img 
+                        src={master.photo} 
+                        alt={master.name} 
+                        className="master-photo"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.master-photo-placeholder') as HTMLElement;
+                          if (placeholder) placeholder.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="master-photo-placeholder" 
+                      style={{ display: (!master.photo || master.photo.trim() === '' || master.photo === 'undefined' || master.photo === 'null') ? 'flex' : 'none' }}
+                    >
+                      <div className="placeholder-content">
+                        <div className="placeholder-icon">👤</div>
+                        <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="master-info">
                     <h4>{master.name}</h4>
                     <p className="specialty">{translateSpecialty(master.specialty, language)}</p>

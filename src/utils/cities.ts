@@ -61,7 +61,9 @@ export function formatStructuredAddressCzech(structured?: {
 }): string {
   if (!structured) return '';
   const cityCz = translateCityToCzech(structured.city);
-  const num = `${structured.houseNumber}${structured.orientationNumber ? '/' + structured.orientationNumber : ''}`;
+  const num = structured.orientationNumber 
+    ? `${structured.houseNumber}/${structured.orientationNumber}`
+    : structured.houseNumber;
   return `${structured.street} ${num}, ${structured.postalCode} ${cityCz}`;
 }
 

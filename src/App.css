@@ -581,10 +581,242 @@ body {
 }
 
 
+/* Карусель фотографий */
+.photo-carousel {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Стрелочки навигации */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.photo-carousel:hover .carousel-arrow {
+  opacity: 1;
+}
+
+.carousel-arrow:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-arrow-left {
+  left: 10px;
+}
+
+.carousel-arrow-right {
+  right: 10px;
+}
+
+/* Индикаторы точек */
+.carousel-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.carousel-dot.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Заглушка для изображений в карусели */
+.photo-carousel .image-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-carousel .placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.photo-carousel .placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.photo-carousel .placeholder-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Карусель для детальной страницы салона */
+.salon-detail-carousel {
+  width: 100%;
+  height: 480px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.salon-detail-carousel .carousel-image {
+  height: 480px;
+  border-radius: 10px;
+}
+
+.salon-detail-carousel .carousel-arrow {
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+}
+
+.salon-detail-carousel .carousel-arrow-left {
+  left: 15px;
+}
+
+.salon-detail-carousel .carousel-arrow-right {
+  right: 15px;
+}
+
+.salon-detail-carousel .carousel-indicators {
+  bottom: 15px;
+}
+
+.salon-detail-carousel .carousel-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.salon-detail-carousel .image-placeholder {
+  height: 480px;
+  border-radius: 10px;
+}
+
+.salon-detail-carousel .placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+}
+
+.salon-detail-carousel .placeholder-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Стили для отображения салона в карточках мастеров */
+.master-type-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.salon-name.clickable {
+  background: #e8f4fd;
+  color: #1976d2;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: inset 0 0 0 1px #bbdefb;
+}
+
+.salon-name.clickable:hover {
+  background: #bbdefb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+}
+
+/* Обратная совместимость для старых стилей */
+.salon-image-container {
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+
 .salon-image {
   width: 100%;
   height: 200px;
   object-fit: cover;
+}
+
+.salon-image-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.placeholder-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.placeholder-text {
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .salon-info {
@@ -662,7 +894,7 @@ body {
   background: white;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  padding: 25px;
+  padding: 43px 25px 25px 25px;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid #e9ecef;
@@ -678,12 +910,50 @@ body {
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
+.master-photo-container {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  margin-top: -10px;
+}
+
 .master-photo-main {
   width: 80px;
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  margin-top: -10px;
+}
+
+.master-photo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: -10px;
+}
+
+.master-photo-placeholder .placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.master-photo-placeholder .placeholder-icon {
+  font-size: 1.8rem;
+  margin-bottom: 2px;
+}
+
+.master-photo-placeholder .placeholder-text {
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .master-info-main h3 {
@@ -706,8 +976,8 @@ body {
   margin-bottom: 8px;
 }
 
-.master-type, .salon-name {
-  background: #667eea;
+.master-type {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
   color: white;
   padding: 4px 12px;
   border-radius: 15px;
@@ -715,20 +985,10 @@ body {
   font-weight: 500;
 }
 
-.salon-name {
-  background: #4ecdc4;
+.master-type.freelancer {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
 }
 
-.salon-name.clickable {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.salon-name.clickable:hover {
-  background: #45b7b8;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
 
 .specialty-main {
   color: #667eea;
@@ -1109,6 +1369,35 @@ body {
   border: 4px solid #667eea;
 }
 
+.master-photo-large-placeholder {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  border: 4px dashed #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.master-photo-large-placeholder .placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.master-photo-large-placeholder .placeholder-icon {
+  font-size: 3.5rem;
+  margin-bottom: 5px;
+}
+
+.master-photo-large-placeholder .placeholder-text {
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .master-detail h1 {
   color: #333;
   margin-bottom: 20px;
@@ -1123,7 +1412,28 @@ body {
   align-items: center;
 }
 
-.master-type, .salon-name, .rating, .experience {
+.master-detail-page .master-type {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.master-detail-page .master-type.freelancer {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.master-detail-page .salon-name.clickable {
+  background: #e8f4fd;
+  color: #1976d2;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  box-shadow: inset 0 0 0 1px #bbdefb;
+}
+
+.master-detail-page .rating, .master-detail-page .experience {
   background: #667eea;
   color: white;
   padding: 8px 16px;
@@ -1247,6 +1557,35 @@ body {
   margin-bottom: 10px;
 }
 
+.main-image-placeholder {
+  width: 100%;
+  height: 400px;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-image-placeholder .placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.main-image-placeholder .placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+}
+
+.main-image-placeholder .placeholder-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
 .thumbnail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -1313,11 +1652,45 @@ body {
   transform: translateY(-2px);
 }
 
+.master-photo-container {
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+
 .master-photo {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.master-card .master-photo-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.master-card .master-photo-placeholder .placeholder-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.master-card .master-photo-placeholder .placeholder-icon {
+  font-size: 1.2rem;
+  margin-bottom: 1px;
+}
+
+.master-card .master-photo-placeholder .placeholder-text {
+  font-size: 0.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .master-info h4 {
@@ -1965,18 +2338,21 @@ body {
   border-radius: 15px;
   margin-bottom: 30px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  text-align: left;
 }
 
 .add-review-form h4 {
   color: #667eea;
   margin-bottom: 20px;
   font-size: 1.5rem;
+  text-align: left;
 }
 
 .rating-input {
   display: flex;
   gap: 5px;
   margin-top: 10px;
+  justify-content: flex-start;
 }
 
 .star-btn {
@@ -2002,6 +2378,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  text-align: left;
 }
 
 .review-item {
@@ -2009,6 +2386,7 @@ body {
   padding: 25px;
   border-radius: 15px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  text-align: left;
 }
 
 .review-header {
@@ -2041,6 +2419,7 @@ body {
   line-height: 1.6;
   margin: 0;
   font-size: 1rem;
+  text-align: left;
 }
 
 .no-reviews {

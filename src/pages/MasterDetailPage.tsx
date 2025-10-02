@@ -24,6 +24,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   salons = [],
 }) => {
   const t = translations[language];
+
   
   // Состояние для бронирования
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -179,27 +180,50 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         {t.back}
       </button>
       <div className="master-detail">
-        <img src={master.photo} alt={master.name} className="master-photo-large" />
+        {master.photo && master.photo.trim() !== '' && master.photo !== 'undefined' && master.photo !== 'null' ? (
+          <img 
+            src={master.photo} 
+            alt={master.name} 
+            className="master-photo-large"
+            onError={(e) => {
+              console.log('Large image failed to load for master:', master.name, 'photo:', master.photo);
+              (e.target as HTMLImageElement).style.display = 'none';
+              const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.master-photo-large-placeholder') as HTMLElement;
+              if (placeholder) placeholder.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div 
+          className="master-photo-large-placeholder" 
+          style={{ display: (!master.photo || master.photo.trim() === '' || master.photo === 'undefined' || master.photo === 'null') ? 'flex' : 'none' }}
+        >
+          <div className="placeholder-content">
+            <div className="placeholder-icon">👤</div>
+            <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+          </div>
+        </div>
         <h1>{master.name}</h1>
         <div className="master-meta">
-          <span className="master-type">
-            {master.isFreelancer ? t.freelancer : t.inSalon}
-          </span>
-          {master.salonName && (
-            <span 
-              className="salon-name clickable" 
-              onClick={() => {
-                if (onSalonSelect && master.salonId) {
-                  const salon = salons.find(s => s.id === master.salonId);
-                  if (salon) {
-                    onSalonSelect(salon);
-                  }
-                }
-              }}
-            >
-              📍 {master.salonName}
+          <div className="master-type-container">
+            <span className={`master-type ${master.isFreelancer ? 'freelancer' : ''}`}>
+              {master.isFreelancer ? t.freelancer : t.inSalon}
             </span>
-          )}
+            {master.salonName && (
+              <span 
+                className="salon-name clickable" 
+                onClick={() => {
+                  if (onSalonSelect && master.salonId) {
+                    const salon = salons.find(s => s.id === master.salonId);
+                    if (salon) {
+                      onSalonSelect(salon);
+                    }
+                  }
+                }}
+              >
+{master.salonName}
+              </span>
+            )}
+          </div>
           <span className="rating">
             ⭐ {master.rating} ({master.reviews} {t.reviews})
           </span>
