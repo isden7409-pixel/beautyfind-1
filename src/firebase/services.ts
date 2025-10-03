@@ -219,9 +219,9 @@ export const masterService = {
         }
       });
       await Promise.all(updatePromises);
-      console.log('Updated masters with salon names');
+      // Updated masters with salon names
     } catch (error) {
-      console.error('Error updating masters with salon names:', error);
+      // Error updating masters with salon names
     }
   },
 
@@ -322,7 +322,6 @@ export const masterService = {
           masterBase.salonName = salon.name;
         }
       } catch (error) {
-        console.error('Error getting salon name:', error);
       }
     }
 
@@ -339,7 +338,6 @@ export const masterService = {
           await salonService.update(data.salonId, { masters: updatedMasters });
         }
       } catch (error) {
-        console.error('Error adding master to salon:', error);
         // Не прерываем создание мастера, если не удалось добавить в салон
       }
     }

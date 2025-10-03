@@ -6,14 +6,22 @@ import { getStorage } from 'firebase/storage';
 // Firebase configuration
 // Используем переменные окружения для безопасности
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyD0s0yw7SItY66TtI3b_oLpYpzDvQAJXMs", // fallback для разработки
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "beautyfind-8c466.firebaseapp.com",
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "beautyfind-8c466",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "beautyfind-8c466.firebasestorage.app",
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "861512568251",
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:861512568251:web:ebe42ff86825efe25d489e",
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || "G-LDQRZ3M63T"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
+
+// Проверяем наличие обязательных переменных окружения
+if (!firebaseConfig.apiKey) {
+  throw new Error('REACT_APP_FIREBASE_API_KEY is required');
+}
+if (!firebaseConfig.projectId) {
+  throw new Error('REACT_APP_FIREBASE_PROJECT_ID is required');
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

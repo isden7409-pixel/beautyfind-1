@@ -92,7 +92,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     try {
       onBookingSuccess(booking);
     } catch (error) {
-      console.error('Booking error:', error);
+      // Booking error occurred
       alert(t.bookingError);
     } finally {
       setIsSubmitting(false);

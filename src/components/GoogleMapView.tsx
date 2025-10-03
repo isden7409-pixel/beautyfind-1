@@ -106,20 +106,15 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     };
     
     const result = cityCoords[city] || cityCoords['All'];
-    console.log('getCityCoordinates called with:', city, 'returning:', result);
     return result;
   };
 
   // Обновляем центр карты при изменении города
   useEffect(() => {
-    console.log('City filter changed:', filters.city);
     if (map && isLoaded) {
       const newCenter = getCityCoordinates(filters.city);
-      console.log('Changing map center to:', filters.city, newCenter);
       map.setCenter({ lat: newCenter.lat, lng: newCenter.lng });
       map.setZoom(newCenter.zoom);
-    } else {
-      console.log('Map not ready yet. Map:', !!map, 'isLoaded:', isLoaded);
     }
   }, [map, isLoaded, filters.city]);
 
@@ -128,7 +123,6 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     
     // Временно отключаем проверку API ключа для демонстрации
     // if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
-    //   console.warn('Google Maps API key not found. Please set REACT_APP_GOOGLE_MAPS_API_KEY in your .env file');
     //   // Показываем сообщение об ошибке вместо карты
     //   if (mapRef.current) {
     //     mapRef.current.innerHTML = `
@@ -169,8 +163,6 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     loader.load().then(() => {
       if (mapRef.current && window.google) {
         const initialCenter = getCityCoordinates(filters.city);
-        console.log('Initializing map with center:', filters.city, initialCenter);
-        console.log('Current filters:', filters);
         const mapInstance = new window.google.maps.Map(mapRef.current, {
           center: { lat: initialCenter.lat, lng: initialCenter.lng },
           zoom: initialCenter.zoom,
@@ -187,7 +179,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         setIsLoaded(true);
       }
     }).catch((error) => {
-      console.error('Error loading Google Maps:', error);
+      // Error loading Google Maps
       if (mapRef.current) {
         mapRef.current.innerHTML = `
           <div style="

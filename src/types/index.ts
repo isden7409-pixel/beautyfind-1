@@ -96,6 +96,62 @@ export interface User {
   phone: string;
   type: 'client' | 'salon' | 'master';
   avatar?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Типы для аутентификации
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+export interface UserProfile {
+  id: string;
+  uid: string;
+  name: string;
+  email: string;
+  phone: string;
+  type: 'client' | 'salon' | 'master';
+  avatar?: string;
+  salonId?: string; // для мастеров, работающих в салоне
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Типы для кабинетов
+export interface DashboardStats {
+  totalBookings: number;
+  pendingBookings: number;
+  completedBookings: number;
+  totalRevenue: number;
+  averageRating: number;
+  totalReviews: number;
+}
+
+export interface FavoriteItem {
+  id: string;
+  userId: string;
+  itemId: string; // ID салона или мастера
+  itemType: 'salon' | 'master';
+  addedAt: Date;
+}
+
+export interface UserBooking {
+  id: string;
+  userId: string;
+  masterId: string;
+  salonId?: string;
+  serviceName: string;
+  date: string;
+  time: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  price: number;
+  notes?: string;
+  createdAt: Date;
 }
 
 // Типы для салона (регистрация)

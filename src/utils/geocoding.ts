@@ -11,21 +11,45 @@ export interface Coordinates {
 // Кэш для хранения уже геокодированных адресов
 const geocodingCache = new Map<string, Coordinates>();
 
+// Загружаем кэш из localStorage при инициализации
+const loadCacheFromStorage = () => {
+  try {
+    const cached = localStorage.getItem('geocoding_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      Object.entries(parsed).forEach(([address, coords]) => {
+        geocodingCache.set(address, coords as Coordinates);
+      });
+    }
+  } catch (error) {
+    // Игнорируем ошибки парсинга
+  }
+};
+
+// Сохраняем кэш в localStorage
+const saveCacheToStorage = () => {
+  try {
+    const cacheObject = Object.fromEntries(geocodingCache);
+    localStorage.setItem('geocoding_cache', JSON.stringify(cacheObject));
+  } catch (error) {
+    // Игнорируем ошибки сохранения
+  }
+};
+
+// Инициализируем кэш
+loadCacheFromStorage();
+
 // Функция для геокодирования структурированного адреса
 export async function geocodeStructuredAddress(structuredAddress: StructuredAddress): Promise<Coordinates | null> {
   const geocodingAddress = createGeocodingAddress(structuredAddress);
-  console.log(`geocodeStructuredAddress вызвана с адресом: ${geocodingAddress}`);
   
   return await geocodeAddress(geocodingAddress);
 }
 
 // Функция для геокодирования адреса
 export async function geocodeAddress(address: string): Promise<Coordinates | null> {
-  console.log(`geocodeAddress вызвана с адресом: ${address}`);
-
   // Проверяем кэш
   if (geocodingCache.has(address)) {
-    console.log(`Адрес ${address} найден в кэше`);
     return geocodingCache.get(address)!;
   }
 
@@ -33,7 +57,6 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
     // Используем публичный Nominatim (OpenStreetMap)
     // Примечание: браузер не позволяет задавать кастомный User-Agent, поэтому без него
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=cz&addressdetails=0`;
-    console.log(`Запрос геокодирования: ${url}`);
 
     const response = await fetch(url, {
       headers: {
@@ -53,14 +76,12 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
         lng: parseFloat(result.lon)
       };
       geocodingCache.set(address, coordinates);
-      console.log(`Геокодирование успешно: ${address} -> ${coordinates.lat}, ${coordinates.lng}`);
+      saveCacheToStorage(); // Сохраняем в localStorage
       return coordinates;
     }
 
-    console.warn(`Не удалось найти координаты для адреса: ${address}`);
     return null;
   } catch (error) {
-    console.error(`Ошибка геокодирования для адреса ${address}:`, error);
     return null;
   }
 }
@@ -90,4 +111,18 @@ export async function getCoordinatesForAddress(address: string): Promise<Coordin
   }
   
   return await geocodeAddress(address);
+}
+
+// Функция для очистки кэша
+export function clearGeocodingCache(): void {
+  geocodingCache.clear();
+  localStorage.removeItem('geocoding_cache');
+}
+
+// Функция для получения статистики кэша
+export function getGeocodingCacheStats(): { size: number; addresses: string[] } {
+  return {
+    size: geocodingCache.size,
+    addresses: Array.from(geocodingCache.keys())
+  };
 }

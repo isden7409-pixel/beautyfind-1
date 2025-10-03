@@ -238,7 +238,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       setHoursError(null);
       setSubmitting(true);
       const id = await masterService.createFromRegistration(formData);
-      console.log('Master created with id', id);
+      // Master created successfully
       alert(validationMessages.registrationSuccess);
       setFormData({
         name: '',
@@ -262,7 +262,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       setPhotoFile(null);
       onSubmit(formData);
     } catch (error) {
-      console.error('Failed to create master', error);
+      // Failed to create master
       const message = (error as Error)?.message || validationMessages.registrationFailed;
       alert(message);
     } finally {

@@ -5,7 +5,7 @@ import SearchAndFilters from '../components/SearchAndFilters';
 import SalonCard from '../components/SalonCard';
 import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
-import { useSalons, useMasters } from '../hooks/useData';
+import { useSalonsData, useMastersData } from '../hooks/useAppData';
 import { masterService } from '../firebase/services';
 
 // Тестовые данные салонов
@@ -755,15 +755,20 @@ interface HomePageProps {
   onMasterSelect: (master: Master) => void;
   onAdminPanel: () => void;
   onPremiumFeatures: () => void;
+  onOpenAuth: () => void;
   currentLanguage: Language;
   onLanguageChange: (language: Language) => void;
   translations: any;
   initialViewMode?: 'salons' | 'masters';
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
-  const { salons, loading: salonsLoading } = useSalons();
-  const { masters, loading: mastersLoading } = useMasters();
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, onOpenAuth, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
+  const salonsData = useSalonsData();
+  const mastersData = useMastersData();
+  const salons = salonsData?.salons && salonsData.salons.length > 0 ? salonsData.salons : mockSalons;
+  const masters = mastersData?.masters && mastersData.masters.length > 0 ? mastersData.masters : [];
+  const salonsLoading = salonsData?.loading || false;
+  const mastersLoading = mastersData?.loading || false;
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
 
   // Update existing masters with salon names
@@ -818,8 +823,11 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
       <header className="App-header">
         <div className="header-top">
           <div className="header-buttons">
+            <button onClick={onOpenAuth} className="admin-btn">
+              {currentLanguage === 'cs' ? 'Můj účet' : 'My Account'}
+            </button>
             <button onClick={onAdminPanel} className="admin-btn">
-              {t.adminPanel}
+              {currentLanguage === 'cs' ? 'Registrace' : 'Registration'}
             </button>
             <button onClick={onPremiumFeatures} className="admin-btn">
               {currentLanguage === 'cs' ? 'Prémiové funkce' : 'Premium Features'}

@@ -6,7 +6,11 @@ import SalonDetailPage from './pages/SalonDetailPage';
 import MasterDetailPage from './pages/MasterDetailPage';
 import AdminPanel from './pages/AdminPanel';
 import PremiumFeaturesPage from './pages/PremiumFeaturesPage';
-import { useSalons } from './hooks/useData';
+import DashboardRouter from './pages/dashboards/DashboardRouter';
+import AuthModal from './components/auth/AuthModal';
+import { AuthProvider, useAuth } from './components/auth/AuthProvider';
+import { useSalonsData } from './hooks/useAppData';
+import { useLanguage, useSetLanguage, useCurrentViewMode, useSetCurrentViewMode } from './store/useStore';
 import './App.css';
 
 // Импортируем mock данные
@@ -114,9 +118,11 @@ const translations = {
     step2Description: "Bezpečná platba kartou nebo převodem",
     step3Title: "Začněte získávat klienty",
     step3Description: "Váš profil bude zobrazen na vrcholu",
-    back: "← Zpět na vyhledávání",
+    back: "← Zpět",
     contact: "Kontakt",
     services: "Služby",
+    languages: "Jazyky",
+    location: "Umístění",
     book: "Rezervovat termín",
     // Booking translations
     bookWith: "Rezervovat u",
@@ -236,9 +242,11 @@ const translations = {
     step2Description: "Secure payment by card or transfer",
     step3Title: "Start getting clients",
     step3Description: "Your profile will be displayed at the top",
-    back: "← Back to search",
+    back: "← Back",
     contact: "Contact",
     services: "Services",
+    languages: "Languages",
+    location: "Location",
     book: "Book Appointment",
     // Booking translations
     bookWith: "Book with",
@@ -317,17 +325,23 @@ const translations = {
 function AppContent() {
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('cs');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
-  const [currentViewMode, setCurrentViewMode] = useState<'salons' | 'masters'>('salons');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   const navigate = useNavigate();
   
+  // Используем глобальное состояние
+  const currentLanguage = useLanguage();
+  const setCurrentLanguage = useSetLanguage();
+  const currentViewMode = useCurrentViewMode();
+  const setCurrentViewMode = useSetCurrentViewMode();
+  
   // Загружаем реальные данные салонов
-  const { salons } = useSalons();
+  const salonsData = useSalonsData();
+  const salons = salonsData?.salons && salonsData.salons.length > 0 ? salonsData.salons : mockSalons;
 
   const handleSalonSelect = (salon: Salon) => {
-    console.log('Salon selected:', salon);
     setSelectedSalon(salon);
     setCurrentViewMode('salons');
     navigate(`/salon/${salon.id}`);
@@ -335,7 +349,6 @@ function AppContent() {
 
 
   const handleMasterSelect = (master: Master) => {
-    console.log('Master selected:', master);
     setSelectedMaster(master);
     setCurrentViewMode('masters');
     navigate(`/master/${master.id}`);
@@ -370,15 +383,29 @@ function AppContent() {
     setShowPremiumFeatures(false);
   };
 
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    setShowDashboard(true);
+  };
+
+  const handleBackFromDashboard = () => {
+    setShowDashboard(false);
+  };
+
+  const handleOpenAuth = () => {
+    setShowAuthModal(true);
+  };
+
   if (showAdminPanel) {
     return (
       <AdminPanel
         language={currentLanguage}
+        onLanguageChange={setCurrentLanguage}
         translations={{
           cs: {
             adminPanel: "Admin Panel",
             back: "← Zpět",
-            backToHome: "← Zpět na hlavní stránku",
+            backToHome: "← Zpět",
             registerSalon: "Registrovat salon",
             registerMaster: "Registrovat mistra",
             salonRegistrationInfo: "Registrace nového salonu",
@@ -429,7 +456,7 @@ function AppContent() {
           en: {
             adminPanel: "Admin Panel",
             back: "← Back",
-            backToHome: "← Back to Home",
+            backToHome: "← Back",
             registerSalon: "Register Salon",
             registerMaster: "Register Master",
             salonRegistrationInfo: "New Salon Registration",
@@ -489,6 +516,17 @@ function AppContent() {
         language={currentLanguage}
         translations={translations}
         onBack={handleBackFromPremium}
+        onLanguageChange={setCurrentLanguage}
+      />
+    );
+  }
+
+  if (showDashboard) {
+    return (
+      <DashboardRouter
+        language={currentLanguage}
+        onBack={handleBackFromDashboard}
+        onLanguageChange={setCurrentLanguage}
       />
     );
   }
@@ -504,6 +542,7 @@ function AppContent() {
               onMasterSelect={handleMasterSelect}
               onAdminPanel={handleAdminPanel}
               onPremiumFeatures={handlePremiumFeatures}
+              onOpenAuth={handleOpenAuth}
               currentLanguage={currentLanguage}
               onLanguageChange={setCurrentLanguage}
               translations={translations}
@@ -521,6 +560,7 @@ function AppContent() {
                 translations={translations}
                   onBack={handleBack}
                   onMasterSelect={handleMasterSelect}
+                  onLanguageChange={setCurrentLanguage}
                 />
               ) : (
                 <div>Salon not found</div>
@@ -538,6 +578,7 @@ function AppContent() {
                   onBack={handleBackFromMaster}
                   onSalonSelect={handleSalonSelect}
                   salons={salons}
+                  onLanguageChange={setCurrentLanguage}
                 />
               ) : (
                 <div>Master not found</div>
@@ -545,15 +586,24 @@ function AppContent() {
             }
           />
       </Routes>
+      
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        language={currentLanguage}
+      />
     </div>
   );
 }
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

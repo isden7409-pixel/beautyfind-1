@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Language, PremiumFeature } from '../types';
+import PageHeader from '../components/PageHeader';
 
 interface PremiumFeaturesPageProps {
   language: Language;
   translations: any;
   onBack: () => void;
+  onLanguageChange: (language: Language) => void;
 }
 
 const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
   language,
   translations,
   onBack,
+  onLanguageChange,
 }) => {
 
   const [selectedType, setSelectedType] = useState<'salon' | 'master'>('salon');
@@ -67,7 +70,6 @@ const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
   ];
 
   const handlePurchase = (feature: PremiumFeature) => {
-    console.log('Premium feature purchased:', feature);
     // В реальном приложении здесь будет логика покупки
     alert(language === 'cs' ? 'Funkce byla úspěšně zakoupena!' : 'Feature successfully purchased!');
   };
@@ -76,12 +78,16 @@ const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
 
   return (
     <div className="premium-features-page">
-      <div className="premium-header">
-        <button onClick={onBack} className="back-button">
-          {language === 'cs' ? '← Zpět' : '← Back'}
-        </button>
-        <h1>⭐ {language === 'cs' ? 'Prémiové funkce' : 'Premium Features'}</h1>
-        <p className="premium-subtitle">
+      <PageHeader
+        title={`⭐ ${language === 'cs' ? 'Prémiové funkce' : 'Premium Features'}`}
+        currentLanguage={language}
+        onLanguageChange={onLanguageChange}
+        showBackButton={true}
+        onBack={onBack}
+        backText={language === 'cs' ? '← Zpět' : '← Back'}
+      />
+      <div className="premium-subtitle">
+        <p>
           {language === 'cs' 
             ? 'Zvyšte svou viditelnost a přilákejte více klientů' 
             : 'Increase your visibility and attract more clients'
@@ -149,25 +155,25 @@ const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
         <h3>{language === 'cs' ? 'Jak to funguje?' : 'How it works?'}</h3>
         <div className="steps">
           <div className="step">
-            <div className="step-number">1</div>
-            <div className="step-content">
+            <div className="step-header-row">
+              <div className="step-number">1</div>
               <h4>{language === 'cs' ? 'Vyberte balíček' : 'Choose package'}</h4>
-              <p>{language === 'cs' ? 'Zvolte si délku prémiového zobrazení' : 'Select the duration of premium display'}</p>
             </div>
+            <p>{language === 'cs' ? 'Zvolte si délku prémiového zobrazení' : 'Select the duration of premium display'}</p>
           </div>
           <div className="step">
-            <div className="step-number">2</div>
-            <div className="step-content">
+            <div className="step-header-row">
+              <div className="step-number">2</div>
               <h4>{language === 'cs' ? 'Zaplaťte' : 'Pay'}</h4>
-              <p>{language === 'cs' ? 'Bezpečná platba kartou nebo převodem' : 'Secure payment by card or transfer'}</p>
             </div>
+            <p>{language === 'cs' ? 'Bezpečná platba kartou nebo převodem' : 'Secure payment by card or transfer'}</p>
           </div>
           <div className="step">
-            <div className="step-number">3</div>
-            <div className="step-content">
-              <h4>{language === 'cs' ? 'Začněte získávat klienty' : 'Start getting clients'}</h4>
-              <p>{language === 'cs' ? 'Váš profil bude zobrazen na vrcholu' : 'Your profile will be displayed at the top'}</p>
+            <div className="step-header-row">
+              <div className="step-number">3</div>
+              <h4>{language === 'cs' ? 'Začněte získavat klienty' : 'Start getting clients'}</h4>
             </div>
+            <p>{language === 'cs' ? 'Váš profil bude zobrazen na vrcholu' : 'Your profile will be displayed at the top'}</p>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { translateServices, translateLanguages } from '../utils/serviceTranslati
 import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
 import { formatExperienceYears } from '../utils/formatters';
+import LazyImage from './LazyImage';
 
 interface MasterCardProps {
   master: Master;
@@ -39,22 +40,30 @@ const MasterCard: React.FC<MasterCardProps> = ({
             alt={master.name} 
             className="master-photo-main"
             onError={(e) => {
-              console.log('Image failed to load for master:', master.name, 'photo:', master.photo);
+              // При ошибке загрузки скрываем изображение и показываем заглушку
               (e.target as HTMLImageElement).style.display = 'none';
-              const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.master-photo-placeholder') as HTMLElement;
-              if (placeholder) placeholder.style.display = 'flex';
+              const container = (e.target as HTMLImageElement).parentElement;
+              if (container) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'master-photo-placeholder';
+                placeholder.innerHTML = `
+                  <div class="placeholder-content">
+                    <div class="placeholder-icon">👤</div>
+                    <div class="placeholder-text">${language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+                  </div>
+                `;
+                container.appendChild(placeholder);
+              }
             }}
           />
-        ) : null}
-        <div 
-          className="master-photo-placeholder" 
-          style={{ display: (!master.photo || master.photo.trim() === '' || master.photo === 'undefined' || master.photo === 'null') ? 'flex' : 'none' }}
-        >
-          <div className="placeholder-content">
-            <div className="placeholder-icon">👤</div>
-            <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+        ) : (
+          <div className="master-photo-placeholder">
+            <div className="placeholder-content">
+              <div className="placeholder-icon">👤</div>
+              <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <div className="master-info-main">
         <h3>{master.name}</h3>

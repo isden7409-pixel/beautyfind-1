@@ -16,7 +16,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         className={`lang-btn ${currentLanguage === 'cs' ? 'active' : ''}`}
         onClick={() => onLanguageChange('cs')}
       >
-        CS
+        CZ
       </button>
       <button
         className={`lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}

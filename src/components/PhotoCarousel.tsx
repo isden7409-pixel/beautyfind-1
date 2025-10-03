@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LazyImage from './LazyImage';
 
 interface PhotoCarouselProps {
   images: string[];
@@ -24,10 +25,11 @@ const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
     return (
       <div className={`photo-carousel ${className}`}>
         {mainImage && mainImage.trim() !== '' ? (
-          <img 
+          <LazyImage 
             src={mainImage} 
             alt={altText} 
             className="carousel-image"
+            placeholder="🏢"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
@@ -71,10 +73,12 @@ const PhotoCarousel: React.FC<PhotoCarouselProps> = ({
   return (
     <div className={`photo-carousel ${className}`}>
       <div className="carousel-container">
-        <img 
+        <LazyImage 
           src={allImages[currentIndex]} 
           alt={altText} 
           className="carousel-image"
+          placeholder="🏢"
+          loading="eager" // Для карусели загружаем сразу
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';

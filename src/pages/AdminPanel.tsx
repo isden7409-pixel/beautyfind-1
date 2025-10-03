@@ -8,12 +8,14 @@ interface AdminPanelProps {
   language: Language;
   translations: any;
   onBack: () => void;
+  onLanguageChange: (language: Language) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
   language,
   translations,
   onBack,
+  onLanguageChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'salon' | 'master'>('salon');
   const [showForm, setShowForm] = useState(false);
@@ -23,14 +25,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
 
   const handleSalonSubmit = (data: SalonRegistration) => {
-    console.log('Salon registration data:', data);
     // Здесь будет отправка данных на сервер
     alert(t.registrationSuccess);
     setShowForm(false);
   };
 
   const handleMasterSubmit = (data: MasterRegistration) => {
-    console.log('Master registration data:', data);
     // Здесь будет отправка данных на сервер
     alert(t.registrationSuccess);
     setShowForm(false);

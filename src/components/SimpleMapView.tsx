@@ -33,7 +33,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
   const [geoMasters, setGeoMasters] = useState<Master[]>([]);
 
   const t = translations[language];
-  // Геокодируем элементы без координат (с задержкой между запросами)
+  // Оптимизированное геокодирование с batch обработкой
   useEffect(() => {
     (async () => {
       // Собираем всех мастеров: фрилансеры + мастера из салонов
@@ -56,49 +56,77 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       setGeoSalons(salons);
       setGeoMasters(allMasters);
       
-      // Затем постепенно геокодируем остальные
+      // Собираем все адреса для геокодирования
+      const addressesToGeocode: Array<{
+        type: 'salon' | 'master';
+        index: number;
+        address: string;
+        structuredAddress?: any;
+      }> = [];
+      
+      // Собираем адреса салонов
+      salons.forEach((salon, index) => {
+        if (!salon.coordinates && (salon.structuredAddress || salon.address)) {
+          addressesToGeocode.push({
+            type: 'salon',
+            index,
+            address: salon.address,
+            structuredAddress: salon.structuredAddress
+          });
+        }
+      });
+      
+      // Собираем адреса мастеров
+      allMasters.forEach((master, index) => {
+        if (!master.coordinates && (master.structuredAddress || master.address)) {
+          addressesToGeocode.push({
+            type: 'master',
+            index,
+            address: master.address || '',
+            structuredAddress: master.structuredAddress
+          });
+        }
+      });
+      
+      // Batch геокодирование с ограничением на количество одновременных запросов
+      const BATCH_SIZE = 5; // Максимум 5 одновременных запросов
       const enrichSalons = [...salons];
       const enrichMasters = [...allMasters];
       
-      // Геокодируем салоны с задержкой
-      for (let i = 0; i < salons.length; i++) {
-        const s = salons[i];
-        if (!s.coordinates && (s.structuredAddress || s.address)) {
-          // Приоритет структурированному адресу
+      for (let i = 0; i < addressesToGeocode.length; i += BATCH_SIZE) {
+        const batch = addressesToGeocode.slice(i, i + BATCH_SIZE);
+        
+        // Обрабатываем batch параллельно
+        const promises = batch.map(async (item) => {
           let coords = undefined;
-          if (s.structuredAddress) {
-            coords = await geocodeStructuredAddress(s.structuredAddress);
-          } else if (s.address) {
-            coords = await geocodeAddress(`${s.address}${s.city ? ', ' + s.city : ''}`);
+          if (item.structuredAddress) {
+            coords = await geocodeStructuredAddress(item.structuredAddress);
+          } else if (item.address) {
+            coords = await geocodeAddress(item.address);
           }
-          
+          return { item, coords };
+        });
+        
+        const results = await Promise.all(promises);
+        
+        // Обновляем результаты
+        results.forEach(({ item, coords }) => {
           if (coords) {
-            enrichSalons[i] = { ...s, coordinates: coords } as Salon;
-            setGeoSalons([...enrichSalons]);
+            if (item.type === 'salon') {
+              enrichSalons[item.index] = { ...enrichSalons[item.index], coordinates: coords } as Salon;
+            } else {
+              enrichMasters[item.index] = { ...enrichMasters[item.index], coordinates: coords } as Master;
+            }
           }
-          // Задержка между запросами
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-      }
-      
-      // Геокодируем мастеров с задержкой
-      for (let i = 0; i < allMasters.length; i++) {
-        const m = allMasters[i];
-        if (!m.coordinates && (m.structuredAddress || m.address)) {
-          // Приоритет структурированному адресу
-          let coords = undefined;
-          if (m.structuredAddress) {
-            coords = await geocodeStructuredAddress(m.structuredAddress);
-          } else if (m.address) {
-            coords = await geocodeAddress(`${m.address}${m.city ? ', ' + m.city : ''}`);
-          }
-          
-          if (coords) {
-            enrichMasters[i] = { ...m, coordinates: coords } as Master;
-            setGeoMasters([...enrichMasters]);
-          }
-          // Задержка между запросами
-          await new Promise(resolve => setTimeout(resolve, 200));
+        });
+        
+        // Обновляем состояние после каждого batch
+        setGeoSalons([...enrichSalons]);
+        setGeoMasters([...enrichMasters]);
+        
+        // Небольшая задержка между batch'ами
+        if (i + BATCH_SIZE < addressesToGeocode.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
     })();
@@ -170,16 +198,13 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
     };
     
     const result = cityCoords[city] || cityCoords['All'];
-    console.log('getCityCoordinates called with:', city, 'returning:', result);
     return result;
   };
 
   // Обновляем центр карты при изменении города
   useEffect(() => {
-    console.log('City filter changed:', filters.city);
     if (map && isLoaded) {
       const newCenter = getCityCoordinates(filters.city);
-      console.log('Changing map center to:', filters.city, newCenter);
       map.setView([newCenter.lat, newCenter.lng], newCenter.zoom);
     }
   }, [map, isLoaded, filters.city]);
@@ -213,8 +238,6 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
       if (mapRef.current && (window as any).L && !createdMap) {
         const L = (window as any).L;
         const initialCenter = getCityCoordinates(filters.city);
-        console.log('Initializing map with center:', filters.city, initialCenter);
-        console.log('Current filters:', filters);
 
         // Защита от повторной инициализации при HMR/повторном монтировании
         const container: any = mapRef.current;
@@ -325,9 +348,9 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
           const marker = L.marker([lat, lng], { icon: salonIcon })
             .addTo(map);
           
-          // Добавляем отладочную информацию
+          // Добавляем обработчик клика
           marker.on('click', function() {
-            console.log('Salon marker clicked:', salon.name);
+            // Обработка клика по маркеру салона
           });
           
           const addressText = salon.structuredAddress
@@ -379,6 +402,7 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
             closeButton: true,
             autoClose: true,
             closeOnClick: true,
+            autoOpen: false,
             className: 'custom-popup',
             maxWidth: 300,
             minWidth: 250
@@ -433,21 +457,16 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
           const marker = L.marker([lat, lng], { icon: masterIcon })
             .addTo(map);
           
-          // Добавляем отладочную информацию
+          // Добавляем обработчик клика
           marker.on('click', function() {
-            console.log('Master marker clicked:', master.name);
+            // Обработка клика по маркеру мастера
           });
           
           const masterAddressText = master.structuredAddress
             ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
-            : (require('../utils/cities').translateAddressToCzech(master.address || '', master.city) || translateCity(master.city));
+            : (require('../utils/cities').translateAddressToCzech(master.address || '', master.city) || translateCity(master.city) || master.address || master.city || '');
 
-          console.log('Master photo debug:', {
-            name: master.name,
-            photo: master.photo,
-            hasPhoto: master.photo && master.photo.trim() !== '',
-            photoType: typeof master.photo
-          });
+          // Debug info removed for production
 
           // Создаем HTML для фото или заглушки заранее
           const placeholderHtml = '<div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.9); border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; flex-direction: column;"><div style="font-size: 24px; margin-bottom: 2px;">👤</div><div style="font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;">' + (language === 'cs' ? 'MISTR' : 'MASTER') + '</div></div>';
@@ -464,9 +483,9 @@ const SimpleMapView: React.FC<SimpleMapViewProps> = ({
                     ⭐ ${master.rating} (${master.reviews})
                   </div>
                 </div>
-                <div style="padding: 16px; background: white;">
-                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3; text-align: center;">${master.name}</h3>
-                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center; justify-content: center;">
+                <div style="padding: 16px; background: white; text-align: center;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${master.name}</h3>
+                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px;">
                     <span style="margin-right: 6px;">📍</span>
                     <span>${masterAddressText || ''}</span>
                   </div>
@@ -538,6 +557,7 @@ ${master.salonName}
             closeButton: true,
             autoClose: true,
             closeOnClick: true,
+            autoOpen: false,
             className: 'custom-popup',
             maxWidth: 300,
             minWidth: 250

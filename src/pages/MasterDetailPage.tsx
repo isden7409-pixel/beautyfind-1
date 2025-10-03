@@ -4,7 +4,9 @@ import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import BookingModal from '../components/BookingModal';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
+import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
+import PageHeader from '../components/PageHeader';
 
 interface MasterDetailPageProps {
   master: Master;
@@ -13,6 +15,7 @@ interface MasterDetailPageProps {
   onBack: () => void;
   onSalonSelect?: (salon: Salon) => void;
   salons?: Salon[];
+  onLanguageChange: (language: Language) => void;
 }
 
 const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
@@ -22,14 +25,14 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   onBack,
   onSalonSelect,
   salons = [],
+  onLanguageChange,
 }) => {
   const t = translations[language];
 
-  
-  // Состояние для бронирования
   const [showBookingModal, setShowBookingModal] = useState(false);
-  
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [map, setMap] = useState<any>(null);
+
   useEffect(() => {
     (async () => {
       const data = await reviewService.getByMaster(master.id);
@@ -37,107 +40,71 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     })();
   }, [master.id]);
 
-  const [map, setMap] = useState<any>(null);
-  const [marker, setMarker] = useState<any>(null);
-
   const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
-    const id = await reviewService.create(newReview);
+    await reviewService.create(newReview);
     const updated = await reviewService.getByMaster(master.id);
     setReviews(updated);
   };
 
-  // Initialize map
-  useEffect(() => {
-    const initMap = async () => {
-      if (typeof window !== 'undefined' && window.L) {
-        const mapElement = document.getElementById('master-detail-map');
-        if (!mapElement) return;
+  const initMap = async () => {
+    if (typeof window !== 'undefined' && window.L) {
+      const mapElement = document.getElementById('master-detail-map');
+      if (!mapElement) return;
 
-        // Check if map is already initialized
-        if (mapElement.hasChildNodes()) return;
-        const el = mapElement as HTMLDivElement;
-        if (!el.offsetWidth || !el.offsetHeight) {
-          setTimeout(initMap, 100);
-          return;
+      if (mapElement.hasChildNodes()) return;
+      const el = mapElement as HTMLDivElement;
+      if (!el.offsetWidth || !el.offsetHeight) {
+        setTimeout(initMap, 100);
+        return;
+      }
+
+      try {
+        let coordinates = master.coordinates;
+
+        if (!coordinates && (master.structuredAddress || (master.address && master.city))) {
+          try {
+            const { geocodeAddress, geocodeStructuredAddress } = await import('../utils/geocoding');
+            const geocoded = master.structuredAddress
+              ? await geocodeStructuredAddress(master.structuredAddress)
+              : await geocodeAddress(`${master.address}, ${master.city}`);
+            if (geocoded) {
+              coordinates = { lat: geocoded.lat, lng: geocoded.lng };
+            }
+          } catch (geoError) {
+            // Geocoding error
+          }
         }
 
-        try {
-          // Отладочная информация
-          console.log('Master data for map:', {
-            name: master.name,
-            address: master.address,
-            city: master.city,
-            coordinates: master.coordinates,
-            isFreelancer: master.isFreelancer
-          });
-          
-          let coordinates = master.coordinates;
-          
-          // Если координат нет, но есть адрес - попробуем геокодировать
-          if (!coordinates && (master.structuredAddress || (master.address && master.city))) {
-            try {
-              const { geocodeAddress, geocodeStructuredAddress } = await import('../utils/geocoding');
-              const geocoded = master.structuredAddress
-                ? await geocodeStructuredAddress(master.structuredAddress)
-                : await geocodeAddress(`${master.address}, ${master.city}`);
-              if (geocoded) {
-                coordinates = geocoded;
-                console.log('Successfully geocoded master:', geocoded);
-              }
-            } catch (error) {
-              console.log('Geocoding failed for master:', error);
-            }
-          }
-          
-          // Если всё ещё нет координат, используем центр города
-          if (!coordinates) {
-            const cityCoords: { [key: string]: { lat: number; lng: number } } = {
-              'Prague': { lat: 50.0755, lng: 14.4378 },
-              'Brno': { lat: 49.1951, lng: 16.6068 },
-              'Ostrava': { lat: 49.8206, lng: 18.2625 },
-              'Plzen': { lat: 49.7475, lng: 13.3776 },
-              'Liberec': { lat: 50.7671, lng: 15.0562 },
-              'Olomouc': { lat: 49.5938, lng: 17.2509 }
-            };
-            coordinates = cityCoords[master.city || 'Prague'] || { lat: 50.0755, lng: 14.4378 };
-            console.log('Using city center coordinates:', coordinates);
-          }
-          
-          const mapInstance = window.L.map('master-detail-map').setView([coordinates.lat, coordinates.lng], 15);
-          
+        if (coordinates) {
+          const newMap = window.L.map('master-detail-map').setView([coordinates.lat, coordinates.lng], 13);
           window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-          }).addTo(mapInstance);
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(newMap);
 
-          const markerInstance = window.L.marker([coordinates.lat, coordinates.lng]).addTo(mapInstance);
-          
-          // Add popup to marker
-          const salonInfo = master.isFreelancer 
-            ? (language === 'cs' ? 'Samostatný pracovník' : 'Freelancer')
-            : master.salonName || (language === 'cs' ? 'Salon' : 'Salon');
-            
-          const { translateCityToCzech } = await import('../utils/cities');
-
+          const markerInstance = window.L.marker([coordinates.lat, coordinates.lng]).addTo(newMap);
           markerInstance.bindPopup(`
             <div style="text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-              <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${master.name}</h3>
-              <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${salonInfo}</p>
-              <p style="margin: 0; color: #888; font-size: 12px;">${master.structuredAddress ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress) : `${master.address || ''}${master.address ? ', ' : ''}${require('../utils/cities').translateCityToCzech(master.city)}`}</p>
+              <div style="font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px;">${master.name}</div>
+              <div style="font-size: 14px; color: #666;">${master.address || master.structuredAddress?.fullAddress || ''}</div>
             </div>
-          `);
-
-          setMap(mapInstance);
-          setTimeout(() => {
-            try { mapInstance.invalidateSize(); } catch {}
-          }, 0);
-          setMarker(markerInstance);
-        } catch (error) {
-          console.error('Error initializing map:', error);
+          `, {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
+            autoOpen: false,
+            className: 'custom-popup',
+            maxWidth: 250,
+            minWidth: 200
+          });
+          setMap(newMap);
         }
+      } catch (error) {
+        // Error initializing map
       }
-    };
+    }
+  };
 
-    // Wait for both Leaflet and DOM element to be ready
+  useEffect(() => {
     const checkAndInit = () => {
       const el = document.getElementById('master-detail-map') as HTMLDivElement | null;
       if (typeof window !== 'undefined' && window.L && el && el.offsetWidth && el.offsetHeight) {
@@ -149,7 +116,6 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
 
     checkAndInit();
 
-    // Cleanup function
     return () => {
       if (map) {
         try { map.remove(); } catch {}
@@ -157,7 +123,6 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     };
   }, [master, language, map]);
 
-  // Обработчики для бронирования
   const handleBookingClick = () => {
     if (master.bookingEnabled) {
       setShowBookingModal(true);
@@ -165,147 +130,179 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   };
 
   const handleBookingSuccess = (booking: Booking) => {
-    console.log('Booking successful:', booking);
-    // Здесь можно добавить уведомление об успешном бронировании
     alert(t.bookingSuccess);
+    setShowBookingModal(false);
   };
 
   const handleBookingClose = () => {
     setShowBookingModal(false);
   };
 
+  const masterSalon = master.salonId ? salons.find(s => s.id === master.salonId) : null;
+
   return (
     <div className="master-detail-page">
-      <button onClick={onBack} className="back-button">
-        {t.back}
-      </button>
-      <div className="master-detail">
-        {master.photo && master.photo.trim() !== '' && master.photo !== 'undefined' && master.photo !== 'null' ? (
-          <img 
-            src={master.photo} 
-            alt={master.name} 
-            className="master-photo-large"
-            onError={(e) => {
-              console.log('Large image failed to load for master:', master.name, 'photo:', master.photo);
-              (e.target as HTMLImageElement).style.display = 'none';
-              const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.master-photo-large-placeholder') as HTMLElement;
-              if (placeholder) placeholder.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div 
-          className="master-photo-large-placeholder" 
-          style={{ display: (!master.photo || master.photo.trim() === '' || master.photo === 'undefined' || master.photo === 'null') ? 'flex' : 'none' }}
-        >
-          <div className="placeholder-content">
-            <div className="placeholder-icon">👤</div>
-            <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
-          </div>
-        </div>
-        <h1>{master.name}</h1>
+      <PageHeader
+        title=""
+        currentLanguage={language}
+        onLanguageChange={onLanguageChange}
+        showBackButton={true}
+        onBack={onBack}
+        backText={t.back}
+      />
+
+      <div className="master-detail-content">
+        {(() => {
+          const hasValidPhoto = master.photo && 
+            master.photo.trim() !== '' && 
+            master.photo !== 'undefined' && 
+            master.photo !== 'null' &&
+            master.photo.startsWith('http');
+          
+          if (hasValidPhoto) {
+            return (
+              <>
+                <img 
+                  src={master.photo} 
+                  alt={master.name} 
+                  className="master-photo-large"
+                  onError={(e) => {
+                    // При ошибке загрузки скрываем изображение и показываем заглушку
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.master-photo-large-placeholder') as HTMLElement;
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+                <div 
+                  className="master-photo-large-placeholder" 
+                  style={{ display: 'none' }}
+                >
+                  <div className="placeholder-content">
+                    <div className="placeholder-icon">👤</div>
+                    <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+                  </div>
+                </div>
+              </>
+            );
+          } else {
+            return (
+              <div className="master-photo-large-placeholder">
+                <div className="placeholder-content">
+                  <div className="placeholder-icon">👤</div>
+                  <div className="placeholder-text">{language === 'cs' ? 'MISTR' : 'MASTER'}</div>
+                </div>
+              </div>
+            );
+          }
+        })()}
+
+        <h1 className="master-name-centered">{master.name}</h1>
+        
         <div className="master-meta">
-          <div className="master-type-container">
-            <span className={`master-type ${master.isFreelancer ? 'freelancer' : ''}`}>
-              {master.isFreelancer ? t.freelancer : t.inSalon}
-            </span>
-            {master.salonName && (
-              <span 
-                className="salon-name clickable" 
-                onClick={() => {
-                  if (onSalonSelect && master.salonId) {
-                    const salon = salons.find(s => s.id === master.salonId);
-                    if (salon) {
-                      onSalonSelect(salon);
-                    }
-                  }
-                }}
-              >
-{master.salonName}
-              </span>
-            )}
-          </div>
-          <span className="rating">
-            ⭐ {master.rating} ({master.reviews} {t.reviews})
-          </span>
-          <span className="experience">{require('../utils/formatters').formatExperienceYears(master.experience, language, true)}</span>
+          {master.worksInSalon && masterSalon && (
+            <div className="salon-info-row">
+              <div className="master-type">{t.inSalon}</div>
+              <div className="salon-name clickable" onClick={() => onSalonSelect && onSalonSelect(masterSalon)}>
+                {masterSalon.name}
+              </div>
+            </div>
+          )}
+          {master.isFreelancer && (
+            <div className="master-type freelancer">{t.freelancer}</div>
+          )}
+          <div className="rating">⭐ {master.rating} ({master.reviews} {t.reviews})</div>
+          {master.experience && (
+            <div className="experience">{formatExperienceYears(master.experience, language)}</div>
+          )}
         </div>
+
         {master.description && (
-          <div className="description-block">
-            <p className="description">{master.description}</p>
+          <div className="description">
+            <p>{master.description}</p>
           </div>
         )}
 
-        <div className="services-section">
-          <h3>{t.services}</h3>
-          <div className="services-grid">
-            {translateServices(master.services || [master.specialty], language).map(service => (
-              <span key={service} className="service-badge">{service}</span>
-            ))}
+        {master.services && master.services.length > 0 && (
+          <div className="services-section">
+            <h3>{t.services}</h3>
+            <div className="services-grid">
+              {master.services.map((service: string, index: number) => (
+                <div key={index} className="service-badge">
+                  {translateServices([service], language)[0]}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {master.languages && master.languages.length > 0 && (
+          <div className="services-section">
+            <h3>{t.languages}</h3>
+            <div className="services-grid">
+              {master.languages.map((lang: string, index: number) => (
+                <div key={index} className="service-badge">
+                  {translateLanguages([lang], language)[0]}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="contact-info">
           <h3>{t.contact}</h3>
-          <p>📞 {master.phone}</p>
-          <p>✉️ {master.email}</p>
-          <p>📍 {master.structuredAddress ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress) : `${master.address || ''}${master.address ? ', ' : ''}${require('../utils/cities').translateCityToCzech(master.city)}`}</p>
-          {master.languages && master.languages.length > 0 && (
-            <div className="languages-in-contact">
-              <p>🌐 <strong>{language === 'cs' ? 'Jazyky:' : 'Languages:'}</strong> {translateLanguages(master.languages, language).join(', ')}</p>
-            </div>
+          <p><strong>{t.phone}:</strong> {master.phone}</p>
+          <p><strong>{t.email}:</strong> {master.email}</p>
+          {master.address && <p><strong>{t.address}:</strong> {master.address}</p>}
+        </div>
+
+        <div className="contact-info">
+          <h3>{t.openHours}</h3>
+          {master.workingHours && master.workingHours.length > 0 ? (
+            <WorkingHoursDisplay workingHours={master.workingHours} language={language} />
+          ) : (
+            <p style={{ color: '#1a1a1a', fontStyle: 'normal' }}>
+              {language === 'cs' ? 'Po domluvě' : 'By appointment'}
+            </p>
           )}
         </div>
-        {/* Working hours before services. For masters in salon, show salon hours */}
-        <div className="contact-info">
-          <h3 className="contact-title">{language === 'cs' ? 'Otevírací doba' : 'Opening hours'}</h3>
-          {master.byAppointment
-            ? (<p>{language === 'cs' ? 'Po domluvě' : 'By appointment'}</p>)
-            : (
-              <WorkingHoursDisplay
-                workingHours={(master.workingHours && master.workingHours.length > 0)
-                  ? master.workingHours
-                  : (salons.find(s => s.id === master.salonId)?.workingHours)}
-                language={language}
-              />
-            )}
+
+        <div className="master-book-button-container">
+          <button 
+            onClick={handleBookingClick} 
+            className="book-button"
+            disabled={!master.bookingEnabled}
+          >
+            {master.bookingEnabled ? t.book : (language === 'cs' ? 'Rezervace nedostupná' : 'Booking unavailable')}
+          </button>
         </div>
 
-        
-
-        
-        <button 
-          className="book-button" 
-          onClick={handleBookingClick}
-          disabled={!master.bookingEnabled}
-        >
-          {master.bookingEnabled ? t.book : (language === 'cs' ? 'Rezervace nedostupná' : 'Booking unavailable')}
-        </button>
-        
         <div className="master-map-section">
-          <h3>{language === 'cs' ? 'Umístění' : 'Location'}</h3>
-          <div id="master-detail-map" style={{ height: '300px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}></div>
+          <h3>{t.location}</h3>
+          <div id="master-detail-map" className="master-detail-map"></div>
         </div>
 
         <ReviewsSection
+          masterId={master.id}
           reviews={reviews}
+          onAddReview={handleAddReview}
           language={language}
           translations={translations}
-          onAddReview={handleAddReview}
-          masterId={master.id}
         />
       </div>
 
-      {/* Модальное окно бронирования */}
-      <BookingModal
-        master={master}
-        isOpen={showBookingModal}
-        onClose={handleBookingClose}
-        onBookingSuccess={handleBookingSuccess}
-        language={language}
-        translations={translations}
-      />
+      {showBookingModal && (
+        <BookingModal
+          master={master}
+          isOpen={showBookingModal}
+          language={language}
+          translations={translations}
+          onClose={handleBookingClose}
+          onBookingSuccess={handleBookingSuccess}
+        />
+      )}
     </div>
   );
 };
 
 export default MasterDetailPage;
+

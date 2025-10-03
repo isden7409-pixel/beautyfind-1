@@ -4,8 +4,10 @@ import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
+import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PhotoCarousel from '../components/PhotoCarousel';
+import PageHeader from '../components/PageHeader';
 
 interface SalonDetailPageProps {
   salon: Salon;
@@ -13,6 +15,7 @@ interface SalonDetailPageProps {
   translations: any;
   onBack: () => void;
   onMasterSelect: (master: Master) => void;
+  onLanguageChange: (language: Language) => void;
 }
 
 const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
@@ -21,6 +24,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   translations,
   onBack,
   onMasterSelect,
+  onLanguageChange,
 }) => {
   const t = translations[language];
   
@@ -39,7 +43,6 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const [marker, setMarker] = useState<any>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   
-  console.log('SalonDetailPage render, showBookingModal:', showBookingModal);
 
   const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
     const id = await reviewService.create(newReview);
@@ -49,15 +52,12 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   const handleBookingClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('Booking button clicked, salon.bookingEnabled:', salon.bookingEnabled);
     if (salon.bookingEnabled) {
       setShowBookingModal(true);
-      console.log('Modal should open now');
     }
   };
 
   const handleBookingSuccess = (booking: Booking) => {
-    console.log('Booking successful:', booking);
     alert(t.bookingSuccess);
   };
 
@@ -84,7 +84,6 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
         try {
           // Попробуем получить координаты: 1) сохраненные 2) геокодирование адреса 3) центр города
           let coordinates = salon.coordinates as any;
-          console.log('Salon coordinates from DB:', coordinates);
           
           if (!coordinates && (salon.structuredAddress || salon.address)) {
             try {
@@ -94,10 +93,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                 : (salon.address ? await geocodeAddress(salon.address) : undefined);
               if (geocoded) {
                 coordinates = geocoded;
-                console.log('Successfully geocoded salon:', geocoded);
               }
             } catch (error) {
-              console.log('Geocoding error:', error);
             }
           }
           if (!coordinates) {
@@ -135,7 +132,6 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           }, 0);
           setMarker(markerInstance);
         } catch (error) {
-          console.error('Error initializing map:', error);
         }
       }
     };
@@ -163,10 +159,15 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   return (
     <div className="salon-detail-page">
-      <button onClick={onBack} className="back-button">
-        {t.back}
-      </button>
-      <div className="salon-detail">
+      <PageHeader
+        title=""
+        currentLanguage={language}
+        onLanguageChange={onLanguageChange}
+        showBackButton={true}
+        onBack={onBack}
+        backText={t.back}
+      />
+      <div className="salon-detail-content">
         <div className="salon-gallery">
           <PhotoCarousel
             images={salon.photos || []}
@@ -214,7 +215,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
             <h3>{t.services}</h3>
             <div className="services-grid">
               {translateServices(salon.services, language).map(service => (
-                <span key={service} className="service-badge">{service}</span>
+                <div key={service} className="service-badge">{service}</div>
               ))}
             </div>
           </div>
@@ -253,9 +254,9 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                   <div className="master-info">
                     <h4>{master.name}</h4>
                     <p className="specialty">{translateSpecialty(master.specialty, language)}</p>
-                    <p className="experience">{master.experience} {t.experience}</p>
+                    <p className="experience">{formatExperienceYears(master.experience, language)}</p>
                     <span className="master-rating">
-                      ⭐ {master.rating} ({master.reviews})
+                      ⭐ {master.rating} ({master.reviews} {t.reviews})
                     </span>
                   </div>
                 </div>

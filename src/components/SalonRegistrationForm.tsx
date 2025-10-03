@@ -188,7 +188,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         }
       }
       const id = await salonService.createFromRegistration(formData);
-      console.log('Salon created with id', id);
+      // Salon created successfully
       alert(validationMessages.registrationSuccess);
       setFormData({
         name: '',
@@ -208,7 +208,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
       setPhotoFiles(null);
       onSubmit(formData);
     } catch (error) {
-      console.error('Failed to create salon', error);
+      // Failed to create salon
       alert(validationMessages.registrationFailed);
     } finally {
       setSubmitting(false);

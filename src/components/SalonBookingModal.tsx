@@ -31,7 +31,7 @@ const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
 
-  console.log('SalonBookingModal render, isOpen:', isOpen);
+  // SalonBookingModal render
   if (!isOpen) return null;
 
   const handleServiceSelect = (service: Service) => {
