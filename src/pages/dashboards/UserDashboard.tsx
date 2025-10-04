@@ -127,6 +127,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
         confirmed: 'Potvrzeno',
         cancelled: 'Zrušeno',
         completed: 'Dokončeno'
+      },
+      profileFields: {
+        name: 'Jméno',
+        email: 'Email',
+        phone: 'Telefon',
+        type: 'Typ'
       }
     },
     en: {
@@ -148,6 +154,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
         confirmed: 'Confirmed',
         cancelled: 'Cancelled',
         completed: 'Completed'
+      },
+      profileFields: {
+        name: 'Name',
+        email: 'Email',
+        phone: 'Phone',
+        type: 'Type'
       }
     }
   };
@@ -274,10 +286,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
           <div className="profile-section">
             <h2>{t.profile}</h2>
             <div className="profile-info">
-              <p><strong>Name:</strong> {userProfile?.name}</p>
-              <p><strong>Email:</strong> {userProfile?.email}</p>
-              <p><strong>Phone:</strong> {userProfile?.phone}</p>
-              <p><strong>Type:</strong> {userProfile?.type}</p>
+              <p><strong>{t.profileFields.name}:</strong> {userProfile?.name}</p>
+              <p><strong>{t.profileFields.email}:</strong> {userProfile?.email}</p>
+              <p><strong>{t.profileFields.phone}:</strong> {userProfile?.phone}</p>
+              <p><strong>{t.profileFields.type}:</strong> {userProfile?.type}</p>
             </div>
           </div>
         )}

@@ -11,12 +11,30 @@ interface DashboardRouterProps {
 }
 
 const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange }) => {
-  const { userProfile } = useAuth();
+  const { userProfile, currentUser, loading } = useAuth();
+
+  console.log('DashboardRouter - Auth state:', { userProfile, currentUser, loading });
+
+  if (loading) {
+    return (
+      <div className="dashboard">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="dashboard">
+        <div className="error">User not authenticated - no current user</div>
+      </div>
+    );
+  }
 
   if (!userProfile) {
     return (
       <div className="dashboard">
-        <div className="error">User not authenticated</div>
+        <div className="error">User authenticated but profile not loaded</div>
       </div>
     );
   }

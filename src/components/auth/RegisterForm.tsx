@@ -60,10 +60,44 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
       await signUp(formData.email, formData.password, userData);
       onSuccess();
     } catch (error: any) {
-      setError(language === 'cs' 
+      console.error('Registration error:', error);
+      
+      let errorMessage = language === 'cs' 
         ? 'Chyba při registraci. Zkuste to znovu.' 
-        : 'Registration error. Please try again.'
-      );
+        : 'Registration error. Please try again.';
+
+      // Более детальные сообщения об ошибках
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = language === 'cs' 
+              ? 'Tento email je již registrován. Zkuste se přihlásit místo registrace.' 
+              : 'This email is already registered. Try signing in instead of registering.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = language === 'cs' 
+              ? 'Heslo je příliš slabé.' 
+              : 'Password is too weak.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = language === 'cs' 
+              ? 'Neplatný email.' 
+              : 'Invalid email address.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = language === 'cs' 
+              ? 'Registrace není povolena. Kontaktujte administrátora.' 
+              : 'Registration is not allowed. Contact administrator.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = language === 'cs' 
+              ? 'Chyba připojení. Zkontrolujte internetové připojení.' 
+              : 'Network error. Check your internet connection.';
+            break;
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

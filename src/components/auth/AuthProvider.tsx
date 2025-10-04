@@ -52,17 +52,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email: email,
         phone: userData.phone || '',
         type: userData.type || 'client',
-        avatar: userData.avatar,
-        salonId: userData.salonId,
+        avatar: userData.avatar, // Оставляем undefined если нет значения
+        salonId: userData.salonId, // Оставляем undefined если нет значения
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      await setDoc(doc(db, 'users', user.uid), profile);
+      // Создаем объект для Firestore без undefined полей
+      const firestoreProfile: any = {
+        id: profile.id,
+        uid: profile.uid,
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        type: profile.type,
+        isActive: profile.isActive,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt
+      };
+
+      // Добавляем опциональные поля только если они не undefined
+      if (profile.avatar !== undefined) {
+        firestoreProfile.avatar = profile.avatar;
+      }
+      if (profile.salonId !== undefined) {
+        firestoreProfile.salonId = profile.salonId;
+      }
+
+      await setDoc(doc(db, 'users', user.uid), firestoreProfile);
       setUserProfile(profile);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing up:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   };
@@ -120,10 +146,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Загружаем профиль пользователя
         try {
+          console.log('Loading user profile for:', user.uid);
           const userDoc = await getDoc(doc(db, 'users', user.uid));
+          console.log('User document exists:', userDoc.exists());
           if (userDoc.exists()) {
             const profileData = userDoc.data() as UserProfile;
+            console.log('Profile data loaded:', profileData);
             setUserProfile(profileData);
+          } else {
+            console.log('User document does not exist in Firestore - creating default profile');
+            // Создаем базовый профиль для пользователя
+            const defaultProfile: UserProfile = {
+              id: user.uid,
+              uid: user.uid,
+              name: user.displayName || user.email?.split('@')[0] || 'User',
+              email: user.email || '',
+              phone: '',
+              type: 'client', // По умолчанию клиент
+              avatar: undefined,
+              salonId: undefined,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
+
+            // Создаем объект для Firestore без undefined полей
+            const firestoreProfile: any = {
+              id: defaultProfile.id,
+              uid: defaultProfile.uid,
+              name: defaultProfile.name,
+              email: defaultProfile.email,
+              phone: defaultProfile.phone,
+              type: defaultProfile.type,
+              isActive: defaultProfile.isActive,
+              createdAt: defaultProfile.createdAt,
+              updatedAt: defaultProfile.updatedAt
+            };
+
+            try {
+              await setDoc(doc(db, 'users', user.uid), firestoreProfile);
+              console.log('Default profile created successfully');
+              setUserProfile(defaultProfile);
+            } catch (createError) {
+              console.error('Error creating default profile:', createError);
+            }
           }
         } catch (error) {
           console.error('Error loading user profile:', error);

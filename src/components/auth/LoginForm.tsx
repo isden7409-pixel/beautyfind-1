@@ -24,10 +24,44 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister, la
       await signIn(email, password);
       onSuccess();
     } catch (error: any) {
-      setError(language === 'cs' 
+      console.error('Login error:', error);
+      
+      let errorMessage = language === 'cs' 
         ? 'Nesprávný email nebo heslo' 
-        : 'Invalid email or password'
-      );
+        : 'Invalid email or password';
+
+      // Более детальные сообщения об ошибках
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            errorMessage = language === 'cs' 
+              ? 'Uživatel s tímto emailem neexistuje. Zaregistrujte se.' 
+              : 'No user found with this email. Please register.';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = language === 'cs' 
+              ? 'Nesprávné heslo.' 
+              : 'Wrong password.';
+            break;
+          case 'auth/invalid-credential':
+            errorMessage = language === 'cs' 
+              ? 'Nesprávný email nebo heslo.' 
+              : 'Invalid email or password.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = language === 'cs' 
+              ? 'Neplatný email.' 
+              : 'Invalid email address.';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = language === 'cs' 
+              ? 'Příliš mnoho pokusů. Zkuste to později.' 
+              : 'Too many attempts. Try again later.';
+            break;
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
