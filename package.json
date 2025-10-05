@@ -1,6 +1,6 @@
 {
   "name": "beautyfind",
-  "version": "0.1.0",
+  "version": "5.10.2025",
   "private": true,
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.10",
