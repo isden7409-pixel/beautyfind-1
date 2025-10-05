@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/auth/AuthProvider';
-import { Master, Booking, DashboardStats, WorkingHours, Service } from '../../types';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { Master, Booking, DashboardStats, WorkingHours } from '../../types';
+import { collection, query, where, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import PageHeader from '../../components/PageHeader';
 
@@ -28,27 +28,67 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(false);
 
-  useEffect(() => {
-    if (userProfile && userProfile.type === 'master') {
-      loadMasterData();
-    }
-  }, [userProfile]);
-
-  const loadMasterData = async () => {
+  const loadMasterData = useCallback(async () => {
     if (!userProfile) return;
 
     try {
       setLoading(true);
+      console.log('Loading master data for user:', userProfile.email, 'type:', userProfile.type);
 
-      // Загружаем профиль мастера
+      // Сначала ищем профиль мастера в коллекции masters
       const masterQuery = query(
         collection(db, 'masters'),
         where('email', '==', userProfile.email)
       );
       const masterSnapshot = await getDocs(masterQuery);
+      console.log('Master query result:', masterSnapshot.empty ? 'No masters found' : 'Masters found');
+      
+      let masterData: Master | null = null;
       
       if (!masterSnapshot.empty) {
-        const masterData = masterSnapshot.docs[0].data() as Master;
+        // Найден профиль в коллекции masters
+        masterData = masterSnapshot.docs[0].data() as Master;
+        masterData.id = masterSnapshot.docs[0].id;
+      } else {
+        // Если профиль не найден в masters, создаем базовый профиль из данных пользователя
+        console.log('Master profile not found in masters collection, creating from user profile');
+        
+        masterData = {
+          id: userProfile.id,
+          name: userProfile.name,
+          specialty: 'Beauty Services', // Значение по умолчанию
+          experience: '0', // Значение по умолчанию
+          rating: 0,
+          reviews: 0,
+          photo: '',
+          worksInSalon: false,
+          isFreelancer: true,
+          byAppointment: false,
+          workingHours: undefined,
+          description: '',
+          phone: userProfile.phone || '',
+          email: userProfile.email,
+          services: [],
+          languages: ['Czech'],
+          city: '',
+          address: '',
+          structuredAddress: undefined,
+          coordinates: undefined,
+          salonId: undefined,
+          salonName: undefined
+        };
+        
+        // Сохраняем базовый профиль в коллекцию masters
+        try {
+          const masterRef = doc(db, 'masters', userProfile.id);
+          await setDoc(masterRef, masterData);
+          console.log('Master profile created successfully');
+        } catch (error) {
+          console.error('Error creating master profile:', error);
+        }
+      }
+
+      if (masterData) {
         setMaster(masterData);
 
         // Загружаем бронирования мастера
@@ -86,7 +126,16 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } finally {
       setLoading(false);
     }
-  };
+  }, [userProfile]);
+
+  useEffect(() => {
+    console.log('MasterDashboard useEffect - userProfile:', userProfile);
+    if (userProfile && userProfile.type === 'master') {
+      loadMasterData();
+    } else if (userProfile && userProfile.type !== 'master') {
+      console.log('User is not a master, type:', userProfile.type);
+    }
+  }, [userProfile, loadMasterData]);
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
     try {
@@ -155,7 +204,19 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         confirmed: 'Potvrzeno',
         cancelled: 'Zrušeno',
         completed: 'Dokončeno'
-      }
+      },
+      specialty: 'Specializace',
+      experience: 'Zkušenosti',
+      rating: 'Hodnocení',
+      reviews: 'recenzí',
+      scheduleEditingMessage: 'Úprava rozvrhu bude implementována zde',
+      name: 'Jméno',
+      phone: 'Telefon',
+      email: 'Email',
+      client: 'Klient',
+      date: 'Datum',
+      price: 'Cena',
+      statusLabel: 'Stav'
     },
     en: {
       title: 'Master Dashboard',
@@ -181,7 +242,19 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         confirmed: 'Confirmed',
         cancelled: 'Cancelled',
         completed: 'Completed'
-      }
+      },
+      specialty: 'Specialty',
+      experience: 'Experience',
+      rating: 'Rating',
+      reviews: 'reviews',
+      scheduleEditingMessage: 'Schedule editing will be implemented here',
+      name: 'Name',
+      phone: 'Phone',
+      email: 'Email',
+      client: 'Client',
+      date: 'Date',
+      price: 'Price',
+      statusLabel: 'Status'
     }
   };
 
@@ -271,12 +344,12 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       <div className="dashboard-content">
         {activeTab === 'overview' && (
           <div className="overview-section">
-            <h2>Přehled</h2>
+            <h2>{t.overview}</h2>
             <div className="master-info">
               <h3>{master.name}</h3>
-              <p>Specialty: {master.specialty}</p>
-              <p>Experience: {master.experience}</p>
-              <p>Rating: {master.rating} ({master.reviews} reviews)</p>
+              <p>{t.specialty}: {master.specialty}</p>
+              <p>{t.experience}: {master.experience}</p>
+              <p>{t.rating}: {master.rating} ({master.reviews} {t.reviews})</p>
             </div>
           </div>
         )}
@@ -292,10 +365,10 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
                   <div key={booking.id} className="booking-item">
                     <div className="booking-info">
                       <h4>{booking.serviceName}</h4>
-                      <p>Client: {booking.clientName}</p>
-                      <p>Date: {booking.date} at {booking.time}</p>
-                      <p>Price: {booking.price} Kč</p>
-                      <p>Status: {t.status[booking.status]}</p>
+                      <p>{t.client}: {booking.clientName}</p>
+                      <p>{t.date}: {booking.date} at {booking.time}</p>
+                      <p>{t.price}: {booking.price} Kč</p>
+                      <p>{t.statusLabel}: {t.status[booking.status]}</p>
                     </div>
                     <div className="booking-actions">
                       {booking.status === 'pending' && (
@@ -340,7 +413,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
               {editingSchedule ? t.save : t.edit}
             </button>
             {/* TODO: Implement schedule editing component */}
-            <p>Schedule editing will be implemented here</p>
+            <p>{t.scheduleEditingMessage}</p>
           </div>
         )}
 
@@ -355,11 +428,11 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
             </button>
             {/* TODO: Implement profile editing component */}
             <div className="profile-info">
-              <p><strong>Name:</strong> {master.name}</p>
-              <p><strong>Specialty:</strong> {master.specialty}</p>
-              <p><strong>Experience:</strong> {master.experience}</p>
-              <p><strong>Phone:</strong> {master.phone}</p>
-              <p><strong>Email:</strong> {master.email}</p>
+              <p><strong>{t.name}:</strong> {master.name}</p>
+              <p><strong>{t.specialty}:</strong> {master.specialty}</p>
+              <p><strong>{t.experience}:</strong> {master.experience}</p>
+              <p><strong>{t.phone}:</strong> {master.phone}</p>
+              <p><strong>{t.email}:</strong> {master.email}</p>
             </div>
           </div>
         )}
