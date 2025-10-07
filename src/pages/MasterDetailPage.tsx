@@ -248,6 +248,33 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           </div>
         )}
 
+        {(() => {
+          console.log('Master paymentMethods:', master.paymentMethods);
+          console.log('Payment methods exists?', master.paymentMethods && master.paymentMethods.length > 0);
+          console.log('Translation for paymentMethods:', t.paymentMethods);
+          return null;
+        })()}
+
+        {master.paymentMethods && master.paymentMethods.length > 0 && (
+          <div className="services-section">
+            <h3>{t.paymentMethods || (language === 'cs' ? 'Způsoby platby' : 'Payment Methods')}</h3>
+            <div className="services-grid">
+              {master.paymentMethods.map(method => {
+                const methodLabels: {[key: string]: string} = {
+                  'cash': t.paymentCash || (language === 'cs' ? 'Platba v hotovosti' : 'Cash'),
+                  'card': t.paymentCard || (language === 'cs' ? 'Platba kartou' : 'Card'),
+                  'qr': t.paymentQR || (language === 'cs' ? 'QR kód' : 'QR Code'),
+                  'account': t.paymentAccount || (language === 'cs' ? 'Platba na účet' : 'Bank Transfer'),
+                  'voucher': t.paymentVoucher || (language === 'cs' ? 'Dárkový poukaz' : 'Gift Voucher'),
+                  'benefit': t.paymentBenefit || (language === 'cs' ? 'Benefitní karty' : 'Benefit Cards')
+                };
+                const label = methodLabels[method] || method;
+                return <div key={method} className="service-badge">{label}</div>;
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="contact-info">
           <h3>{t.contact}</h3>
           <p><strong>{t.phone}:</strong> {master.phone}</p>

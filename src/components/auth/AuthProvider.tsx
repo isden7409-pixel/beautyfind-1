@@ -41,6 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
+      console.log('signUp called with userData:', userData);
+      console.log('User type from userData:', userData.type);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
@@ -80,7 +82,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         firestoreProfile.salonId = profile.salonId;
       }
 
+      console.log('Creating user profile in Firestore:', firestoreProfile);
       await setDoc(doc(db, 'users', user.uid), firestoreProfile);
+      console.log('User profile created successfully with type:', firestoreProfile.type);
       setUserProfile(profile);
     } catch (error: any) {
       console.error('Error signing up:', error);

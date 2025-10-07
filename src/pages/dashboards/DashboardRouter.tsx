@@ -39,6 +39,8 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onL
     );
   }
 
+  console.log('DashboardRouter - User profile type:', userProfile.type);
+
   switch (userProfile.type) {
     case 'client':
       return <UserDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} />;

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   language: 'cs' | 'en';
+  onGoToRegistration?: () => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, language }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, language, onGoToRegistration }) => {
   const [isLogin, setIsLogin] = useState(true);
 
   if (!isOpen) return null;
@@ -37,19 +37,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess, langu
           ×
         </button>
         
-        {isLogin ? (
-          <LoginForm
-            onSuccess={handleSuccess}
-            onSwitchToRegister={() => setIsLogin(false)}
-            language={language}
-          />
-        ) : (
-          <RegisterForm
-            onSuccess={handleSuccess}
-            onSwitchToLogin={() => setIsLogin(true)}
-            language={language}
-          />
-        )}
+        <LoginForm
+          onSuccess={handleSuccess}
+          language={language}
+          onGoToRegistration={() => {
+            onClose();
+            onGoToRegistration && onGoToRegistration();
+          }}
+        />
       </div>
     </div>
   );

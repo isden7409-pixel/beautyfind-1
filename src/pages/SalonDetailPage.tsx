@@ -219,6 +219,27 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
               ))}
             </div>
           </div>
+
+          {salon.paymentMethods && salon.paymentMethods.length > 0 && (
+            <div className="services-section">
+              <h3>{t.paymentMethods || (language === 'cs' ? 'Způsoby platby' : 'Payment Methods')}</h3>
+              <div className="services-grid">
+                {salon.paymentMethods.map(method => {
+                  const methodLabels: {[key: string]: string} = {
+                    'cash': t.paymentCash || (language === 'cs' ? 'Platba v hotovosti' : 'Cash'),
+                    'card': t.paymentCard || (language === 'cs' ? 'Platba kartou' : 'Card'),
+                    'qr': t.paymentQR || (language === 'cs' ? 'QR kód' : 'QR Code'),
+                    'account': t.paymentAccount || (language === 'cs' ? 'Platba na účet' : 'Bank Transfer'),
+                    'voucher': t.paymentVoucher || (language === 'cs' ? 'Dárkový poukaz' : 'Gift Voucher'),
+                    'benefit': t.paymentBenefit || (language === 'cs' ? 'Benefitní karty' : 'Benefit Cards')
+                  };
+                  const label = methodLabels[method] || method;
+                  return <div key={method} className="service-badge">{label}</div>;
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="masters-section">
             <h3>Naši mistři</h3>
             <div className="masters-grid">

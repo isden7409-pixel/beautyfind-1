@@ -30,6 +30,7 @@ export interface Salon {
     lat: number;
     lng: number;
   };
+  ownerId?: string; // ID владельца салона (uid пользователя)
   isPremium?: boolean;
   premiumUntil?: string;
   bookingEnabled?: boolean;
@@ -38,6 +39,7 @@ export interface Salon {
   unavailableDates?: string[];
   bookings?: Booking[];
   byAppointment?: boolean;
+  paymentMethods?: string[];
 }
 
 // Typy pro mistry
@@ -74,6 +76,7 @@ export interface Master {
   unavailableDates?: string[];
   bookings?: Booking[];
   byAppointment?: boolean;
+  paymentMethods?: string[];
 }
 
 // Типы для отзывов
@@ -169,6 +172,7 @@ export interface SalonRegistration {
   services: string[];
   photos: File[];
   byAppointment?: boolean;
+  paymentMethods?: string[];
 }
 
 // Typy pro mistra (registrace)
@@ -189,6 +193,7 @@ export interface MasterRegistration {
   structuredAddress?: StructuredAddress; // новый структурированный адрес
   workingHours?: WorkingHours[];
   byAppointment?: boolean;
+  paymentMethods?: string[];
 }
 
 // Типы для поиска и фильтров

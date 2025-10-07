@@ -6,6 +6,9 @@ import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { salonService } from '../firebase/services';
+import { useAuth } from './auth/AuthProvider';
+import { auth, db } from '../firebase/config';
+import { doc, setDoc } from 'firebase/firestore';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -78,6 +81,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { currentUser, updateProfile, signUp } = useAuth();
   const [formData, setFormData] = useState<SalonRegistration>({
     name: '',
     city: '',
@@ -91,11 +95,16 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     workingHours: undefined,
     byAppointment: false,
     services: [],
-    photos: []
+    photos: [],
+    paymentMethods: []
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const t = translations[language];
   const validationMessages = getValidationMessages(language);
@@ -132,6 +141,18 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     }));
   };
 
+  const handlePaymentMethodToggle = (method: string) => {
+    const newMethods = selectedPaymentMethods.includes(method)
+      ? selectedPaymentMethods.filter(m => m !== method)
+      : [...selectedPaymentMethods, method];
+    
+    setSelectedPaymentMethods(newMethods);
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: newMethods
+    }));
+  };
+
   const handlePhotoChange = (files: FileList | null) => {
     setPhotoFiles(files);
     if (files) {
@@ -150,10 +171,23 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
 
   const [submitting, setSubmitting] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate passwords
+      if (!password || !confirmPassword) {
+        setPasswordError(language === 'cs' ? 'Heslo je povinné' : 'Password is required');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError(language === 'cs' ? 'Hesla se neshodují' : 'Passwords do not match');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setPasswordError(null);
       // Validate services
       if (selectedServices.length === 0) {
         setServicesError(validationMessages.servicesRequired);
@@ -161,6 +195,14 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         return;
       } else {
         setServicesError(null);
+      }
+      // Validate payment methods
+      if (selectedPaymentMethods.length === 0) {
+        setPaymentError(t.atLeastOnePayment);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setPaymentError(null);
       }
       // If not by appointment, require working hours to be provided
       if (!formData.byAppointment) {
@@ -187,7 +229,30 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           return;
         }
       }
-      const id = await salonService.createFromRegistration(formData);
+      // Ensure owner account exists; create if needed
+      let ownerId = currentUser?.uid;
+      const isNewUser = !ownerId;
+      if (isNewUser) {
+        await signUp(formData.email, password, {
+          name: formData.name,
+          phone: formData.phone,
+          type: 'salon'
+        } as any);
+        ownerId = auth.currentUser?.uid || undefined;
+      }
+
+      const id = await salonService.createFromRegistration(formData, ownerId);
+      // Обновляем профиль пользователя, добавляя salonId
+      if (ownerId) {
+        if (isNewUser) {
+          // Для нового пользователя используем setDoc с merge
+          const userRef = doc(db, 'users', ownerId);
+          await setDoc(userRef, { salonId: id, updatedAt: new Date() }, { merge: true });
+        } else {
+          // Для существующего пользователя используем updateProfile
+          await updateProfile({ salonId: id, type: 'salon' as any });
+        }
+      }
       // Salon created successfully
       alert(validationMessages.registrationSuccess);
       setFormData({
@@ -205,7 +270,10 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         photos: []
       });
       setSelectedServices([]);
+      setSelectedPaymentMethods([]);
       setPhotoFiles(null);
+      setPassword('');
+      setConfirmPassword('');
       onSubmit(formData);
     } catch (error) {
       // Failed to create salon
@@ -234,6 +302,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
         />
         </div>
+
 
         <div className="form-group city-field">
           <label htmlFor="city">{t.city} *</label>
@@ -317,6 +386,35 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           </div>
         </div>
 
+        {/* Passwords */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="password">{language === 'cs' ? 'Nastavit heslo *' : 'Password *'}</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">{language === 'cs' ? 'Potvrzení hesla *' : 'Confirm Password *'}</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+        </div>
+        {passwordError && <div className="form-error" role="alert">{passwordError}</div>}
+
         <div className="form-group">
           <label htmlFor="website">{t.website}</label>
           <input
@@ -361,6 +459,61 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             ))}
           </div>
           {servicesError && <div className="form-error" role="alert">{servicesError}</div>}
+        </div>
+
+        <div className="form-group">
+          <label>{t.selectPaymentMethods}</label>
+          <div className="services-grid">
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('cash')}
+                onChange={() => handlePaymentMethodToggle('cash')}
+              />
+              <span className="service-label">{t.paymentCash}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('card')}
+                onChange={() => handlePaymentMethodToggle('card')}
+              />
+              <span className="service-label">{t.paymentCard}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('qr')}
+                onChange={() => handlePaymentMethodToggle('qr')}
+              />
+              <span className="service-label">{t.paymentQR}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('account')}
+                onChange={() => handlePaymentMethodToggle('account')}
+              />
+              <span className="service-label">{t.paymentAccount}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('voucher')}
+                onChange={() => handlePaymentMethodToggle('voucher')}
+              />
+              <span className="service-label">{t.paymentVoucher}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('benefit')}
+                onChange={() => handlePaymentMethodToggle('benefit')}
+              />
+              <span className="service-label">{t.paymentBenefit}</span>
+            </label>
+          </div>
+          {paymentError && <div className="form-error" role="alert">{paymentError}</div>}
         </div>
 
         <div className="form-group">

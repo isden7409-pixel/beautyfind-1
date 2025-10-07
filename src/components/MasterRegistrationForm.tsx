@@ -5,6 +5,8 @@ import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { masterService } from '../firebase/services';
+import { useAuth } from './auth/AuthProvider';
+import { auth } from '../firebase/config';
 import { getRequiredMessage, getValidationMessages } from '../utils/form';
 
 // Список всех чешских городов
@@ -80,6 +82,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   onCancel,
   salons = []
 }) => {
+  const { currentUser, signUp, updateProfile } = useAuth();
   const [formData, setFormData] = useState<MasterRegistration>({
     name: '',
     specialty: '',
@@ -95,12 +98,17 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     address: '',
     structuredAddress: undefined,
     workingHours: undefined,
-    byAppointment: false
+    byAppointment: false,
+    paymentMethods: []
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const t = translations[language];
   const validationMessages = getValidationMessages(language);
@@ -166,6 +174,18 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     }));
   };
 
+  const handlePaymentMethodToggle = (method: string) => {
+    const newMethods = selectedPaymentMethods.includes(method)
+      ? selectedPaymentMethods.filter(m => m !== method)
+      : [...selectedPaymentMethods, method];
+    
+    setSelectedPaymentMethods(newMethods);
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: newMethods
+    }));
+  };
+
   const handlePhotoChange = (files: FileList | null) => {
     setPhotoFile(files);
     if (files && files[0]) {
@@ -185,6 +205,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [servicesError, setServicesError] = useState<string | null>(null);
   const [languagesError, setLanguagesError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const isWorkingHoursFilled = (wh?: any[]): boolean => {
     if (!wh || wh.length === 0) return false;
@@ -195,6 +216,18 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate passwords
+      if (!password || !confirmPassword) {
+        setPasswordError(language === 'cs' ? 'Heslo je povinné' : 'Password is required');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError(language === 'cs' ? 'Hesla se neshodují' : 'Passwords do not match');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setPasswordError(null);
       // Validate services
       if (selectedServices.length === 0) {
         setServicesError(validationMessages.servicesRequired);
@@ -210,6 +243,14 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         return;
       } else {
         setLanguagesError(null);
+      }
+      // Validate payment methods
+      if (selectedPaymentMethods.length === 0) {
+        setPaymentError(t.atLeastOnePayment);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setPaymentError(null);
       }
       // Validate working hours unless "by appointment" selected
       if (!formData.byAppointment && !isWorkingHoursFilled(formData.workingHours)) {
@@ -237,7 +278,19 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       }
       setHoursError(null);
       setSubmitting(true);
-      const id = await masterService.createFromRegistration(formData);
+
+      // Create user account if not logged in
+      let ownerId = currentUser?.uid;
+      if (!ownerId) {
+        await signUp(formData.email, password, {
+          name: formData.name,
+          phone: formData.phone,
+          type: 'master'
+        } as any);
+        ownerId = auth.currentUser?.uid || undefined;
+      }
+
+      const id = await masterService.createFromRegistration({ ...formData, isFreelancer: true });
       // Master created successfully
       alert(validationMessages.registrationSuccess);
       setFormData({
@@ -259,7 +312,10 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       });
       setSelectedServices([]);
       setSelectedLanguages([]);
+      setSelectedPaymentMethods([]);
       setPhotoFile(null);
+      setPassword('');
+      setConfirmPassword('');
       onSubmit(formData);
     } catch (error) {
       // Failed to create master
@@ -272,7 +328,16 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
 
   return (
     <div className="registration-form">
-      <h2>{t.registerMaster}</h2>
+      <h2>
+        {language === 'cs' ? 'Zaregistrovat se jako mistr' : 'Register as Master'}
+        <br />
+        {language === 'cs' ? '(samostatný pracovník)' : '(Freelancer)'}
+      </h2>
+      <p className="form-help form-help-centered">
+        {language === 'cs'
+          ? 'Pokud mistr pracuje v salonu, registraci provádí salon ve svém kabinetu.'
+          : 'If a master works in a salon, the salon must register them from its dashboard.'}
+      </p>
       <form onSubmit={handleSubmit} className="form">
         {hoursError && !formData.byAppointment && (
           <div className="form-error" role="alert">{hoursError}</div>
@@ -361,32 +426,36 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
           </div>
         </div>
 
-        <div className="form-group">
-          <div className="work-type-selection">
-            <div className="work-type-option">
-              <input
-                type="radio"
-                name="workType"
-                value="freelancer"
-                checked={formData.isFreelancer}
-                onChange={() => setFormData(prev => ({ ...prev, isFreelancer: true, salonId: undefined }))}
-                id="freelancer"
-              />
-              <label htmlFor="freelancer" className="work-type-label">{t.freelancer}</label>
-            </div>
-            <div className="work-type-option">
-              <input
-                type="radio"
-                name="workType"
-                value="salon"
-                checked={!formData.isFreelancer}
-                onChange={() => setFormData(prev => ({ ...prev, isFreelancer: false }))}
-                id="salon"
-              />
-              <label htmlFor="salon" className="work-type-label">{language === 'cs' ? 'Pracuje v salonu' : 'Works in salon'}</label>
-            </div>
+        {/* Passwords */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="password">{language === 'cs' ? 'Nastavit heslo *' : 'Password *'}</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirmPassword">{language === 'cs' ? 'Potvrzení hesla *' : 'Confirm Password *'}</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="form-input"
+            />
           </div>
         </div>
+        {passwordError && <div className="form-error" role="alert">{passwordError}</div>}
+
+        {/* Work type forced to freelancer: UI removed */}
 
         {formData.isFreelancer ? (
           <>
@@ -427,60 +496,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               />
             </div>
           </>
-        ) : (
-          <div>
-            <div className="form-group form-group-tight">
-              <label htmlFor="salonId">{t.salon}</label>
-              <select
-                id="salonId"
-                name="salonId"
-                value={formData.salonId || ''}
-                onChange={(e) => {
-                  const selectedSalonId = e.target.value;
-                  const selectedSalon = salons.find(s => s.id === selectedSalonId);
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    salonId: selectedSalonId,
-                    // Автоматически копируем адрес салона
-                    address: selectedSalon?.address || '',
-                    city: selectedSalon?.city || '',
-                    structuredAddress: selectedSalon?.structuredAddress
-                  }));
-                }}
-                required
-                className="form-select"
-              >
-                <option value="">{t.selectSalon} *</option>
-                {salons.map(salon => (
-                  <option key={salon.id} value={salon.id}>
-                    {salon.name} - {salon.structuredAddress 
-                      ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress, language)
-                      : `${salon.address}, ${salon.city}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {formData.salonId && (
-              <div className="salon-info">
-                <h4>{language === 'cs' ? 'Informace o salonu' : 'Salon Information'}</h4>
-                {(() => {
-                  const selectedSalon = salons.find(s => s.id === formData.salonId);
-                  return selectedSalon ? (
-                    <div className="salon-details">
-                      <p><strong>{language === 'cs' ? 'Název:' : 'Name:'}</strong> {selectedSalon.name}</p>
-                      <p><strong>{language === 'cs' ? 'Adresa:' : 'Address:'}</strong> {selectedSalon.structuredAddress 
-                        ? require('../utils/cities').formatStructuredAddressCzech(selectedSalon.structuredAddress, language)
-                        : `${selectedSalon.address}, ${selectedSalon.city}`}</p>
-                      <p><strong>{language === 'cs' ? 'Telefon:' : 'Phone:'}</strong> {selectedSalon.phone}</p>
-                      <p><strong>{language === 'cs' ? 'Email:' : 'Email:'}</strong> {selectedSalon.email}</p>
-                    </div>
-                  ) : null;
-                })()}
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
 
         <div className="form-group working-hours-group">
           <label htmlFor="openHours">{t.openHours} *</label>
@@ -541,6 +557,61 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
             ))}
           </div>
           {languagesError && <div className="form-error" role="alert">{languagesError}</div>}
+        </div>
+
+        <div className="form-group">
+          <label>{t.selectPaymentMethods}</label>
+          <div className="services-grid">
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('cash')}
+                onChange={() => handlePaymentMethodToggle('cash')}
+              />
+              <span className="service-label">{t.paymentCash}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('card')}
+                onChange={() => handlePaymentMethodToggle('card')}
+              />
+              <span className="service-label">{t.paymentCard}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('qr')}
+                onChange={() => handlePaymentMethodToggle('qr')}
+              />
+              <span className="service-label">{t.paymentQR}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('account')}
+                onChange={() => handlePaymentMethodToggle('account')}
+              />
+              <span className="service-label">{t.paymentAccount}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('voucher')}
+                onChange={() => handlePaymentMethodToggle('voucher')}
+              />
+              <span className="service-label">{t.paymentVoucher}</span>
+            </label>
+            <label className="service-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedPaymentMethods.includes('benefit')}
+                onChange={() => handlePaymentMethodToggle('benefit')}
+              />
+              <span className="service-label">{t.paymentBenefit}</span>
+            </label>
+          </div>
+          {paymentError && <div className="form-error" role="alert">{paymentError}</div>}
         </div>
 
         <div className="form-group">

@@ -4,11 +4,11 @@ import { UserProfile } from '../../types';
 
 interface LoginFormProps {
   onSuccess: () => void;
-  onSwitchToRegister: () => void;
   language: 'cs' | 'en';
+  onGoToRegistration?: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister, language }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, language, onGoToRegistration }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -73,8 +73,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister, la
       email: 'Email',
       password: 'Heslo',
       login: 'Přihlásit se',
-      noAccount: 'Nemáte účet?',
-      register: 'Zaregistrujte se',
+      noAccount: 'Nemáte účet? Nejprve se prosím zaregistrujte v sekci',
+      registration: 'Registrace',
       loading: 'Přihlašování...'
     },
     en: {
@@ -82,8 +82,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister, la
       email: 'Email',
       password: 'Password',
       login: 'Sign In',
-      noAccount: "Don't have an account?",
-      register: 'Register',
+      noAccount: "Don't have an account? Please register first in",
+      registration: 'Registration',
       loading: 'Signing in...'
     }
   };
@@ -126,7 +126,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister, la
       </form>
 
       <div className="auth-switch">
-        <p>{t.noAccount} <button type="button" onClick={onSwitchToRegister} className="link-button">{t.register}</button></p>
+        <p>
+          {t.noAccount} {" "}
+          <button type="button" className="link-button" onClick={onGoToRegistration}>{t.registration}</button>
+        </p>
       </div>
     </div>
   );

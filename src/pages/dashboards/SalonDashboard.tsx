@@ -41,15 +41,32 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     try {
       setLoading(true);
 
-      // Загружаем профиль салона
-      const salonQuery = query(
-        collection(db, 'salons'),
-        where('email', '==', userProfile.email)
-      );
-      const salonSnapshot = await getDocs(salonQuery);
+      // Загружаем профиль салона - сначала пытаемся по ownerId, потом по email
+      let salonSnapshot;
+      
+      // Вариант 1: Ищем по ownerId (новый подход)
+      if (userProfile.uid) {
+        const salonQueryByOwner = query(
+          collection(db, 'salons'),
+          where('ownerId', '==', userProfile.uid)
+        );
+        salonSnapshot = await getDocs(salonQueryByOwner);
+      }
+      
+      // Вариант 2: Если не нашли по ownerId, ищем по email (обратная совместимость)
+      if (!salonSnapshot || salonSnapshot.empty) {
+        const salonQueryByEmail = query(
+          collection(db, 'salons'),
+          where('email', '==', userProfile.email)
+        );
+        salonSnapshot = await getDocs(salonQueryByEmail);
+      }
       
       if (!salonSnapshot.empty) {
-        const salonData = salonSnapshot.docs[0].data() as Salon;
+        const salonData = { 
+          id: salonSnapshot.docs[0].id,
+          ...salonSnapshot.docs[0].data() 
+        } as Salon;
         setSalon(salonData);
 
         // Загружаем мастеров салона

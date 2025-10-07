@@ -55,6 +55,22 @@ export const salonService = {
     })) as Salon[];
   },
 
+  // Get salon by owner ID
+  async getByOwnerId(ownerId: string): Promise<Salon | null> {
+    const q = query(
+      collection(db, SALONS_COLLECTION),
+      where('ownerId', '==', ownerId)
+    );
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      return {
+        id: querySnapshot.docs[0].id,
+        ...querySnapshot.docs[0].data()
+      } as Salon;
+    }
+    return null;
+  },
+
   // Search salons
   async search(searchTerm: string): Promise<Salon[]> {
     const q = query(
@@ -76,7 +92,7 @@ export const salonService = {
   },
 
   // Create salon from registration form (handles photo upload)
-  async createFromRegistration(data: SalonRegistration): Promise<string> {
+  async createFromRegistration(data: SalonRegistration, ownerId?: string): Promise<string> {
     const photoUrls = data.photos && data.photos.length
       ? await uploadMultipleFiles(data.photos, 'salon_photos')
       : [];
@@ -120,11 +136,17 @@ export const salonService = {
       openHours: data.openHours,
       photos: photoUrls,
       masters: [],
+      paymentMethods: data.paymentMethods,
     } as Partial<Salon>;
 
     // Добавляем coordinates только если они есть
     if (coordinates) {
       salonBase.coordinates = coordinates;
+    }
+
+    // Добавляем ownerId если передан
+    if (ownerId) {
+      salonBase.ownerId = ownerId;
     }
 
     const salon = salonBase as Omit<Salon, 'id'>;
@@ -247,6 +269,7 @@ export const masterService = {
 
   // Create master from registration form (handles photo upload)
   async createFromRegistration(data: MasterRegistration): Promise<string> {
+    console.log('Creating master from registration, paymentMethods:', data.paymentMethods);
     let photoUrl = '';
     // MasterRegistration.photo в форме мы храним как File (один файл)
     if (data.photo && (data.photo as File).size !== undefined) {
@@ -303,6 +326,7 @@ export const masterService = {
       email: data.email,
       services: data.services,
       languages: data.languages,
+      paymentMethods: data.paymentMethods,
     } as Partial<Master>;
 
     // Добавляем coordinates только если они есть
@@ -326,6 +350,9 @@ export const masterService = {
     }
 
     const master = masterBase as Omit<Master, 'id'>;
+    
+    console.log('Master object before saving to Firestore:', master);
+    console.log('Payment methods in master object:', master.paymentMethods);
 
     const id = await this.create(master);
     

@@ -14,62 +14,8 @@ import { useLanguage, useSetLanguage, useCurrentViewMode, useSetCurrentViewMode 
 import './App.css';
 
 // Импортируем mock данные
-const mockSalons: Salon[] = [
-  {
-    id: "1",
-    name: "Elegance Beauty Prague",
-    city: "Prague",
-    address: "Václavské náměstí 28, 110 00 Praha 1",
-    services: ["Manicure", "Pedicure", "Haircut", "Makeup", "Facial"],
-    rating: 4.8,
-    reviews: 127,
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop&crop=center",
-    coordinates: { lat: 50.0755, lng: 14.4378 },
-    description: "Luxury beauty salon in the heart of Prague offering premium beauty services.",
-    phone: "+420 123 456 789",
-    email: "info@elegancebeauty.cz",
-    website: "www.elegancebeauty.cz",
-    openHours: "Mon-Fri: 9:00-19:00, Sat: 9:00-17:00",
-    photos: [],
-    masters: []
-  },
-  {
-    id: "2", 
-    name: "Modern Style Brno",
-    city: "Brno",
-    address: "Náměstí Svobody 8, 602 00 Brno",
-    services: ["Haircut", "Hair Coloring", "Hair Styling", "Barber"],
-    rating: 4.6,
-    reviews: 89,
-    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=300&fit=crop&crop=center",
-    coordinates: { lat: 49.1951, lng: 16.6068 },
-    description: "Contemporary hair salon specializing in modern cuts and coloring techniques.",
-    phone: "+420 987 654 321",
-    email: "info@modernstyle.cz",
-    website: "www.modernstyle.cz",
-    openHours: "Mon-Fri: 8:00-18:00, Sat: 8:00-16:00",
-    photos: [],
-    masters: []
-  },
-  {
-    id: "3",
-    name: "Nail Art Studio Ostrava", 
-    city: "Ostrava",
-    address: "Stodolní 1, 702 00 Ostrava",
-    services: ["Manicure", "Pedicure", "Nail Art", "Gel Nails"],
-    rating: 4.9,
-    reviews: 156,
-    image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&h=300&fit=crop&crop=center",
-    coordinates: { lat: 49.8209, lng: 18.2625 },
-    description: "Professional nail art studio with creative designs and premium nail care services.",
-    phone: "+420 555 123 456",
-    email: "info@nailartstudio.cz",
-    website: "www.nailartstudio.cz", 
-    openHours: "Mon-Fri: 9:00-20:00, Sat: 9:00-18:00",
-    photos: [],
-    masters: []
-  }
-];
+// Убраны тестовые данные - теперь используются только реальные данные из Firebase
+const mockSalons: Salon[] = [];
 
 const translations = {
   cs: {
@@ -371,6 +317,10 @@ function AppContent() {
     setShowAdminPanel(true);
   };
 
+  const goToRegistration = () => {
+    setShowAdminPanel(true);
+  };
+
   const handleBackFromAdmin = () => {
     setShowAdminPanel(false);
   };
@@ -406,17 +356,37 @@ function AppContent() {
             adminPanel: "Admin Panel",
             back: "← Zpět",
             backToHome: "← Zpět",
-            registerSalon: "Registrovat salon",
+            registerSalon: "Zaregistrovat salon",
             registerMaster: "Registrovat mistra",
             salonRegistrationInfo: "Registrace nového salonu",
             masterRegistrationInfo: "Registrace nového mistra",
             salonRegistrationDescription: "Zaregistrujte svůj salon a získejte více klientů",
             masterRegistrationDescription: "Zaregistrujte se jako mistr a najděte nové klienty",
+            clientRegistrationDescription: "Zaregistrujte se jako klient a najděte nejlepší salony a mistry",
             benefits: "Výhody",
-            benefit1: "Více klientů a zákazníků",
-            benefit2: "Profesionální prezentace",
-            benefit3: "Snadné řízení rezervací",
-            benefit4: "Marketing a reklama",
+            benefit1: "Všechny salony a mistři na jednom místě",
+            benefit2: "Najděte mistra poblíž vás",
+            benefit3: "Rychlé rezervace",
+            benefit4: "Vyhledávání podle recenzí",
+            benefit5: "Snadné porovnání cen",
+            masterBenefit1: "Nové klienty a zákazníky",
+            masterBenefit2: "Profesionální prezentace",
+            masterBenefit3: "Snadné řízení rezervací",
+            masterBenefit4: "Marketing a reklama",
+            masterRequirement3: "Kvalifikace a certifikáty",
+            salonBenefit1: "Zvýšení viditelnosti salonu",
+            salonBenefit2: "Více klientů a zákazníků",
+            salonBenefit3: "Snadné řízení rezervací",
+            salonBenefit4: "Prezentace všech služeb a mistrů",
+            paymentMethods: "Způsoby platby",
+            paymentCash: "Platba v hotovosti",
+            paymentCard: "Platba kartou",
+            paymentQR: "QR kód",
+            paymentAccount: "Platba na účet",
+            paymentVoucher: "Dárkový poukaz",
+            paymentBenefit: "Benefitní karty",
+            selectPaymentMethods: "Vyberte způsoby platby *",
+            atLeastOnePayment: "Vyberte alespoň jeden způsob platby",
             requirements: "Požadavky",
             requirement1: "Licence na provozování",
             requirement2: "Profesionální vybavení",
@@ -463,11 +433,31 @@ function AppContent() {
             masterRegistrationInfo: "New Master Registration",
             salonRegistrationDescription: "Register your salon and get more clients",
             masterRegistrationDescription: "Register as a master and find new clients",
+            clientRegistrationDescription: "Register as a client and find the best salons and masters",
             benefits: "Benefits",
-            benefit1: "More clients and customers",
-            benefit2: "Professional presentation",
-            benefit3: "Easy booking management",
-            benefit4: "Marketing and advertising",
+            benefit1: "All salons and masters in one place",
+            benefit2: "Find a master near you",
+            benefit3: "Quick booking",
+            benefit4: "Search by reviews",
+            benefit5: "Easy price comparison",
+            masterBenefit1: "New clients and customers",
+            masterBenefit2: "Professional presentation",
+            masterBenefit3: "Easy booking management",
+            masterBenefit4: "Marketing and advertising",
+            masterRequirement3: "Qualifications and certificates",
+            salonBenefit1: "Increase salon visibility",
+            salonBenefit2: "More clients and customers",
+            salonBenefit3: "Easy booking management",
+            salonBenefit4: "Showcase all services and masters",
+            paymentMethods: "Payment methods",
+            paymentCash: "Cash payment",
+            paymentCard: "Card payment",
+            paymentQR: "QR code",
+            paymentAccount: "Bank transfer",
+            paymentVoucher: "Gift voucher",
+            paymentBenefit: "Benefit cards",
+            selectPaymentMethods: "Select payment methods *",
+            atLeastOnePayment: "Select at least one payment method",
             requirements: "Requirements",
             requirement1: "Business license",
             requirement2: "Professional equipment",
@@ -592,6 +582,7 @@ function AppContent() {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
         language={currentLanguage}
+        onGoToRegistration={goToRegistration}
       />
     </div>
   );
