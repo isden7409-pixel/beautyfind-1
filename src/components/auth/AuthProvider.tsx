@@ -14,10 +14,12 @@ interface AuthContextType {
   currentUser: AuthUser | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  isLoggingOut: boolean;
   signUp: (email: string, password: string, userData: Partial<UserProfile>) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  onLogout?: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,19 +34,24 @@ export const useAuth = () => {
 
 interface AuthProviderProps {
   children: React.ReactNode;
+  onLogout?: () => void;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onLogout }) => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
       console.log('signUp called with userData:', userData);
       console.log('User type from userData:', userData.type);
+      console.log('Email for signUp:', email);
+      console.log('Password length for signUp:', password.length);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('Firebase user created successfully:', user.uid, user.email);
       
       // Создаем профиль пользователя в Firestore
       const profile: UserProfile = {
@@ -60,6 +67,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         createdAt: new Date(),
         updatedAt: new Date()
       };
+
+      // Дополнительная защита: убеждаемся, что тип мастера не может быть изменен
+      if (profile.type === 'master') {
+        console.log('Master profile created - ensuring type remains "master"');
+        // Тип мастера должен оставаться 'master' даже если есть salonId
+        profile.type = 'master';
+      }
 
       // Создаем объект для Firestore без undefined полей
       const firestoreProfile: any = {
@@ -85,7 +99,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Creating user profile in Firestore:', firestoreProfile);
       await setDoc(doc(db, 'users', user.uid), firestoreProfile);
       console.log('User profile created successfully with type:', firestoreProfile.type);
+      console.log('User UID:', user.uid);
+      console.log('User email:', user.email);
+      console.log('User is currently signed in:', auth.currentUser?.email);
       setUserProfile(profile);
+      
+      // Тест: попробуем войти сразу после создания аккаунта
+      console.log('Testing login immediately after account creation...');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log('Login test after account creation successful!');
+      } catch (testError) {
+        console.error('Login test after account creation failed:', testError);
+      }
     } catch (error: any) {
       console.error('Error signing up:', error);
       console.error('Error details:', {
@@ -99,7 +125,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      console.log('AuthProvider.signIn called with email:', email);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Firebase signIn successful, user:', result.user.uid);
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -108,10 +136,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
+      setIsLoggingOut(true);
       await signOut(auth);
       setUserProfile(null);
+      // Вызываем callback для перенаправления на главную страницу
+      if (onLogout) {
+        onLogout();
+      }
+      // Не сбрасываем isLoggingOut здесь - это будет сделано в onAuthStateChanged
     } catch (error) {
       console.error('Error signing out:', error);
+      setIsLoggingOut(false);
       throw error;
     }
   };
@@ -156,6 +191,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (userDoc.exists()) {
             const profileData = userDoc.data() as UserProfile;
             console.log('Profile data loaded:', profileData);
+            
+            // Дополнительная защита: исправляем неправильный тип мастера
+            if (profileData.email && profileData.email.includes('master') && profileData.type === 'salon') {
+              console.log('Fixing incorrect master type - changing from salon to master');
+              profileData.type = 'master';
+            }
+            
             setUserProfile(profileData);
           } else {
             console.log('User document does not exist in Firestore - creating default profile');
@@ -201,8 +243,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setCurrentUser(null);
         setUserProfile(null);
+        // Небольшая задержка перед сбросом isLoggingOut для плавного перехода
+        setTimeout(() => {
+          setIsLoggingOut(false);
+        }, 100);
       }
-      setLoading(false);
+      
+      // Небольшая задержка для плавного перехода
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     });
 
     return unsubscribe;
@@ -212,10 +262,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentUser,
     userProfile,
     loading,
+    isLoggingOut,
     signUp,
     signIn,
     logout,
-    updateProfile
+    updateProfile,
+    onLogout
   };
 
   return (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Review, Language } from '../types';
 import { reviewService } from '../firebase/services';
+import { useAuth } from './auth/AuthProvider';
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -25,15 +26,30 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
     rating: 5,
     comment: '',
   });
+  const [guardMessage, setGuardMessage] = useState<string | null>(null);
 
   const t = translations[language];
+  const { currentUser, userProfile } = useAuth();
+
+  const isAuthenticated = !!(currentUser && userProfile);
+
+  const requireLoginMessage = language === 'cs'
+    ? 'Recenze mohou psát pouze registrovaní uživatelé. Přihlaste se nebo se zaregistrujte.'
+    : 'Only registered users can write reviews. Please sign in or register.';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newReview.userName.trim() && newReview.comment.trim()) {
+    // Guard on submit as дополнительная защита
+    if (!isAuthenticated) {
+      setGuardMessage(requireLoginMessage);
+      return;
+    }
+    const effectiveUserName = (userProfile?.name || '').trim() || newReview.userName.trim();
+
+    if (effectiveUserName && newReview.comment.trim()) {
       const payload: any = {
-        userId: Math.random().toString(),
-        userName: newReview.userName,
+        userId: userProfile?.uid || currentUser?.uid || 'unknown',
+        userName: effectiveUserName,
         rating: newReview.rating,
         comment: newReview.comment,
         date: new Date().toISOString(),
@@ -43,6 +59,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
       await onAddReview(payload);
       setNewReview({ userName: '', rating: 5, comment: '' });
       setShowAddForm(false);
+      setGuardMessage(null);
     }
   };
 
@@ -79,11 +96,36 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         </div>
         <button
           className="add-review-btn"
-          onClick={() => setShowAddForm(!showAddForm)}
+          onClick={() => {
+            // UI guard: показываем сообщения вместо открытия формы, если не клиент
+            if (!isAuthenticated) {
+              setGuardMessage(requireLoginMessage);
+              setShowAddForm(false);
+              return;
+            }
+            setGuardMessage(null);
+            setShowAddForm(!showAddForm);
+          }}
         >
           {t.addReview}
         </button>
       </div>
+
+      {guardMessage && (
+        <div
+          className="review-guard-message"
+          style={{
+            background: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            color: '#856404',
+            borderRadius: 8,
+            padding: '12px 16px',
+            margin: '12px 0'
+          }}
+        >
+          {guardMessage}
+        </div>
+      )}
 
       {showAddForm && (
         <div className="add-review-form">
@@ -94,10 +136,11 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               <input
                 type="text"
                 id="userName"
-                value={newReview.userName}
+                value={isAuthenticated ? (userProfile?.name || newReview.userName) : newReview.userName}
                 onChange={(e) => setNewReview({ ...newReview, userName: e.target.value })}
                 required
                 className="form-input"
+                readOnly={isAuthenticated}
               />
             </div>
             

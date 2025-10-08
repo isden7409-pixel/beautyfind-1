@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/auth/AuthProvider';
 import { Salon, Master, Booking, DashboardStats } from '../../types';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { reviewService, userService } from '../../firebase/services';
 import PageHeader from '../../components/PageHeader';
+import SalonProfileEditForm from '../../components/SalonProfileEditForm';
 
 interface SalonDashboardProps {
   language: 'cs' | 'en';
@@ -13,6 +16,7 @@ interface SalonDashboardProps {
 
 const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLanguageChange }) => {
   const { userProfile } = useAuth();
+  const navigate = useNavigate();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [masters, setMasters] = useState<Master[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -25,15 +29,109 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'masters' | 'bookings' | 'profile'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'masters' | 'bookings' | 'profile' | 'favorites' | 'reviews'>('overview');
   const [editingProfile, setEditingProfile] = useState(false);
   const [showAddMaster, setShowAddMaster] = useState(false);
+  const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
+  const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
+  const [userReviews, setUserReviews] = useState<any[]>([]);
+
+  const loadFavorites = useCallback(async () => {
+    if (!userProfile) return;
+
+    try {
+      const favorites = await reviewService.getFavorites(userProfile.uid);
+      
+      // Загружаем данные салонов
+      if (favorites.favoriteSalons.length > 0) {
+        const salonPromises = favorites.favoriteSalons.map(async (salonId) => {
+          const salonQuery = query(collection(db, 'salons'), where('__name__', '==', salonId));
+          const salonSnapshot = await getDocs(salonQuery);
+          if (salonSnapshot.empty) return null;
+          const d = salonSnapshot.docs[0];
+          return { id: d.id, ...(d.data() as any) } as Salon;
+        });
+        const salons = (await Promise.all(salonPromises)).filter(Boolean) as Salon[];
+        setFavoriteSalons(salons);
+      } else {
+        setFavoriteSalons([]);
+      }
+
+      // Загружаем данные мастеров
+      if (favorites.favoriteMasters.length > 0) {
+        const masterPromises = favorites.favoriteMasters.map(async (masterId) => {
+          const masterQuery = query(collection(db, 'masters'), where('__name__', '==', masterId));
+          const masterSnapshot = await getDocs(masterQuery);
+          if (masterSnapshot.empty) return null;
+          const d = masterSnapshot.docs[0];
+          return { id: d.id, ...(d.data() as any) } as Master;
+        });
+        const masters = (await Promise.all(masterPromises)).filter(Boolean) as Master[];
+        setFavoriteMasters(masters);
+      } else {
+        setFavoriteMasters([]);
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  }, [userProfile]);
+
+  const removeFavorite = async (itemId: string, itemType: 'master' | 'salon') => {
+    if (!userProfile) return;
+    
+    try {
+      await userService.toggleFavorite(userProfile.uid, itemId, itemType);
+      // Перезагружаем избранное
+      loadFavorites();
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
+  const loadUserReviews = useCallback(async () => {
+    if (!userProfile) return;
+
+    try {
+      const reviewsQuery = query(
+        collection(db, 'reviews'),
+        where('userId', '==', userProfile.uid)
+      );
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+      const reviewsData = reviewsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+      
+      // Загружаем данные салонов и мастеров для отзывов
+      const reviewsWithDetails = await Promise.all(reviewsData.map(async (review) => {
+        let targetData = null;
+        if (review.salonId) {
+          const salonDoc = await getDoc(doc(db, 'salons', review.salonId));
+          if (salonDoc.exists()) {
+            targetData = { id: salonDoc.id, ...salonDoc.data(), type: 'salon' };
+          }
+        } else if (review.masterId) {
+          const masterDoc = await getDoc(doc(db, 'masters', review.masterId));
+          if (masterDoc.exists()) {
+            targetData = { id: masterDoc.id, ...masterDoc.data(), type: 'master' };
+          }
+        }
+        return { ...review, targetData };
+      }));
+
+      setUserReviews(reviewsWithDetails);
+    } catch (error) {
+      console.error('Error loading user reviews:', error);
+    }
+  }, [userProfile]);
 
   useEffect(() => {
     if (userProfile && userProfile.type === 'salon') {
       loadSalonData();
+      loadFavorites();
+      loadUserReviews();
     }
-  }, [userProfile]);
+  }, [userProfile, loadFavorites, loadUserReviews]);
 
   const loadSalonData = async () => {
     if (!userProfile) return;
@@ -138,18 +236,6 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     }
   };
 
-  const updateSalonProfile = async (updatedData: Partial<Salon>) => {
-    if (!salon) return;
-
-    try {
-      const salonRef = doc(db, 'salons', salon.id);
-      await updateDoc(salonRef, updatedData);
-      setSalon({ ...salon, ...updatedData });
-      setEditingProfile(false);
-    } catch (error) {
-      console.error('Error updating salon profile:', error);
-    }
-  };
 
   const addMaster = async (masterData: Partial<Master>) => {
     if (!salon) return;
@@ -188,6 +274,20 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     }
   };
 
+  const updateSalonProfile = async (updatedData: any) => {
+    if (!salon) return;
+
+    try {
+      const salonRef = doc(db, 'salons', salon.id);
+      await updateDoc(salonRef, updatedData);
+      setSalon({ ...salon, ...updatedData });
+      setEditingProfile(false);
+    } catch (error) {
+      console.error('Error updating salon profile:', error);
+      throw error;
+    }
+  };
+
   const translations = {
     cs: {
       title: 'Kabinet salonu',
@@ -196,6 +296,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       masters: 'Mistři',
       bookings: 'Rezervace',
       profile: 'Profil',
+      favorites: 'Oblíbené',
       totalBookings: 'Celkem rezervací',
       pendingBookings: 'Čekající',
       completedBookings: 'Dokončené',
@@ -215,6 +316,14 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
         confirmed: 'Potvrzeno',
         cancelled: 'Zrušeno',
         completed: 'Dokončeno'
+      },
+      profileFields: {
+        name: 'Jméno',
+        address: 'Adresa',
+        phone: 'Telefon',
+        email: 'Email',
+        website: 'Webové stránky',
+        description: 'Popis'
       }
     },
     en: {
@@ -224,6 +333,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       masters: 'Masters',
       bookings: 'Bookings',
       profile: 'Profile',
+      favorites: 'Favorites',
       totalBookings: 'Total Bookings',
       pendingBookings: 'Pending',
       completedBookings: 'Completed',
@@ -243,6 +353,14 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
         confirmed: 'Confirmed',
         cancelled: 'Cancelled',
         completed: 'Completed'
+      },
+      profileFields: {
+        name: 'Name',
+        address: 'Address',
+        phone: 'Phone',
+        email: 'Email',
+        website: 'Website',
+        description: 'Description'
       }
     }
   };
@@ -252,7 +370,10 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
   if (loading) {
     return (
       <div className="dashboard">
-        <div className="loading">Loading...</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div>{language === 'cs' ? 'Načítání...' : 'Loading...'}</div>
+        </div>
       </div>
     );
   }
@@ -260,7 +381,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
   if (!salon) {
     return (
       <div className="dashboard">
-        <div className="error">Salon profile not found</div>
+        <div className="error">{language === 'cs' ? 'Profil salonu nebyl nalezen' : 'Salon profile not found'}</div>
       </div>
     );
   }
@@ -327,6 +448,18 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           onClick={() => setActiveTab('profile')}
         >
           {t.profile}
+        </button>
+        <button 
+          className={activeTab === 'favorites' ? 'active' : ''}
+          onClick={() => setActiveTab('favorites')}
+        >
+          {t.favorites}
+        </button>
+        <button 
+          className={activeTab === 'reviews' ? 'active' : ''}
+          onClick={() => setActiveTab('reviews')}
+        >
+          {language === 'cs' ? 'Moje recenze' : 'My Reviews'}
         </button>
       </div>
 
@@ -434,15 +567,195 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
             >
               {editingProfile ? t.save : t.edit}
             </button>
-            {/* TODO: Implement profile editing component */}
-            <div className="profile-info">
-              <p><strong>Name:</strong> {salon.name}</p>
-              <p><strong>Address:</strong> {salon.address}</p>
-              <p><strong>Phone:</strong> {salon.phone}</p>
-              <p><strong>Email:</strong> {salon.email}</p>
-              <p><strong>Website:</strong> {salon.website}</p>
-              <p><strong>Description:</strong> {salon.description}</p>
+            
+            {!editingProfile && (
+              <div className="profile-info">
+                <p><strong>{t.profileFields.name}:</strong> {salon.name}</p>
+                <p><strong>{t.profileFields.address}:</strong> {salon.address}</p>
+                <p><strong>{t.profileFields.phone}:</strong> {salon.phone}</p>
+                <p><strong>{t.profileFields.email}:</strong> {salon.email}</p>
+                <p><strong>{t.profileFields.website}:</strong> {salon.website}</p>
+                <p><strong>{t.profileFields.description}:</strong> {salon.description}</p>
+              </div>
+            )}
+
+            <SalonProfileEditForm
+              salon={salon}
+              language={language}
+              translations={{
+                name: t.profileFields.name,
+                email: t.profileFields.email,
+                phone: t.profileFields.phone,
+                address: t.profileFields.address,
+                website: t.profileFields.website,
+                description: t.profileFields.description,
+                basicInfo: language === 'cs' ? 'Základní informace' : 'Basic Information',
+                location: language === 'cs' ? 'Lokace' : 'Location',
+                servicesLabel: language === 'cs' ? 'Služby' : 'Services',
+                workingHours: language === 'cs' ? 'Pracovní doba' : 'Working Hours',
+                photos: language === 'cs' ? 'Fotografie' : 'Photos',
+                additionalInfo: language === 'cs' ? 'Další informace' : 'Additional Information',
+                namePlaceholder: language === 'cs' ? 'Zadejte název salonu' : 'Enter salon name',
+                emailPlaceholder: language === 'cs' ? 'Zadejte email salonu' : 'Enter salon email',
+                phonePlaceholder: language === 'cs' ? 'Zadejte telefon salonu' : 'Enter salon phone',
+                websitePlaceholder: language === 'cs' ? 'Zadejte URL webových stránek' : 'Enter website URL',
+                descriptionPlaceholder: language === 'cs' ? 'Popište salon a jeho služby' : 'Describe salon and its services',
+                selectServices: language === 'cs' ? 'Vyberte služby' : 'Select services',
+                byAppointment: language === 'cs' ? 'Pouze na objednání' : 'By appointment only',
+                cancel: t.cancel,
+                save: t.save,
+                saving: language === 'cs' ? 'Ukládání...' : 'Saving...',
+                services: {
+                  'Manicure and Pedicure': language === 'cs' ? 'Manikúra a pedikúra' : 'Manicure and Pedicure',
+                  'Gel Nails': language === 'cs' ? 'Gelové nehty' : 'Gel Nails',
+                  'Nail Art': language === 'cs' ? 'Nail Art' : 'Nail Art',
+                  'Eyebrows & Eyelashes': language === 'cs' ? 'Obličejové chloupky' : 'Eyebrows & Eyelashes',
+                  'Relaxation Massage': language === 'cs' ? 'Relaxační masáž' : 'Relaxation Massage',
+                  'Women\'s Haircuts': language === 'cs' ? 'Dámské střihy' : 'Women\'s Haircuts',
+                  'Men\'s Haircuts and Beards': language === 'cs' ? 'Pánské střihy a vousy' : 'Men\'s Haircuts and Beards',
+                  'Makeup Artist': language === 'cs' ? 'Vizážistka' : 'Makeup Artist',
+                  'Nail Design': language === 'cs' ? 'Nail Design' : 'Nail Design',
+                  'Makeup & Nail Art': language === 'cs' ? 'Makeup & Nail Art' : 'Makeup & Nail Art'
+                }
+              }}
+              onSave={updateSalonProfile}
+              onCancel={() => setEditingProfile(false)}
+            />
+          </div>
+        )}
+
+        {activeTab === 'favorites' && (
+          <div className="favorites-section">
+            
+            <div className="favorites-content">
+              <div className="favorites-category">
+                <h3>{language === 'cs' ? 'Oblíbené salony' : 'Favorite Salons'}</h3>
+                {favoriteSalons.length > 0 ? (
+                  <div className="favorites-grid">
+                    {favoriteSalons.map((salon) => (
+                      <div
+                        key={salon.id}
+                        className="favorite-item clickable"
+                        onClick={() => { window.location.href = `/salon/${salon.id}`; }}
+                      >
+                        <div className="favorite-item-content">
+                          <h4>{salon.name}</h4>
+                          <p className="favorite-item-address">
+                            {salon.structuredAddress 
+                              ? require('../../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
+                              : salon.address
+                            }
+                          </p>
+                          <p className="favorite-item-rating">
+                            ⭐ {salon.rating} ({salon.reviews} {language === 'cs' ? 'recenzí' : 'reviews'})
+                          </p>
+                        </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFavorite(salon.id, 'salon');
+                          }}
+                          className="remove-button"
+                        >
+                          {language === 'cs' ? 'Odebrat' : 'Remove'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-favorites">
+                    {language === 'cs' ? 'Nemáte žádné oblíbené salony' : 'You have no favorite salons'}
+                  </p>
+                )}
+              </div>
+
+              <div className="favorites-category">
+                <h3>{language === 'cs' ? 'Oblíbení mistři' : 'Favorite Masters'}</h3>
+                {favoriteMasters.length > 0 ? (
+                  <div className="favorites-grid">
+                    {favoriteMasters.map((master) => (
+                      <div
+                        key={master.id}
+                        className="favorite-item clickable"
+                        onClick={() => { window.location.href = `/master/${master.id}`; }}
+                      >
+                        <div className="favorite-item-content">
+                          <h4>{master.name}</h4>
+                          <p className="favorite-item-address">
+                            {master.structuredAddress 
+                              ? require('../../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
+                              : master.address}
+                          </p>
+                          <p className="favorite-item-rating">
+                            ⭐ {master.rating} ({master.reviews} {language === 'cs' ? 'recenzí' : 'reviews'})
+                          </p>
+                        </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFavorite(master.id, 'master');
+                          }}
+                          className="remove-button"
+                        >
+                          {language === 'cs' ? 'Odebrat' : 'Remove'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-favorites">
+                    {language === 'cs' ? 'Nemáte žádné oblíbené mistry' : 'You have no favorite masters'}
+                  </p>
+                )}
+              </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="reviews-section">
+            <h2>{language === 'cs' ? 'Moje recenze' : 'My Reviews'}</h2>
+            {userReviews.length === 0 ? (
+              <p>{language === 'cs' ? 'Nemáte žádné recenze' : 'You have no reviews'}</p>
+            ) : (
+              <div className="reviews-list">
+                {userReviews.map(review => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-content">
+                      <div className="review-header">
+                        <h4>
+                          {review.targetData ? (
+                            <span 
+                              className="clickable-target"
+                              onClick={() => window.location.href = `/${review.targetData.type}/${review.targetData.id}`}
+                            >
+                              {review.targetData.name}
+                            </span>
+                          ) : (
+                            <span className="deleted-target">
+                              {language === 'cs' ? 'Smazaný ' : 'Deleted '}
+                              {review.salonId ? (language === 'cs' ? 'salon' : 'salon') : (language === 'cs' ? 'mistr' : 'master')}
+                            </span>
+                          )}
+                        </h4>
+                        <div className="review-rating">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                          ))}
+                          <span className="rating-number">({review.rating})</span>
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="review-comment">"{review.comment}"</p>
+                      )}
+                      <p className="review-date">
+                        {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

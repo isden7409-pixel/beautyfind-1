@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import { Salon, Master, Language } from './types';
 import HomePage from './pages/HomePage';
 import SalonDetailPage from './pages/SalonDetailPage';
@@ -10,6 +10,7 @@ import DashboardRouter from './pages/dashboards/DashboardRouter';
 import AuthModal from './components/auth/AuthModal';
 import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import { useSalonsData } from './hooks/useAppData';
+import { salonService, masterService } from './firebase/services';
 import { useLanguage, useSetLanguage, useCurrentViewMode, useSetCurrentViewMode } from './store/useStore';
 import './App.css';
 
@@ -283,6 +284,9 @@ function AppContent() {
   const currentViewMode = useCurrentViewMode();
   const setCurrentViewMode = useSetCurrentViewMode();
   
+  // Используем аутентификацию
+  const { currentUser, userProfile } = useAuth();
+  
   // Загружаем реальные данные салонов
   const salonsData = useSalonsData();
   const salons = salonsData?.salons && salonsData.salons.length > 0 ? salonsData.salons : mockSalons;
@@ -323,7 +327,16 @@ function AppContent() {
 
   const handleBackFromAdmin = () => {
     setShowAdminPanel(false);
+    // После регистрации салона/мастера пользователь должен попасть в кабинет
+    setShowDashboard(true);
   };
+
+  const handleGoToHome = () => {
+    setShowAdminPanel(false);
+    setShowDashboard(false);
+    setShowAuthModal(false);
+  };
+
 
   const handlePremiumFeatures = () => {
     setShowPremiumFeatures(true);
@@ -343,8 +356,102 @@ function AppContent() {
   };
 
   const handleOpenAuth = () => {
-    setShowAuthModal(true);
+    // Если пользователь уже залогинен, переходим в кабинет
+    if (currentUser && userProfile) {
+      setShowDashboard(true);
+    } else {
+      // Если не залогинен, показываем форму входа
+      setShowAuthModal(true);
+    }
   };
+
+  // Route components that support direct URL access without prior selection
+  const SalonDetailRoute: React.FC = () => {
+    const params = useParams();
+    const id = params.id as string | undefined;
+    const [entity, setEntity] = React.useState<Salon | null>(
+      selectedSalon && selectedSalon.id === id ? selectedSalon : null
+    );
+    const [showLoading, setShowLoading] = React.useState(false);
+    React.useEffect(() => {
+      let active = true;
+      const t = setTimeout(() => setShowLoading(true), 150);
+      (async () => {
+        if (!entity && id) {
+          try {
+            const fetched = await salonService.getById(id);
+            if (active && fetched) setEntity(fetched);
+          } catch {}
+        }
+      })();
+      return () => { active = false; clearTimeout(t); };
+    }, [id, entity]);
+    if (!id) return <div>Salon not found</div>;
+    if (!entity) return showLoading ? <div>Loading...</div> : null;
+    return (
+      <SalonDetailPage
+        salon={entity}
+        language={currentLanguage}
+        translations={translations}
+        onBack={handleBack}
+        onMasterSelect={handleMasterSelect}
+        onLanguageChange={setCurrentLanguage}
+      />
+    );
+  };
+
+  const MasterDetailRoute: React.FC = () => {
+    const params = useParams();
+    const id = params.id as string | undefined;
+    const [entity, setEntity] = React.useState<Master | null>(
+      selectedMaster && selectedMaster.id === id ? selectedMaster : null
+    );
+    const [showLoading, setShowLoading] = React.useState(false);
+    React.useEffect(() => {
+      let active = true;
+      const t = setTimeout(() => setShowLoading(true), 150);
+      (async () => {
+        if (!entity && id) {
+          try {
+            const fetched = await masterService.getById(id);
+            if (active && fetched) setEntity(fetched);
+          } catch {}
+        }
+      })();
+      return () => { active = false; clearTimeout(t); };
+    }, [id, entity]);
+    if (!id) return <div>Master not found</div>;
+    if (!entity) return showLoading ? <div>Loading...</div> : null;
+    return (
+      <MasterDetailPage
+        master={entity}
+        language={currentLanguage}
+        translations={translations}
+        onBack={handleBackFromMaster}
+        onSalonSelect={handleSalonSelect}
+        salons={salons}
+        onLanguageChange={setCurrentLanguage}
+      />
+    );
+  };
+
+  // При выходе скрываем кабинет/модалки, но не уводим гостя с детальных страниц
+  React.useEffect(() => {
+    if (!currentUser) {
+      const wasDashboardOpen = showDashboard;
+      setShowDashboard(false);
+      setShowAdminPanel(false);
+      setShowAuthModal(false);
+      setSelectedSalon(null);
+      setSelectedMaster(null);
+      if (wasDashboardOpen) {
+        setCurrentViewMode('salons');
+      }
+      if (wasDashboardOpen) {
+        navigate('/');
+      }
+    }
+  }, [currentUser, navigate, setCurrentViewMode, showDashboard]);
 
   if (showAdminPanel) {
     return (
@@ -496,6 +603,7 @@ function AppContent() {
           }
         }}
         onBack={handleBackFromAdmin}
+        onGoToHome={handleGoToHome}
       />
     );
   }
@@ -537,44 +645,13 @@ function AppContent() {
               onLanguageChange={setCurrentLanguage}
               translations={translations}
               initialViewMode={currentViewMode}
+              isLoggedIn={!!(currentUser && userProfile)}
+              userProfile={userProfile}
             />
           }
           />
-        <Route
-          path="/salon/:id"
-          element={
-            selectedSalon ? (
-              <SalonDetailPage
-                salon={selectedSalon}
-                language={currentLanguage}
-                translations={translations}
-                  onBack={handleBack}
-                  onMasterSelect={handleMasterSelect}
-                  onLanguageChange={setCurrentLanguage}
-                />
-              ) : (
-                <div>Salon not found</div>
-              )
-            }
-          />
-          <Route
-            path="/master/:id"
-            element={
-              selectedMaster ? (
-                <MasterDetailPage
-                  master={selectedMaster}
-                  language={currentLanguage}
-                  translations={translations}
-                  onBack={handleBackFromMaster}
-                  onSalonSelect={handleSalonSelect}
-                  salons={salons}
-                  onLanguageChange={setCurrentLanguage}
-                />
-              ) : (
-                <div>Master not found</div>
-              )
-            }
-          />
+        <Route path="/salon/:id" element={<SalonDetailRoute />} />
+        <Route path="/master/:id" element={<MasterDetailRoute />} />
       </Routes>
       
       <AuthModal
@@ -590,11 +667,16 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider onLogout={() => {
+        // Плавное перенаправление на главную страницу
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+      }}>
         <AppContent />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

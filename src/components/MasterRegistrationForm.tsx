@@ -292,7 +292,11 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
 
       const id = await masterService.createFromRegistration({ ...formData, isFreelancer: true });
       // Master created successfully
-      alert(validationMessages.registrationSuccess);
+      
+      // Вызываем onSubmit с данными ДО очистки формы
+      onSubmit(formData);
+      
+      // Очищаем форму после успешной отправки
       setFormData({
         name: '',
         specialty: '',
@@ -316,7 +320,6 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
       setPhotoFile(null);
       setPassword('');
       setConfirmPassword('');
-      onSubmit(formData);
     } catch (error) {
       // Failed to create master
       const message = (error as Error)?.message || validationMessages.registrationFailed;

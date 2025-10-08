@@ -8,6 +8,7 @@ import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PhotoCarousel from '../components/PhotoCarousel';
 import PageHeader from '../components/PageHeader';
+import FavoriteButton from '../components/FavoriteButton';
 
 interface SalonDetailPageProps {
   salon: Salon;
@@ -178,7 +179,15 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           />
         </div>
         <div className="salon-info">
-          <h1>{salon.name}</h1>
+          <div className="salon-title-row">
+            <h1>{salon.name}</h1>
+            <FavoriteButton
+              itemId={salon.id}
+              itemType="salon"
+              language={language}
+            />
+          </div>
+          
           <div className="salon-meta">
             <span className="rating">
               ⭐ {averageRating} ({reviewsCount} {t.reviews})

@@ -59,6 +59,7 @@ export interface Master {
   description?: string;
   phone?: string;
   email?: string;
+  website?: string;
   services?: string[];
   languages?: string[];
   salonName?: string;
@@ -89,6 +90,9 @@ export interface Review {
   date: string;
   salonId?: string;
   masterId?: string;
+  targetType?: 'salon' | 'master';
+  targetId?: string;
+  createdAt?: any;
 }
 
 // Типы для пользователей
@@ -120,6 +124,9 @@ export interface UserProfile {
   type: 'client' | 'salon' | 'master';
   avatar?: string;
   salonId?: string; // для мастеров, работающих в салоне
+  // Избранное пользователя
+  favoriteMasters?: string[]; // массив ID мастеров
+  favoriteSalons?: string[];  // массив ID салонов
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

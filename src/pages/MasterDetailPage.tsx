@@ -7,6 +7,7 @@ import { translateServices, translateLanguages } from '../utils/serviceTranslati
 import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PageHeader from '../components/PageHeader';
+import FavoriteButton from '../components/FavoriteButton';
 
 interface MasterDetailPageProps {
   master: Master;
@@ -197,6 +198,14 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         })()}
 
         <h1 className="master-name-centered">{master.name}</h1>
+        
+        <div className="favorite-button-container" style={{ textAlign: 'center', margin: '10px 0' }}>
+          <FavoriteButton
+            itemId={master.id}
+            itemType="master"
+            language={language}
+          />
+        </div>
         
         <div className="master-meta">
           {master.worksInSalon && masterSalon && (

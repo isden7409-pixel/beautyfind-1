@@ -85,7 +85,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
           fontSize: '14px'
         }}
       >
-        {placeholder || 'Loading...'}
+        {placeholder || 'Načítání...'}
       </div>
     );
   }

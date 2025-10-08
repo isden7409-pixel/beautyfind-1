@@ -7,8 +7,7 @@ import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { salonService } from '../firebase/services';
 import { useAuth } from './auth/AuthProvider';
-import { auth, db } from '../firebase/config';
-import { doc, setDoc } from 'firebase/firestore';
+import { auth } from '../firebase/config';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -81,7 +80,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { currentUser, updateProfile, signUp } = useAuth();
+  const { currentUser, signUp, signIn, logout } = useAuth();
   const [formData, setFormData] = useState<SalonRegistration>({
     name: '',
     city: '',
@@ -229,32 +228,54 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           return;
         }
       }
-      // Ensure owner account exists; create if needed
-      let ownerId = currentUser?.uid;
-      const isNewUser = !ownerId;
-      if (isNewUser) {
+      // Если пользователь уже залогинен, выходим из аккаунта
+      if (currentUser) {
+        console.log('User is already logged in, logging out first...');
+        await logout();
+        // Ждем немного, чтобы состояние обновилось
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Всегда создаем новый аккаунт для салона
+      console.log('Creating new salon owner account with email:', formData.email);
+      console.log('Password length:', password.length);
+      console.log('Password value (first 3 chars):', password.substring(0, 3));
+      try {
         await signUp(formData.email, password, {
           name: formData.name,
           phone: formData.phone,
           type: 'salon'
         } as any);
-        ownerId = auth.currentUser?.uid || undefined;
+        const ownerId = auth.currentUser?.uid || undefined;
+        console.log('Salon owner account created successfully, ownerId:', ownerId);
+        console.log('Current user after signUp:', auth.currentUser?.email);
+      } catch (signUpError) {
+        console.error('Error during signUp:', signUpError);
+        throw signUpError;
       }
 
-      const id = await salonService.createFromRegistration(formData, ownerId);
-      // Обновляем профиль пользователя, добавляя salonId
-      if (ownerId) {
-        if (isNewUser) {
-          // Для нового пользователя используем setDoc с merge
-          const userRef = doc(db, 'users', ownerId);
-          await setDoc(userRef, { salonId: id, updatedAt: new Date() }, { merge: true });
-        } else {
-          // Для существующего пользователя используем updateProfile
-          await updateProfile({ salonId: id, type: 'salon' as any });
-        }
-      }
+      const id = await salonService.createFromRegistration(formData, auth.currentUser?.uid);
+      // Для салонов не нужно дополнительное обновление профиля
+      // Профиль уже создан в signUp с правильным типом 'salon'
       // Salon created successfully
-      alert(validationMessages.registrationSuccess);
+      
+      // Тест: попробуем войти сразу после регистрации
+      console.log('Testing login immediately after registration...');
+      console.log('Current user after salon creation:', auth.currentUser?.email);
+      console.log('Trying to sign in with:', formData.email, 'password length:', password.length);
+      try {
+        await signIn(formData.email, password);
+        console.log('Login test successful!');
+      } catch (loginTestError: any) {
+        console.error('Login test failed:', loginTestError);
+        console.error('Login test error code:', loginTestError.code);
+        console.error('Login test error message:', loginTestError.message);
+      }
+      
+      // Вызываем onSubmit с данными ДО очистки формы
+      onSubmit(formData);
+      
+      // Очищаем форму после успешной отправки
       setFormData({
         name: '',
         city: '',
@@ -274,7 +295,6 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
       setPhotoFiles(null);
       setPassword('');
       setConfirmPassword('');
-      onSubmit(formData);
     } catch (error) {
       // Failed to create salon
       alert(validationMessages.registrationFailed);

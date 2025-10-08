@@ -8,7 +8,9 @@ import {
   deleteDoc, 
   query, 
   where, 
-  orderBy
+  orderBy,
+  arrayUnion,
+  arrayRemove
 } from 'firebase/firestore';
 import { db } from './config';
 import { Salon, Master, Review, SalonRegistration, MasterRegistration } from '../types';
@@ -387,6 +389,29 @@ export const masterService = {
 
 // Review services
 export const reviewService = {
+  // Favorites: toggle for current user
+  async toggleFavorite(userId: string, itemId: string, itemType: 'salon' | 'master'): Promise<'added' | 'removed'> {
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) throw new Error('User profile not found');
+    const data: any = snap.data();
+    const field = itemType === 'salon' ? 'favoriteSalons' : 'favoriteMasters';
+    const list: string[] = Array.isArray(data[field]) ? data[field] : [];
+    const exists = list.includes(itemId);
+    const updated = exists ? list.filter((x) => x !== itemId) : [...list, itemId];
+    await updateDoc(userRef, { [field]: updated, updatedAt: new Date() });
+    return exists ? 'removed' : 'added';
+  },
+  async getFavorites(userId: string): Promise<{ favoriteSalons: string[]; favoriteMasters: string[] }> {
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) throw new Error('User profile not found');
+    const data: any = snap.data();
+    return {
+      favoriteSalons: Array.isArray(data.favoriteSalons) ? data.favoriteSalons : [],
+      favoriteMasters: Array.isArray(data.favoriteMasters) ? data.favoriteMasters : []
+    };
+  },
   // helper to normalize createdAt/date to timestamp
   _ts(r: any): number {
     const v = r?.createdAt ?? r?.date ?? null;
@@ -459,6 +484,23 @@ export const reviewService = {
     if (clean.salonId === undefined) delete clean.salonId;
     if (clean.masterId === undefined) delete clean.masterId;
 
+    // Server-side guard: allow only signed-in users (any type) to create reviews
+    try {
+      const uid: string | undefined = clean.userId;
+      if (!uid) {
+        throw new Error('Missing userId');
+      }
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        throw new Error('User profile not found');
+      }
+      // any existing user type is allowed now
+    } catch (guardErr) {
+      // Прерываем создание отзыва с понятной ошибкой
+      throw guardErr instanceof Error ? guardErr : new Error('Not allowed to create review');
+    }
+
     const docRef = await addDoc(collection(db, REVIEWS_COLLECTION), clean);
     return docRef.id;
   },
@@ -473,6 +515,62 @@ export const reviewService = {
   async delete(id: string): Promise<void> {
     const docRef = doc(db, REVIEWS_COLLECTION, id);
     await deleteDoc(docRef);
+  }
+};
+
+export const userService = {
+  async toggleFavorite(userId: string, itemId: string, itemType: 'master' | 'salon'): Promise<'added' | 'removed'> {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      throw new Error('User not found.');
+    }
+
+    const userProfile = userSnap.data() as any;
+    let status: 'added' | 'removed';
+
+    if (itemType === 'master') {
+      if (userProfile.favoriteMasters?.includes(itemId)) {
+        await updateDoc(userRef, {
+          favoriteMasters: arrayRemove(itemId)
+        });
+        status = 'removed';
+      } else {
+        await updateDoc(userRef, {
+          favoriteMasters: arrayUnion(itemId)
+        });
+        status = 'added';
+      }
+    } else { // itemType === 'salon'
+      if (userProfile.favoriteSalons?.includes(itemId)) {
+        await updateDoc(userRef, {
+          favoriteSalons: arrayRemove(itemId)
+        });
+        status = 'removed';
+      } else {
+        await updateDoc(userRef, {
+          favoriteSalons: arrayUnion(itemId)
+        });
+        status = 'added';
+      }
+    }
+    return status;
+  },
+
+  async getFavorites(userId: string): Promise<{ favoriteMasters: string[]; favoriteSalons: string[] }> {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      return { favoriteMasters: [], favoriteSalons: [] };
+    }
+
+    const userProfile = userSnap.data() as any;
+    return {
+      favoriteMasters: userProfile.favoriteMasters || [],
+      favoriteSalons: userProfile.favoriteSalons || []
+    };
   }
 };
 

@@ -180,9 +180,11 @@ interface HomePageProps {
   onLanguageChange: (language: Language) => void;
   translations: any;
   initialViewMode?: 'salons' | 'masters';
+  isLoggedIn?: boolean;
+  userProfile?: any;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, onOpenAuth, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons' }) => {
+const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAdminPanel, onPremiumFeatures, onOpenAuth, currentLanguage, onLanguageChange, translations, initialViewMode = 'salons', isLoggedIn = false, userProfile }) => {
   const salonsData = useSalonsData();
   const mastersData = useMastersData();
   const salons = salonsData?.salons && salonsData.salons.length > 0 ? salonsData.salons : mockSalons;
@@ -244,7 +246,10 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         <div className="header-top">
           <div className="header-buttons">
             <button onClick={onOpenAuth} className="admin-btn">
-              {currentLanguage === 'cs' ? 'Můj účet' : 'My Account'}
+              {isLoggedIn 
+                ? (currentLanguage === 'cs' ? `Můj účet (${userProfile?.name || 'Uživatel'})` : `My Account (${userProfile?.name || 'User'})`)
+                : (currentLanguage === 'cs' ? 'Přihlášení' : 'Login')
+              }
             </button>
             <button onClick={onAdminPanel} className="admin-btn">
               {currentLanguage === 'cs' ? 'Registrace' : 'Registration'}

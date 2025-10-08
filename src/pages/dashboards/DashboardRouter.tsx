@@ -11,22 +11,38 @@ interface DashboardRouterProps {
 }
 
 const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange }) => {
-  const { userProfile, currentUser, loading } = useAuth();
+  const { userProfile, currentUser, loading, isLoggingOut } = useAuth();
 
   console.log('DashboardRouter - Auth state:', { userProfile, currentUser, loading });
 
-  if (loading) {
+  if (loading || isLoggingOut) {
     return (
       <div className="dashboard">
-        <div>Loading...</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div>{isLoggingOut ? (language === 'cs' ? 'Odhlašování...' : 'Logging out...') : (language === 'cs' ? 'Načítání...' : 'Loading...')}</div>
+        </div>
       </div>
     );
   }
 
-  if (!currentUser) {
+  // Если пользователь не аутентифицирован и мы не в процессе logout, показываем ошибку
+  if (!currentUser && !isLoggingOut) {
     return (
       <div className="dashboard">
-        <div className="error">User not authenticated - no current user</div>
+        <div className="error">{language === 'cs' ? 'Uživatel není ověřen - žádný aktuální uživatel' : 'User not authenticated - no current user'}</div>
+      </div>
+    );
+  }
+
+  // Если пользователь не аутентифицирован, но мы в процессе logout, показываем загрузку
+  if (!currentUser && isLoggingOut) {
+    return (
+      <div className="dashboard">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div>{language === 'cs' ? 'Odhlašování...' : 'Logging out...'}</div>
+        </div>
       </div>
     );
   }
@@ -34,7 +50,10 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onL
   if (!userProfile) {
     return (
       <div className="dashboard">
-        <div className="error">User authenticated but profile not loaded</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div>{language === 'cs' ? 'Načítání profilu...' : 'Loading profile...'}</div>
+        </div>
       </div>
     );
   }
@@ -51,7 +70,7 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onL
     default:
       return (
         <div className="dashboard">
-          <div className="error">Unknown user type</div>
+          <div className="error">{language === 'cs' ? 'Neznámý typ uživatele' : 'Unknown user type'}</div>
         </div>
       );
   }

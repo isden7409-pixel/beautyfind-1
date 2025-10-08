@@ -21,10 +21,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, language, onGoToRegist
     setLoading(true);
 
     try {
+      console.log('Attempting to sign in with email:', email);
       await signIn(email, password);
+      console.log('Sign in successful');
       onSuccess();
     } catch (error: any) {
       console.error('Login error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       
       let errorMessage = language === 'cs' 
         ? 'Nesprávný email nebo heslo' 

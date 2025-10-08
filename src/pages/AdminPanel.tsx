@@ -5,12 +5,14 @@ import MasterRegistrationForm from '../components/MasterRegistrationForm';
 import ClientRegistrationForm from '../components/ClientRegistrationForm';
 import { useSalons } from '../hooks/useData';
 import PageHeader from '../components/PageHeader';
+import { useAuth } from '../components/auth/AuthProvider';
 
 interface AdminPanelProps {
   language: Language;
   translations: any;
   onBack: () => void;
   onLanguageChange: (language: Language) => void;
+  onGoToHome: () => void; // Новая функция для перехода на главную страницу
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -18,29 +20,56 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   translations,
   onBack,
   onLanguageChange,
+  onGoToHome,
 }) => {
   const [activeTab, setActiveTab] = useState<'salon' | 'master' | 'client'>('salon');
   const [showForm, setShowForm] = useState(false);
   const { salons } = useSalons();
+  const { currentUser, userProfile, logout } = useAuth();
 
   const t = translations[language];
 
+  // Проверка, залогинен ли пользователь
+  const isLoggedIn = currentUser && userProfile;
+
+
+  // Функция для автоматического выхода и регистрации
+  const handleLogoutAndRegister = async () => {
+    if (isLoggedIn) {
+      try {
+        await logout();
+        // Небольшая задержка для обновления состояния
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setShowForm(true);
+      } catch (error) {
+        console.error('Error during logout:', error);
+        alert(language === 'cs' ? 'Chyba při odhlašování' : 'Error during logout');
+      }
+    } else {
+      setShowForm(true);
+    }
+  };
 
   const handleSalonSubmit = (data: SalonRegistration) => {
-    // Здесь будет отправка данных на сервер
-    alert(t.registrationSuccess);
+    // После успешной регистрации салона пользователь уже залогинен
+    // Перенаправляем в кабинет салона
     setShowForm(false);
+    // Закрываем админ панель и переходим в кабинет
+    onBack();
   };
 
   const handleMasterSubmit = (data: MasterRegistration) => {
-    // Здесь будет отправка данных на сервер
-    alert(t.registrationSuccess);
+    // После успешной регистрации мастера пользователь уже залогинен
+    // Перенаправляем в кабинет мастера
     setShowForm(false);
+    // Закрываем админ панель и переходим в кабинет
+    onBack();
   };
 
   const handleCancel = () => {
     setShowForm(false);
   };
+
 
   if (showForm) {
     return (
@@ -51,7 +80,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           onLanguageChange={onLanguageChange}
           showBackButton={true}
           onBack={handleCancel}
-          backText={language === 'cs' ? '← Zpět' : '← Back'}
+          backText={language === 'cs' ? 'Zpět' : 'Back'}
         />
         
         {activeTab === 'salon' ? (
@@ -83,14 +112,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <div className="admin-panel">
-      <PageHeader
-        title=""
-        currentLanguage={language}
-        onLanguageChange={onLanguageChange}
-        showBackButton={true}
-        onBack={onBack}
-        backText={language === 'cs' ? '← Zpět' : '← Back'}
-      />
+        <PageHeader
+          title=""
+          currentLanguage={language}
+          onLanguageChange={onLanguageChange}
+          showBackButton={true}
+          onBack={onGoToHome}
+          backText={language === 'cs' ? 'Zpět' : 'Back'}
+        />
 
       <div className="admin-content">
 
@@ -171,9 +200,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             )}
           </div>
 
+          {isLoggedIn && (
+            <div className="registration-warning" style={{
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              padding: '15px',
+              marginBottom: '20px',
+              color: '#856404'
+            }}>
+              <strong>{language === 'cs' ? '⚠️ Upozornění:' : '⚠️ Warning:'}</strong>
+              <br />
+              {language === 'cs' 
+                ? `Jste přihlášeni jako ${userProfile?.name} (${userProfile?.type === 'salon' ? 'Salon' : userProfile?.type === 'master' ? 'Mistr' : 'Klient'}). Pro registraci nového účtu budete automaticky odhlášeni.`
+                : `You are logged in as ${userProfile?.name} (${userProfile?.type === 'salon' ? 'Salon' : userProfile?.type === 'master' ? 'Master' : 'Client'}). You will be automatically logged out to register a new account.`
+              }
+            </div>
+          )}
+
           <button
             className="btn btn-primary btn-large"
-            onClick={() => setShowForm(true)}
+            onClick={handleLogoutAndRegister}
           >
             {activeTab === 'salon' 
               ? t.startSalonRegistration 
