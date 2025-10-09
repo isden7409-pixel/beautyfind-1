@@ -27,7 +27,6 @@ const ClientProfileEditForm: React.FC<ClientProfileEditFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const t = translations[language];
   const validationMessages = getValidationMessages(language);
 
   useEffect(() => {
@@ -129,6 +128,17 @@ const ClientProfileEditForm: React.FC<ClientProfileEditFormProps> = ({
             onChange={handleInputChange}
             className={errors.email ? 'error' : ''}
             placeholder={translations.emailPlaceholder}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
@@ -176,7 +186,7 @@ const ClientProfileEditForm: React.FC<ClientProfileEditFormProps> = ({
         </button>
         <button
           type="submit"
-          className="submit-button"
+          className="save-button"
           disabled={submitting}
         >
           {submitting ? translations.saving : translations.save}

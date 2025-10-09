@@ -128,6 +128,7 @@ export const salonService = {
       byAppointment: data.byAppointment,
       workingHours: normalizedSalonWorkingHours,
       services: data.services,
+      languages: data.languages,
       rating: 0,
       reviews: 0,
       image: photoUrls[0] || defaultImage,

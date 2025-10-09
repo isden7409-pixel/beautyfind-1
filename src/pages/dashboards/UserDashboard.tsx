@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/auth/AuthProvider';
-import { UserBooking, DashboardStats, Salon, Master, UserProfile } from '../../types';
+import { UserBooking, DashboardStats, Salon, Master } from '../../types';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { userService } from '../../firebase/services';
@@ -11,9 +11,10 @@ interface UserDashboardProps {
   language: 'cs' | 'en';
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
+  onNavigate?: (path: string) => void;
 }
 
-const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLanguageChange }) => {
+const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
   const { userProfile } = useAuth();
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
@@ -104,15 +105,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     }
   }, [userProfile]);
 
-  useEffect(() => {
-    if (userProfile) {
-      loadUserData();
-      loadFavorites();
-      loadUserReviews();
-    }
-  }, [userProfile, loadFavorites, loadUserReviews]);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     if (!userProfile) return;
 
     try {
@@ -152,7 +145,15 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     } finally {
       setLoading(false);
     }
-  };
+  }, [userProfile]);
+
+  useEffect(() => {
+    if (userProfile) {
+      loadUserData();
+      loadFavorites();
+      loadUserReviews();
+    }
+  }, [userProfile, loadFavorites, loadUserReviews, loadUserData]);
 
   const removeFavorite = async (itemId: string, itemType: 'master' | 'salon') => {
     if (!userProfile) return;
@@ -449,23 +450,26 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
         {activeTab === 'profile' && (
           <div className="profile-section">
             <h2>{t.profile}</h2>
-            <button 
-              onClick={() => setEditingProfile(!editingProfile)}
-              className="edit-button"
-            >
-              {editingProfile ? t.save : t.edit}
-            </button>
-            
+
             {!editingProfile && (
               <div className="profile-info">
                 <p><strong>{t.profileFields.name}:</strong> {userProfile?.name}</p>
                 <p><strong>{t.profileFields.email}:</strong> {userProfile?.email}</p>
                 <p><strong>{t.profileFields.phone}:</strong> {userProfile?.phone}</p>
-                <p><strong>{t.profileFields.type}:</strong> {userProfile?.type}</p>
+                <p><strong>{t.profileFields.type}:</strong> {userProfile?.type === 'client' ? (language === 'cs' ? 'Klient' : 'Client') : userProfile?.type}</p>
               </div>
             )}
 
-            {userProfile && (
+            {!editingProfile && (
+              <button 
+                onClick={() => setEditingProfile(!editingProfile)}
+                className="edit-button profile-edit-button"
+              >
+                {t.edit}
+              </button>
+            )}
+
+            {editingProfile && userProfile && (
               <ClientProfileEditForm
                 userProfile={userProfile}
                 language={language}

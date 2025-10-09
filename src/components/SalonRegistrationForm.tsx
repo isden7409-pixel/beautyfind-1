@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SalonRegistration, Language } from '../types';
-import { translateServices } from '../utils/serviceTranslations';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import { getRequiredMessage, getValidationMessages } from '../utils/form';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
@@ -100,6 +100,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -118,6 +119,11 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     'Skin Cleansing', 'Men\'s Haircuts and Beards', 'Hot Towel',
     'Women\'s Haircuts and Coloring', 'Body Treatment', 'Sauna',
     'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts'
+  ];
+
+  const availableLanguages = [
+    'Czech', 'English', 'German', 'French', 'Spanish', 'Italian',
+    'Russian', 'Slovak', 'Polish', 'Ukrainian', 'Portuguese', 'Dutch'
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -152,25 +158,49 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     }));
   };
 
+  const handleLanguageToggle = (lang: string) => {
+    const updated = selectedLanguages.includes(lang)
+      ? selectedLanguages.filter(l => l !== lang)
+      : [...selectedLanguages, lang];
+    setSelectedLanguages(updated);
+    setFormData(prev => ({ ...prev, languages: updated }));
+  };
+
   const handlePhotoChange = (files: FileList | null) => {
-    setPhotoFiles(files);
+    // Добавляем новые файлы к уже выбранным, не заменяя их (до 10)
+    const dataTransfer = new DataTransfer();
+    const existing = photoFiles ? Array.from(photoFiles) : [];
+    existing.forEach(f => dataTransfer.items.add(f));
+
     if (files) {
-      const fileArray = Array.from(files);
-      setFormData(prev => ({
-        ...prev,
-        photos: fileArray
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        photos: []
-      }));
+      Array.from(files).forEach(f => dataTransfer.items.add(f));
     }
+    // Ограничиваем 10
+    const limited = new DataTransfer();
+    const all = Array.from(dataTransfer.files).slice(0, 10);
+    all.forEach(f => limited.items.add(f));
+
+    setPhotoFiles(limited.files);
+    setFormData(prev => ({
+      ...prev,
+      photos: Array.from(limited.files)
+    }));
+  };
+
+  const handleRemoveSelectedFile = (index: number) => {
+    if (!photoFiles) return;
+    const dt = new DataTransfer();
+    Array.from(photoFiles).forEach((f, i) => {
+      if (i !== index) dt.items.add(f);
+    });
+    setPhotoFiles(dt.files);
+    setFormData(prev => ({ ...prev, photos: Array.from(dt.files) }));
   };
 
   const [submitting, setSubmitting] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [languagesError, setLanguagesError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,6 +232,14 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         return;
       } else {
         setPaymentError(null);
+      }
+      // Validate languages
+      if (selectedLanguages.length === 0) {
+        setLanguagesError(language === 'cs' ? 'Vyberte alespoň jeden jazyk' : 'Select at least one language');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      } else {
+        setLanguagesError(null);
       }
       // If not by appointment, require working hours to be provided
       if (!formData.byAppointment) {
@@ -400,8 +438,17 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
               required
               className="form-input"
               placeholder={language === 'cs' ? 'Např. mujmail@seznam.cz' : 'e.g. mymail@gmail.com'}
-            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
-            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+              onInvalid={(e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.validity.valueMissing) {
+                  target.setCustomValidity(getRequiredMessage(language));
+                } else if (target.validity.typeMismatch) {
+                  target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+                } else {
+                  target.setCustomValidity('');
+                }
+              }}
+              onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           </div>
         </div>
@@ -481,6 +528,23 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           {servicesError && <div className="form-error" role="alert">{servicesError}</div>}
         </div>
 
+        {/* Languages between Services and Payment Methods */}
+        <div className="form-group">
+          <label>{t.languagesLabel || (language === 'cs' ? 'Jazyky' : 'Languages')} *</label>
+          <div className="services-grid">
+            {availableLanguages.map(lang => (
+              <label key={lang} className="service-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedLanguages.includes(lang)}
+                  onChange={() => handleLanguageToggle(lang)}
+                />
+                <span className="service-label">{translateLanguages([lang], language)[0]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="form-group">
           <label>{t.selectPaymentMethods}</label>
           <div className="services-grid">
@@ -544,6 +608,18 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             accept="image/*"
             onChange={handlePhotoChange}
             selectedFiles={photoFiles}
+            onRemoveFile={handleRemoveSelectedFile}
+            maxFiles={10}
+            onReorderFile={(from, to) => {
+              if (!photoFiles) return;
+              const files = Array.from(photoFiles);
+              const [moved] = files.splice(from, 1);
+              files.splice(to, 0, moved);
+              const dt = new DataTransfer();
+              files.forEach(f => dt.items.add(f));
+              setPhotoFiles(dt.files);
+              setFormData(prev => ({ ...prev, photos: Array.from(dt.files) }));
+            }}
             selectButtonText={t.selectFiles}
             noFileText={t.noFileSelected}
             filesSelectedText={t.filesSelected}

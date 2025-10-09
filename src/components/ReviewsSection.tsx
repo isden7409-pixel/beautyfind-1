@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Review, Language } from '../types';
 import { reviewService } from '../firebase/services';
 import { useAuth } from './auth/AuthProvider';
+import { getRequiredMessage } from '../utils/form';
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -141,6 +142,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 required
                 className="form-input"
                 readOnly={isAuthenticated}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
               />
             </div>
             
@@ -170,6 +173,8 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 className="form-textarea"
                 rows={4}
                 placeholder={t.commentPlaceholder}
+                onInvalid={(e) => (e.target as HTMLTextAreaElement).setCustomValidity(getRequiredMessage(language))}
+                onInput={(e) => (e.target as HTMLTextAreaElement).setCustomValidity('')}
               />
             </div>
             

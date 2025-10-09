@@ -1,54 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Master, Language, Salon } from '../types';
+import { Master, Language } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { getRequiredMessage, getValidationMessages } from '../utils/form';
-
-// Список всех чешских городов
-const CZECH_CITIES = [
-  { value: 'Prague', label: 'Praha' },
-  { value: 'Brno', label: 'Brno' },
-  { value: 'Ostrava', label: 'Ostrava' },
-  { value: 'Plzen', label: 'Plzeň' },
-  { value: 'Liberec', label: 'Liberec' },
-  { value: 'Olomouc', label: 'Olomouc' },
-  { value: 'Budweis', label: 'České Budějovice' },
-  { value: 'Hradec', label: 'Hradec Králové' },
-  { value: 'Pardubice', label: 'Pardubice' },
-  { value: 'Zlín', label: 'Zlín' },
-  { value: 'Havirov', label: 'Havířov' },
-  { value: 'Kladno', label: 'Kladno' },
-  { value: 'Most', label: 'Most' },
-  { value: 'Opava', label: 'Opava' },
-  { value: 'Frydek', label: 'Frýdek-Místek' },
-  { value: 'Karvina', label: 'Karviná' },
-  { value: 'Jihlava', label: 'Jihlava' },
-  { value: 'Teplice', label: 'Teplice' },
-  { value: 'Decin', label: 'Děčín' },
-  { value: 'Chomutov', label: 'Chomutov' },
-  { value: 'Jablonec', label: 'Jablonec nad Nisou' },
-  { value: 'Mlada', label: 'Mladá Boleslav' },
-  { value: 'Prostejov', label: 'Prostějov' },
-  { value: 'Prerov', label: 'Přerov' },
-  { value: 'Trebic', label: 'Třebíč' },
-  { value: 'Ceska', label: 'Česká Lípa' },
-  { value: 'Tabor', label: 'Tábor' },
-  { value: 'Znojmo', label: 'Znojmo' },
-  { value: 'Pribram', label: 'Příbram' },
-  { value: 'Orlova', label: 'Orlová' },
-  { value: 'Cheb', label: 'Cheb' },
-  { value: 'Modrany', label: 'Modřany' },
-  { value: 'Litvinov', label: 'Litvínov' },
-  { value: 'Trinec', label: 'Třinec' },
-  { value: 'Kolin', label: 'Kolín' },
-  { value: 'Kromeriz', label: 'Kroměříž' },
-  { value: 'Sumperk', label: 'Šumperk' },
-  { value: 'Usti', label: 'Ústí nad Labem' },
-  { value: 'Hodonin', label: 'Hodonín' },
-  { value: 'Cesky', label: 'Český Těšín' }
-];
 
 interface MasterProfileEditFormProps {
   master: Master;
@@ -94,8 +50,28 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const t = translations[language];
   const validationMessages = getValidationMessages(language);
+
+  // Полный список услуг как в форме регистрации
+  const availableServices = [
+    'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial', 
+    'Massage', 'Nail Art', 'Eyebrows', 'Eyelashes', 'Hair Coloring',
+    'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber',
+    'Gel Nails', 'Nail Extensions', 'Coloring', 'Styling', 'Beard Trim',
+    'Event Makeup', 'Bridal Makeup', 'Relaxation Massage', 'Sports Massage',
+    'Lymphatic Massage', 'Women\'s Haircuts', 'Women\'s Haircut', 'Highlights', 'Anti-aging',
+    'Skin Cleansing', 'Men\'s Haircuts and Beards', 'Hot Towel',
+    'Women\'s Haircuts and Coloring', 'Body Treatment', 'Sauna',
+    'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts',
+    'Eyebrow Shaping', 'Eyebrow Shaping & Tinting', 'Balayage', 'Hair Wash',
+    'Skin Treatment', 'Cleansing', 'Lash Extensions', 'Wedding Hairstyles',
+    'Relaxation', 'Therapeutic Massage', 'Aromatherapy', 'Detox'
+  ];
+
+  const availableLanguages = [
+    'Czech', 'English', 'German', 'French', 'Spanish', 'Italian', 
+    'Russian', 'Slovak', 'Polish', 'Ukrainian', 'Portuguese', 'Dutch'
+  ];
 
   useEffect(() => {
     setFormData({
@@ -190,6 +166,13 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
     }
   };
 
+  const handlePhotoRemove = () => {
+    setFormData(prev => ({
+      ...prev,
+      photo: ''
+    }));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -279,6 +262,17 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
             onChange={handleInputChange}
             className={errors.email ? 'error' : ''}
             placeholder={translations.emailPlaceholder}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
@@ -320,29 +314,30 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
             {translations.experience} <span className="required">*</span>
           </label>
           <input
-            type="text"
+            type="number"
             id="experience"
             name="experience"
             value={formData.experience}
             onChange={handleInputChange}
             className={errors.experience ? 'error' : ''}
             placeholder={translations.experiencePlaceholder}
+            min="0"
+            max="50"
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.rangeUnderflow) {
+                target.setCustomValidity(language === 'cs' ? 'Hodnota musí být alespoň 0' : 'Value must be at least 0');
+              } else if (target.validity.rangeOverflow) {
+                target.setCustomValidity(language === 'cs' ? 'Hodnota musí být maximálně 50' : 'Value must be at most 50');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           {errors.experience && <span className="error-message">{errors.experience}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="website">
-            {translations.website}
-          </label>
-          <input
-            type="url"
-            id="website"
-            name="website"
-            value={formData.website}
-            onChange={handleInputChange}
-            placeholder={translations.websitePlaceholder}
-          />
         </div>
 
         <div className="form-group">
@@ -363,35 +358,75 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       <div className="form-section">
         <h3>{translations.location}</h3>
         
+        <div className="form-group city-field">
+          <label htmlFor="city">{language === 'cs' ? 'Město *' : 'City *'}</label>
+          <select
+            id="city"
+            name="city"
+            value={formData.city}
+            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+            className="form-select"
+            required
+            onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity('')}
+          >
+            <option value="">{language === 'cs' ? 'Vyberte město' : 'Select city'}</option>
+            {[
+              { value: 'Prague', label: 'Praha' },
+              { value: 'Brno', label: 'Brno' },
+              { value: 'Ostrava', label: 'Ostrava' },
+              { value: 'Plzen', label: 'Plzeň' },
+              { value: 'Liberec', label: 'Liberec' },
+              { value: 'Olomouc', label: 'Olomouc' },
+              { value: 'Budweis', label: 'České Budějovice' },
+              { value: 'Hradec', label: 'Hradec Králové' },
+              { value: 'Pardubice', label: 'Pardubice' },
+              { value: 'Zlín', label: 'Zlín' },
+            ].map(city => (
+              <option key={city.value} value={city.value}>{city.label}</option>
+            ))}
+          </select>
+        </div>
+        
         <StructuredAddressInput
           value={formData.structuredAddress || undefined}
           onChange={handleAddressChange}
           language={language}
           translations={translations}
+          city={formData.city}
         />
       </div>
 
       <div className="form-section">
-        <h3>{translations.servicesLabel}</h3>
+        <h3>{language === 'cs' ? 'Otevírací doba' : 'Opening Hours'} <span className="required">*</span></h3>
+        
+        <WorkingHoursInput
+          value={formData.workingHours}
+          onChange={handleWorkingHoursChange}
+          language={language}
+          byAppointment={formData.byAppointment}
+          onByAppointmentChange={(value) => setFormData(prev => ({ ...prev, byAppointment: value }))}
+        />
+      </div>
+
+      <div className="form-section">
+        <h3>{translations.servicesLabel} <span className="required">*</span></h3>
         
         <div className="form-group">
-          <label>
-            {translations.selectServices} <span className="required">*</span>
-          </label>
           <div className="services-grid">
-            {Object.keys(translations.services).map((serviceKey) => (
-              <label key={serviceKey} className="service-option">
+            {availableServices.map((service) => (
+              <label key={service} className="service-checkbox">
                 <input
                   type="checkbox"
-                  checked={formData.services.includes(serviceKey)}
+                  checked={formData.services.includes(service)}
                   onChange={(e) => {
                     const selectedServices = e.target.checked
-                      ? [...formData.services, serviceKey]
-                      : formData.services.filter(s => s !== serviceKey);
+                      ? [...formData.services, service]
+                      : formData.services.filter(s => s !== service);
                     handleServicesChange(selectedServices);
                   }}
                 />
-                <span className="service-name">{translations.services[serviceKey]}</span>
+                <span className="service-label">{translateServices([service], language)[0]}</span>
               </label>
             ))}
           </div>
@@ -400,26 +435,23 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>{translations.languagesLabel}</h3>
+        <h3>{translations.languagesLabel} <span className="required">*</span></h3>
         
         <div className="form-group">
-          <label>
-            {translations.selectLanguages}
-          </label>
-          <div className="languages-grid">
-            {Object.keys(translations.languages).map((languageKey) => (
-              <label key={languageKey} className="language-option">
+          <div className="services-grid">
+            {availableLanguages.map((lang) => (
+              <label key={lang} className="service-checkbox">
                 <input
                   type="checkbox"
-                  checked={formData.languages.includes(languageKey)}
+                  checked={formData.languages.includes(lang)}
                   onChange={(e) => {
                     const selectedLanguages = e.target.checked
-                      ? [...formData.languages, languageKey]
-                      : formData.languages.filter(l => l !== languageKey);
+                      ? [...formData.languages, lang]
+                      : formData.languages.filter(l => l !== lang);
                     handleLanguagesChange(selectedLanguages);
                   }}
                 />
-                <span className="language-name">{translations.languages[languageKey]}</span>
+                <span className="service-label">{translateLanguages([lang], language)[0]}</span>
               </label>
             ))}
           </div>
@@ -427,13 +459,33 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>{translations.workingHours}</h3>
-        
-        <WorkingHoursInput
-          value={formData.workingHours}
-          onChange={handleWorkingHoursChange}
-          language={language}
-        />
+        <h3>{language === 'cs' ? 'Způsoby platby' : 'Payment Methods'} <span className="required">*</span></h3>
+        <div className="form-group">
+          <div className="services-grid">
+            {[
+              { key: 'cash', label: language === 'cs' ? 'Platba v hotovosti' : 'Cash payment' },
+              { key: 'card', label: language === 'cs' ? 'Platba kartou' : 'Card payment' },
+              { key: 'qr', label: language === 'cs' ? 'QR platba' : 'QR payment' },
+              { key: 'account', label: language === 'cs' ? 'Převod na účet' : 'Bank transfer' },
+              { key: 'voucher', label: language === 'cs' ? 'Dárkový poukaz' : 'Voucher' },
+              { key: 'benefit', label: language === 'cs' ? 'Benefitní karta' : 'Benefit card' },
+            ].map(method => (
+              <label key={method.key} className="service-checkbox">
+                <input
+                  type="checkbox"
+                  checked={(formData.paymentMethods || []).includes(method.key)}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                      ? ([...(formData.paymentMethods || []), method.key])
+                      : (formData.paymentMethods || []).filter(m => m !== method.key);
+                    setFormData(prev => ({ ...prev, paymentMethods: next }));
+                  }}
+                />
+                <span className="service-label">{method.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="form-section">
@@ -444,27 +496,15 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
           multiple={false}
           onChange={handlePhotoChange}
           selectedFiles={null}
+          previewUrls={formData.photo ? [formData.photo] : []}
+          onRemoveUrl={handlePhotoRemove}
+          maxFiles={1}
           selectButtonText={language === 'cs' ? 'Vybrat fotografii' : 'Select photo'}
           noFileText={language === 'cs' ? 'Žádná fotografie nebyla vybrána' : 'No photo selected'}
           filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
           fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
         />
-      </div>
-
-      <div className="form-section">
-        <h3>{translations.additionalInfo}</h3>
-        
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="byAppointment"
-              checked={formData.byAppointment}
-              onChange={handleInputChange}
-            />
-            <span className="checkbox-text">{translations.byAppointment}</span>
-          </label>
-        </div>
+        <p className="form-help">{language === 'cs' ? 'Nahrajte svou profesionální fotografii (max 1)' : 'Upload your professional photo (max 1)'}</p>
       </div>
 
       <div className="form-actions">
@@ -478,7 +518,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
         </button>
         <button
           type="submit"
-          className="submit-button"
+          className="save-button"
           disabled={submitting}
         >
           {submitting ? translations.saving : translations.save}

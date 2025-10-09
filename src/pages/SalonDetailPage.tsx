@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Salon, Master, Language, Review, Booking } from '../types';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
-import { translateServices, translateSpecialty } from '../utils/serviceTranslations';
+import { translateServices, translateSpecialty, translateLanguages } from '../utils/serviceTranslations';
 import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PhotoCarousel from '../components/PhotoCarousel';
@@ -20,7 +22,7 @@ interface SalonDetailPageProps {
 }
 
 const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
-  salon,
+  salon: initialSalon,
   language,
   translations,
   onBack,
@@ -29,6 +31,22 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 }) => {
   const t = translations[language];
   
+  // Realtime salon data (auto-updates card after profile save)
+  const [currentSalon, setCurrentSalon] = useState<Salon>(initialSalon);
+  useEffect(() => {
+    setCurrentSalon(initialSalon);
+  }, [initialSalon]);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'salons', initialSalon.id), (snap) => {
+      if (snap.exists()) {
+        setCurrentSalon({ id: initialSalon.id, ...(snap.data() as any) } as Salon);
+      }
+    });
+    return () => unsub();
+  }, [initialSalon.id]);
+  // Alias for rendering code below
+  const salon = currentSalon;
+
   const [reviews, setReviews] = useState<Review[]>([]);
   useEffect(() => {
     (async () => {
@@ -200,12 +218,23 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
               </span>
             )}
           </div>
-          <p className="description">{salon.description}</p>
+          <p className="description pre-line">{salon.description}</p>
           <div className="contact-info">
             <h3 className="contact-title">{t.contact}</h3>
             <p>📞 {salon.phone}</p>
             <p>✉️ {salon.email}</p>
-            {salon.website && <p>🌐 {salon.website}</p>}
+            {salon.website && (
+              <p>
+                🌐 <a 
+                  href={salon.website.startsWith('http') ? salon.website : `https://${salon.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="website-link"
+                >
+                  {salon.website}
+                </a>
+              </p>
+            )}
           </div>
           {/* Working hours before services, in same gray box style */}
           <div className="contact-info">
@@ -228,6 +257,17 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
               ))}
             </div>
           </div>
+
+        {salon.languages && salon.languages.length > 0 && (
+          <div className="services-section">
+            <h3>{language === 'cs' ? 'Jazyky' : 'Languages'}</h3>
+            <div className="services-grid">
+              {translateLanguages(salon.languages, language).map(lang => (
+                <div key={lang} className="service-badge">{lang}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
           {salon.paymentMethods && salon.paymentMethods.length > 0 && (
             <div className="services-section">

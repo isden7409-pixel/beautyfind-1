@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Master, Salon, Service, Booking } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
+import { getRequiredMessage } from '../utils/form';
 
 interface BookingFormProps {
   master: Master;
@@ -157,6 +158,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
             onChange={handleInputChange}
             required
             placeholder={t.enterFullName}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -170,6 +173,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
             onChange={handleInputChange}
             required
             placeholder={t.enterPhoneNumber}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -183,6 +188,17 @@ const BookingForm: React.FC<BookingFormProps> = ({
             onChange={handleInputChange}
             required
             placeholder={t.enterEmailAddress}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 

@@ -370,7 +370,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               onChange={handleInputChange}
               required
               className="form-input"
-              placeholder={language === 'cs' ? 'Např. Manikúra a pedikúra' : 'e.g. Manicure and pedicure'}
+              placeholder={language === 'cs' ? 'Např. Kosmetologie' : 'e.g. Cosmetology'}
             onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
             onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
@@ -389,9 +389,20 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               required
               className="form-input"
               placeholder={language === 'cs' ? 'Např. 5' : 'e.g. 5'}
-            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
-            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
-          />
+              onInvalid={(e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.validity.valueMissing) {
+                  target.setCustomValidity(getRequiredMessage(language));
+                } else if (target.validity.rangeUnderflow) {
+                  target.setCustomValidity(language === 'cs' ? 'Hodnota musí být alespoň 0' : 'Value must be at least 0');
+                } else if (target.validity.rangeOverflow) {
+                  target.setCustomValidity(language === 'cs' ? 'Hodnota musí být maximálně 55' : 'Value must be at most 55');
+                } else {
+                  target.setCustomValidity('');
+                }
+              }}
+              onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+            />
           </div>
         </div>
 
@@ -423,8 +434,17 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
               required
               className="form-input"
               placeholder={language === 'cs' ? 'Např. mujmail@seznam.cz' : 'e.g. mymail@gmail.com'}
-            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
-            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
+              onInvalid={(e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.validity.valueMissing) {
+                  target.setCustomValidity(getRequiredMessage(language));
+                } else if (target.validity.typeMismatch) {
+                  target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+                } else {
+                  target.setCustomValidity('');
+                }
+              }}
+              onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           </div>
         </div>

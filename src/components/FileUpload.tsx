@@ -12,6 +12,15 @@ interface FileUploadProps {
   fileSelectedText: string;
   className?: string;
   required?: boolean;
+  // Дополнительно для предпросмотра уже сохранённых изображений (URL)
+  previewUrls?: string[]; // для случаев, когда уже есть загруженные фото (кабинет)
+  onRemoveUrl?: (url: string) => void;
+  // Удаление файлов из текущего выбора (регистрация/новая загрузка)
+  onRemoveFile?: (index: number) => void;
+  maxFiles?: number;
+  // DnD reorder support
+  onReorderUrl?: (fromIndex: number, toIndex: number) => void;
+  onReorderFile?: (fromIndex: number, toIndex: number) => void;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -25,16 +34,34 @@ const FileUpload: React.FC<FileUploadProps> = ({
   filesSelectedText,
   fileSelectedText,
   className = "",
-  required = false
+  required = false,
+  previewUrls = [],
+  onRemoveUrl,
+  onRemoveFile,
+  maxFiles,
+  onReorderUrl,
+  onReorderFile
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragItemRef = useRef<{ type: 'url' | 'file'; index: number } | null>(null);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.files);
+    const files = e.target.files;
+    if (files && maxFiles && multiple) {
+      if (files.length > maxFiles) {
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
+          dataTransfer.items.add(files[i]);
+        }
+        onChange(dataTransfer.files);
+        return;
+      }
+    }
+    onChange(files);
   };
 
   const getFileStatusText = () => {
@@ -69,6 +96,66 @@ const FileUpload: React.FC<FileUploadProps> = ({
           {getFileStatusText()}
         </span>
       </div>
+
+      {(previewUrls?.length || (selectedFiles && selectedFiles.length)) ? (
+        <div className="file-preview-grid">
+          {/* Сначала уже сохранённые URL */}
+          {previewUrls?.map((url, idx) => (
+            <div
+              key={url}
+              className="file-preview-item"
+              draggable={!!onReorderUrl}
+              onDragStart={() => (dragItemRef.current = { type: 'url', index: idx })}
+              onDragOver={(e) => onReorderUrl && e.preventDefault()}
+              onDrop={(e) => {
+                if (!onReorderUrl) return;
+                e.preventDefault();
+                const src = dragItemRef.current;
+                if (src && src.type === 'url' && src.index !== idx) {
+                  onReorderUrl(src.index, idx);
+                }
+                dragItemRef.current = null;
+              }}
+            >
+              <img src={url} alt="preview" className="file-preview-img" />
+              {onRemoveUrl && (
+                <button type="button" className="file-remove-btn" onClick={(e) => { e.stopPropagation(); onRemoveUrl(url); }}>
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+          {/* Затем выбранные файлы текущей сессии */}
+          {selectedFiles && Array.from(selectedFiles).map((f, idx) => {
+            const url = URL.createObjectURL(f);
+            return (
+              <div
+                key={`${f.name}-${idx}`}
+                className="file-preview-item"
+                draggable={!!onReorderFile}
+                onDragStart={() => (dragItemRef.current = { type: 'file', index: idx })}
+                onDragOver={(e) => onReorderFile && e.preventDefault()}
+                onDrop={(e) => {
+                  if (!onReorderFile) return;
+                  e.preventDefault();
+                  const src = dragItemRef.current;
+                  if (src && src.type === 'file' && src.index !== idx) {
+                    onReorderFile(src.index, idx);
+                  }
+                  dragItemRef.current = null;
+                }}
+              >
+                <img src={url} alt={f.name} className="file-preview-img" />
+                {onRemoveFile && (
+                  <button type="button" className="file-remove-btn" onClick={(e) => { e.stopPropagation(); onRemoveFile(idx); }}>
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 };

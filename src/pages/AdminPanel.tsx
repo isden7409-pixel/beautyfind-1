@@ -102,7 +102,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <ClientRegistrationForm
             language={language}
             translations={translations}
-            onSubmit={() => { alert(t.registrationSuccess); setShowForm(false); }}
+            onSubmit={() => { setShowForm(false); onBack(); }}
             onCancel={handleCancel}
           />
         )}

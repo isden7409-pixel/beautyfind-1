@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StructuredAddress, Language } from '../types';
 import { createFullAddress, validateStructuredAddress } from '../utils/addressUtils';
+import { getRequiredMessage } from '../utils/form';
 
 interface StructuredAddressInputProps {
   language: Language;
@@ -129,6 +130,8 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
             required={required}
             className="form-input"
             placeholder={language === 'cs' ? 'Např. Václavské náměstí' : 'e.g. Wenceslas Square'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -142,6 +145,8 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
             required={required}
             className="form-input"
             placeholder={language === 'cs' ? 'Např. 791' : 'e.g. 791'}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
       </div>
@@ -170,6 +175,8 @@ const StructuredAddressInput: React.FC<StructuredAddressInputProps> = ({
             className="form-input"
             placeholder={language === 'cs' ? '110 00' : '110 00'}
             maxLength={6}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
       </div>

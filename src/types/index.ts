@@ -40,6 +40,7 @@ export interface Salon {
   bookings?: Booking[];
   byAppointment?: boolean;
   paymentMethods?: string[];
+  languages?: string[];
 }
 
 // Typy pro mistry
@@ -180,6 +181,7 @@ export interface SalonRegistration {
   photos: File[];
   byAppointment?: boolean;
   paymentMethods?: string[];
+  languages?: string[];
 }
 
 // Typy pro mistra (registrace)

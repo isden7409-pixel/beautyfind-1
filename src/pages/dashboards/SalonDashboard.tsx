@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/auth/AuthProvider';
 import { Salon, Master, Booking, DashboardStats } from '../../types';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { reviewService, userService } from '../../firebase/services';
+import { uploadSingleFile } from '../../firebase/upload';
 import PageHeader from '../../components/PageHeader';
 import SalonProfileEditForm from '../../components/SalonProfileEditForm';
+import SalonMasterRegistrationForm from '../../components/SalonMasterRegistrationForm';
+import SalonMasterCard from '../../components/SalonMasterCard';
+import { translateServices, translateLanguages } from '../../utils/serviceTranslations';
 
 interface SalonDashboardProps {
   language: 'cs' | 'en';
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
+  onNavigate?: (path: string) => void;
 }
 
-const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLanguageChange }) => {
+const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
   const { userProfile } = useAuth();
-  const navigate = useNavigate();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [masters, setMasters] = useState<Master[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -31,10 +34,22 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'masters' | 'bookings' | 'profile' | 'favorites' | 'reviews'>('overview');
   const [editingProfile, setEditingProfile] = useState(false);
-  const [showAddMaster, setShowAddMaster] = useState(false);
+  const [showMasterForm, setShowMasterForm] = useState(false);
+  const [editingMaster, setEditingMaster] = useState<Master | null>(null);
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
   const [userReviews, setUserReviews] = useState<any[]>([]);
+
+  // Helper: format address without city because city is displayed separately
+  const formatAddressWithoutCity = (addr: string | undefined, structured?: { street: string; houseNumber: string; orientationNumber?: string; postalCode: string; city: string; }) => {
+    if (structured) {
+      const num = structured.orientationNumber ? `${structured.houseNumber}/${structured.orientationNumber}` : structured.houseNumber;
+      return `${structured.street} ${num}, ${structured.postalCode}`;
+    }
+    if (!addr) return '';
+    // Convert patterns like "Street 1, 123 45 Brno" -> "Street 1, 123 45"
+    return addr.replace(/,\s*(\d{3}\s?\d{2})\s+.+$/, ', $1');
+  };
 
   const loadFavorites = useCallback(async () => {
     if (!userProfile) return;
@@ -125,15 +140,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     }
   }, [userProfile]);
 
-  useEffect(() => {
-    if (userProfile && userProfile.type === 'salon') {
-      loadSalonData();
-      loadFavorites();
-      loadUserReviews();
-    }
-  }, [userProfile, loadFavorites, loadUserReviews]);
-
-  const loadSalonData = async () => {
+  const loadSalonData = useCallback(async () => {
     if (!userProfile) return;
 
     try {
@@ -218,7 +225,35 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     } finally {
       setLoading(false);
     }
-  };
+  }, [userProfile]);
+
+  const loadMastersData = useCallback(async () => {
+    if (!salon) return;
+
+    try {
+      // Загружаем мастеров салона
+      const mastersQuery = query(
+        collection(db, 'masters'),
+        where('salonId', '==', salon.id)
+      );
+      const mastersSnapshot = await getDocs(mastersQuery);
+      const mastersData = mastersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Master[];
+      setMasters(mastersData);
+    } catch (error) {
+      console.error('Error loading masters data:', error);
+    }
+  }, [salon]);
+
+  useEffect(() => {
+    if (userProfile && userProfile.type === 'salon') {
+      loadSalonData();
+      loadFavorites();
+      loadUserReviews();
+    }
+  }, [userProfile, loadFavorites, loadUserReviews, loadSalonData]);
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
     try {
@@ -237,42 +272,6 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
   };
 
 
-  const addMaster = async (masterData: Partial<Master>) => {
-    if (!salon) return;
-
-    try {
-      const newMaster: Master = {
-        id: '', // Will be set by Firestore
-        name: masterData.name || '',
-        specialty: masterData.specialty || '',
-        experience: masterData.experience || '',
-        rating: 0,
-        reviews: 0,
-        photo: masterData.photo || '',
-        worksInSalon: true,
-        isFreelancer: false,
-        salonId: salon.id,
-        salonName: salon.name,
-        email: masterData.email || '',
-        phone: masterData.phone || '',
-        services: masterData.services || [],
-        languages: masterData.languages || [],
-        bookingEnabled: true,
-        workingHours: [],
-        availableServices: [],
-        unavailableDates: [],
-        bookings: [],
-        byAppointment: false
-      };
-
-      const docRef = await addDoc(collection(db, 'masters'), newMaster);
-      newMaster.id = docRef.id;
-      setMasters([...masters, newMaster]);
-      setShowAddMaster(false);
-    } catch (error) {
-      console.error('Error adding master:', error);
-    }
-  };
 
   const updateSalonProfile = async (updatedData: any) => {
     if (!salon) return;
@@ -285,6 +284,101 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     } catch (error) {
       console.error('Error updating salon profile:', error);
       throw error;
+    }
+  };
+
+  const handleMasterSubmit = async (masterData: any) => {
+    try {
+      // Handle photo upload if it's a File object
+      let photoUrl = masterData.photo;
+      if (masterData.photo && masterData.photo instanceof File) {
+        photoUrl = await uploadSingleFile(masterData.photo, 'masters/photos');
+      }
+
+      // Prepare master data without File objects
+      const processedMasterData = {
+        ...masterData,
+        photo: photoUrl
+      };
+
+      if (editingMaster) {
+        // Update existing master
+        const masterRef = doc(db, 'masters', editingMaster.id);
+        await updateDoc(masterRef, {
+          ...processedMasterData,
+          // Inherit salon contact data
+          phone: salon?.phone,
+          email: salon?.email,
+          address: salon?.address,
+          structuredAddress: salon?.structuredAddress,
+          paymentMethods: salon?.paymentMethods,
+          website: salon?.website,
+          updatedAt: new Date()
+        });
+      } else {
+        // Create new master
+        const masterRef = doc(collection(db, 'masters'));
+        await setDoc(masterRef, {
+          id: masterRef.id,
+          ...processedMasterData,
+          // Inherit salon contact data
+          phone: salon?.phone,
+          email: salon?.email,
+          address: salon?.address,
+          structuredAddress: salon?.structuredAddress,
+          paymentMethods: salon?.paymentMethods,
+          website: salon?.website,
+          salonId: salon?.id,
+          salonName: salon?.name,
+          isFreelancer: false,
+          rating: 0,
+          reviews: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        // Add master to salon's masters array
+        if (salon) {
+          const salonRef = doc(db, 'salons', salon.id);
+          await updateDoc(salonRef, {
+            masters: [...(salon.masters || []), masterRef.id]
+          });
+        }
+      }
+
+      setShowMasterForm(false);
+      setEditingMaster(null);
+      setActiveTab('masters'); // Переходим к разделу Masters
+      loadMastersData();
+    } catch (error) {
+      console.error('Error saving master:', error);
+      alert(language === 'cs' ? 'Chyba při ukládání mistra' : 'Error saving master');
+    }
+  };
+
+  const handleMasterRemove = async (masterId: string) => {
+    if (!window.confirm(language === 'cs' ? 'Opravdu chcete odebrat tohoto mistra?' : 'Are you sure you want to remove this master?')) {
+      return;
+    }
+
+    try {
+      // Remove master from salon's masters array
+      if (salon) {
+        const salonRef = doc(db, 'salons', salon.id);
+        await updateDoc(salonRef, {
+          masters: (salon.masters || []).filter((master: Master) => master.id !== masterId)
+        });
+      }
+
+      // Optionally delete master document (or mark as inactive)
+      // const masterRef = doc(db, 'masters', masterId);
+      // await deleteDoc(masterRef);
+
+      loadMastersData();
+      alert(language === 'cs' ? 'Mistr byl odebrán' : 'Master was removed');
+    } catch (error) {
+      console.error('Error removing master:', error);
+      alert(language === 'cs' ? 'Chyba při odebírání mistra' : 'Error removing master');
     }
   };
 
@@ -483,25 +577,49 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
             <div className="section-header">
               <h2>{t.masters}</h2>
               <button 
-                onClick={() => setShowAddMaster(true)}
-                className="add-button"
+                onClick={() => setShowMasterForm(true)}
+                className="add-master-button"
               >
                 {t.addMaster}
               </button>
             </div>
+
+            {showMasterForm && (
+              <div className="master-form-overlay">
+                <div className="master-form-container">
+                  <SalonMasterRegistrationForm
+                    salon={salon}
+                    master={editingMaster}
+                    language={language}
+                    translations={t}
+                    onSubmit={handleMasterSubmit}
+                    onCancel={() => {
+                      setShowMasterForm(false);
+                      setEditingMaster(null);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {masters.length === 0 ? (
               <p>{t.noMasters}</p>
             ) : (
               <div className="masters-list">
                 {masters.map(master => (
-                  <div key={master.id} className="master-item">
-                    <div className="master-info">
-                      <h4>{master.name}</h4>
-                      <p>Specialty: {master.specialty}</p>
-                      <p>Experience: {master.experience}</p>
-                      <p>Rating: {master.rating} ({master.reviews} reviews)</p>
-                    </div>
-                  </div>
+                  <SalonMasterCard
+                    key={master.id}
+                    master={master}
+                    salon={salon}
+                    language={language}
+                    translations={t}
+                    onEdit={(master) => {
+                      setEditingMaster(master);
+                      setShowMasterForm(true);
+                    }}
+                    onRemove={handleMasterRemove}
+                    onNavigate={onNavigate}
+                  />
                 ))}
               </div>
             )}
@@ -561,66 +679,147 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
         {activeTab === 'profile' && (
           <div className="profile-section">
             <h2>{t.profile}</h2>
-            <button 
-              onClick={() => setEditingProfile(!editingProfile)}
-              className="edit-button"
-            >
-              {editingProfile ? t.save : t.edit}
-            </button>
-            
+
             {!editingProfile && (
               <div className="profile-info">
+                {/* Jméno */}
                 <p><strong>{t.profileFields.name}:</strong> {salon.name}</p>
-                <p><strong>{t.profileFields.address}:</strong> {salon.address}</p>
+
+                {/* Město */}
+                {salon.city && (
+                  <p><strong>{language === 'cs' ? 'Město' : 'City'}:</strong> {(
+                    {
+                      Prague: 'Praha', Brno: 'Brno', Ostrava: 'Ostrava', Plzen: 'Plzeň',
+                      Liberec: 'Liberec', Olomouc: 'Olomouc'
+                    } as Record<string, string>
+                  )[salon.city] || salon.city}</p>
+                )}
+
+                {/* Adresa (without city, which is shown above) */}
+                <p><strong>{t.profileFields.address}:</strong> {formatAddressWithoutCity(salon.address, salon.structuredAddress || undefined)}</p>
+
+                {/* Telefon, Email, Web */}
                 <p><strong>{t.profileFields.phone}:</strong> {salon.phone}</p>
                 <p><strong>{t.profileFields.email}:</strong> {salon.email}</p>
-                <p><strong>{t.profileFields.website}:</strong> {salon.website}</p>
-                <p><strong>{t.profileFields.description}:</strong> {salon.description}</p>
+                {salon.website && (
+                  <p>
+                    <strong>{t.profileFields.website}:</strong>{' '}
+                    <a 
+                      href={salon.website.startsWith('http') ? salon.website : `https://${salon.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="website-link"
+                    >
+                      {salon.website}
+                    </a>
+                  </p>
+                )}
+
+                {/* Popis */}
+                {salon.description && (
+                  <>
+                    <p><strong>{t.profileFields.description}:</strong></p>
+                    <p className="pre-line">{salon.description}</p>
+                  </>
+                )}
+
+                {/* Pouze na objednání */}
+                <p><strong>{language === 'cs' ? 'Pouze na objednání' : 'By appointment only'}:</strong> {salon.byAppointment ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
+
+                {/* Služby */}
+                {salon.services && salon.services.length > 0 && (
+                  <p><strong>{language === 'cs' ? 'Služby' : 'Services'}:</strong> {translateServices(salon.services, language).join(', ')}</p>
+                )}
+
+                {/* Jazyky */}
+                {salon.languages && salon.languages.length > 0 && (
+                  <p><strong>{language === 'cs' ? 'Jazyky' : 'Languages'}:</strong> {translateLanguages(salon.languages, language).join(', ')}</p>
+                )}
+
+                {/* Způsoby platby */}
+                {salon.paymentMethods && salon.paymentMethods.length > 0 && (
+                  <p>
+                    <strong>{language === 'cs' ? 'Způsoby platby' : 'Payment Methods'}:</strong>{' '}
+                    {salon.paymentMethods
+                      .map((method) => ({
+                        cash: language === 'cs' ? 'Hotově' : 'Cash',
+                        card: language === 'cs' ? 'Kartou' : 'Card',
+                        qr: language === 'cs' ? 'QR platba' : 'QR payment',
+                        account: language === 'cs' ? 'Převod na účet' : 'Bank transfer',
+                        voucher: language === 'cs' ? 'Dárkový poukaz' : 'Voucher',
+                        benefit: language === 'cs' ? 'Benefitní karta' : 'Benefit card'
+                      } as Record<string, string>)[method] || method)
+                      .join(', ')}
+                  </p>
+                )}
               </div>
             )}
 
-            <SalonProfileEditForm
-              salon={salon}
-              language={language}
-              translations={{
-                name: t.profileFields.name,
-                email: t.profileFields.email,
-                phone: t.profileFields.phone,
-                address: t.profileFields.address,
-                website: t.profileFields.website,
-                description: t.profileFields.description,
-                basicInfo: language === 'cs' ? 'Základní informace' : 'Basic Information',
-                location: language === 'cs' ? 'Lokace' : 'Location',
-                servicesLabel: language === 'cs' ? 'Služby' : 'Services',
-                workingHours: language === 'cs' ? 'Pracovní doba' : 'Working Hours',
-                photos: language === 'cs' ? 'Fotografie' : 'Photos',
-                additionalInfo: language === 'cs' ? 'Další informace' : 'Additional Information',
-                namePlaceholder: language === 'cs' ? 'Zadejte název salonu' : 'Enter salon name',
-                emailPlaceholder: language === 'cs' ? 'Zadejte email salonu' : 'Enter salon email',
-                phonePlaceholder: language === 'cs' ? 'Zadejte telefon salonu' : 'Enter salon phone',
-                websitePlaceholder: language === 'cs' ? 'Zadejte URL webových stránek' : 'Enter website URL',
-                descriptionPlaceholder: language === 'cs' ? 'Popište salon a jeho služby' : 'Describe salon and its services',
-                selectServices: language === 'cs' ? 'Vyberte služby' : 'Select services',
-                byAppointment: language === 'cs' ? 'Pouze na objednání' : 'By appointment only',
-                cancel: t.cancel,
-                save: t.save,
-                saving: language === 'cs' ? 'Ukládání...' : 'Saving...',
-                services: {
-                  'Manicure and Pedicure': language === 'cs' ? 'Manikúra a pedikúra' : 'Manicure and Pedicure',
-                  'Gel Nails': language === 'cs' ? 'Gelové nehty' : 'Gel Nails',
-                  'Nail Art': language === 'cs' ? 'Nail Art' : 'Nail Art',
-                  'Eyebrows & Eyelashes': language === 'cs' ? 'Obličejové chloupky' : 'Eyebrows & Eyelashes',
-                  'Relaxation Massage': language === 'cs' ? 'Relaxační masáž' : 'Relaxation Massage',
-                  'Women\'s Haircuts': language === 'cs' ? 'Dámské střihy' : 'Women\'s Haircuts',
-                  'Men\'s Haircuts and Beards': language === 'cs' ? 'Pánské střihy a vousy' : 'Men\'s Haircuts and Beards',
-                  'Makeup Artist': language === 'cs' ? 'Vizážistka' : 'Makeup Artist',
-                  'Nail Design': language === 'cs' ? 'Nail Design' : 'Nail Design',
-                  'Makeup & Nail Art': language === 'cs' ? 'Makeup & Nail Art' : 'Makeup & Nail Art'
-                }
-              }}
-              onSave={updateSalonProfile}
-              onCancel={() => setEditingProfile(false)}
-            />
+            {!editingProfile && (
+              <button 
+                onClick={() => setEditingProfile(!editingProfile)}
+                className="edit-button profile-edit-button"
+              >
+                {t.edit}
+              </button>
+            )}
+
+            {editingProfile && (
+              <SalonProfileEditForm
+                salon={salon}
+                language={language}
+                translations={{
+                  name: language === 'cs' ? 'Název salonu' : 'Salon name',
+                  email: t.profileFields.email,
+                  phone: t.profileFields.phone,
+                  address: t.profileFields.address,
+                  website: t.profileFields.website,
+                  description: t.profileFields.description,
+                  basicInfo: language === 'cs' ? 'Základní informace' : 'Basic Information',
+                  location: language === 'cs' ? 'Lokace' : 'Location',
+                  servicesLabel: language === 'cs' ? 'Služby' : 'Services',
+                  workingHours: language === 'cs' ? 'Otevírací doba' : 'Opening Hours',
+                  photos: language === 'cs' ? 'Fotografie' : 'Photos',
+                  additionalInfo: language === 'cs' ? 'Další informace' : 'Additional Information',
+                  namePlaceholder: language === 'cs' ? 'Zadejte název salonu' : 'Enter salon name',
+                  emailPlaceholder: language === 'cs' ? 'Zadejte email salonu' : 'Enter salon email',
+                  phonePlaceholder: language === 'cs' ? 'Zadejte telefon salonu' : 'Enter salon phone',
+                  websitePlaceholder: language === 'cs' ? 'Zadejte URL webových stránek' : 'Enter website URL',
+                  descriptionPlaceholder: language === 'cs' ? 'Popište salon a jeho služby' : 'Describe salon and its services',
+                  selectServices: language === 'cs' ? 'Vyberte služby' : 'Select services',
+                  selectPaymentMethods: language === 'cs' ? 'Způsoby platby' : 'Payment methods',
+                  paymentCash: language === 'cs' ? 'Hotově' : 'Cash',
+                  paymentCard: language === 'cs' ? 'Kartou' : 'Card',
+                  languagesLabel: language === 'cs' ? 'Jazyky' : 'Languages',
+                  selectLanguages: language === 'cs' ? 'Vyberte jazyky' : 'Select languages',
+                  byAppointment: language === 'cs' ? 'Pouze na objednání' : 'By appointment only',
+                  cancel: t.cancel,
+                  save: t.save,
+                  saving: language === 'cs' ? 'Ukládání...' : 'Saving...',
+                  services: {
+                    'Manicure and Pedicure': language === 'cs' ? 'Manikúra a pedikúra' : 'Manicure and Pedicure',
+                    'Gel Nails': language === 'cs' ? 'Gelové nehty' : 'Gel Nails',
+                    'Nail Art': language === 'cs' ? 'Nail Art' : 'Nail Art',
+                    'Eyebrows & Eyelashes': language === 'cs' ? 'Obličejové chloupky' : 'Eyebrows & Eyelashes',
+                    'Relaxation Massage': language === 'cs' ? 'Relaxační masáž' : 'Relaxation Massage',
+                    'Women\'s Haircuts': language === 'cs' ? 'Dámské střihy' : 'Women\'s Haircuts',
+                    'Men\'s Haircuts and Beards': language === 'cs' ? 'Pánské střihy a vousy' : 'Men\'s Haircuts and Beards',
+                    'Makeup Artist': language === 'cs' ? 'Vizážistka' : 'Makeup Artist',
+                    'Nail Design': language === 'cs' ? 'Nail Design' : 'Nail Design',
+                    'Makeup & Nail Art': language === 'cs' ? 'Makeup & Nail Art' : 'Makeup & Nail Art'
+                  },
+                  languages: {
+                    'Czech': language === 'cs' ? 'Čeština' : 'Czech',
+                    'English': language === 'cs' ? 'Angličtina' : 'English',
+                    'German': language === 'cs' ? 'Němčina' : 'German',
+                    'Slovak': language === 'cs' ? 'Slovenština' : 'Slovak',
+                    'Russian': language === 'cs' ? 'Ruština' : 'Russian'
+                  }
+                }}
+                onSave={updateSalonProfile}
+                onCancel={() => setEditingProfile(false)}
+              />
+            )}
           </div>
         )}
 

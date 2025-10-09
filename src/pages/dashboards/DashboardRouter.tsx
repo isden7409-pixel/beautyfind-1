@@ -8,9 +8,10 @@ interface DashboardRouterProps {
   language: 'cs' | 'en';
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
+  onNavigate?: (path: string) => void;
 }
 
-const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange }) => {
+const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
   const { userProfile, currentUser, loading, isLoggingOut } = useAuth();
 
   console.log('DashboardRouter - Auth state:', { userProfile, currentUser, loading });
@@ -62,11 +63,11 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onL
 
   switch (userProfile.type) {
     case 'client':
-      return <UserDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} />;
+      return <UserDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
     case 'master':
-      return <MasterDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} />;
+      return <MasterDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
     case 'salon':
-      return <SalonDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} />;
+      return <SalonDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
     default:
       return (
         <div className="dashboard">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Salon, Master, Language } from './types';
 import HomePage from './pages/HomePage';
 import SalonDetailPage from './pages/SalonDetailPage';
@@ -126,7 +126,7 @@ const translations = {
     descriptionPlaceholder: "Popište váš salon a služby...",
     servicesLabel: "Služby",
     photos: "Fotografie",
-    photosHelp: "Nahrajte fotografie vašeho salonu (max 5)",
+    photosHelp: "Nahrajte fotografie vašeho salonu (max 10)",
     selectFiles: "Vybrat soubory",
     noFileSelected: "Soubor není vybrán",
     filesSelected: "souborů vybráno",
@@ -141,7 +141,7 @@ const translations = {
     selectCity: "Vyberte město",
     selectSalon: "Vyberte salon",
     photo: "Fotografie",
-    photoHelp: "Nahrajte svou profesionální fotografii"
+    photoHelp: "Nahrajte svou profesionální fotografii (max 1)"
   },
   en: {
     title: "BeautyFind.cz",
@@ -250,7 +250,7 @@ const translations = {
     descriptionPlaceholder: "Describe your salon and services...",
     servicesLabel: "Services",
     photos: "Photos",
-    photosHelp: "Upload photos of your salon (max 5)",
+    photosHelp: "Upload photos of your salon (max 10)",
     selectFiles: "Select Files",
     noFileSelected: "No file selected",
     filesSelected: "files selected",
@@ -265,7 +265,7 @@ const translations = {
     selectCity: "Select City",
     selectSalon: "Select Salon",
     photo: "Photo",
-    photoHelp: "Upload your professional photo"
+    photoHelp: "Upload your professional photo (max 1)"
   }
 };
 
@@ -277,6 +277,7 @@ function AppContent() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Используем глобальное состояние
   const currentLanguage = useLanguage();
@@ -440,14 +441,13 @@ function AppContent() {
     if (!currentUser) {
       const wasDashboardOpen = showDashboard;
       setShowDashboard(false);
-      setShowAdminPanel(false);
+      // Keep AdminPanel open when logging out from Registrace to start a new registration
+      // setShowAdminPanel(false); // removed to stay on Registrace
       setShowAuthModal(false);
       setSelectedSalon(null);
       setSelectedMaster(null);
       if (wasDashboardOpen) {
         setCurrentViewMode('salons');
-      }
-      if (wasDashboardOpen) {
         navigate('/');
       }
     }
@@ -492,7 +492,7 @@ function AppContent() {
             paymentAccount: "Platba na účet",
             paymentVoucher: "Dárkový poukaz",
             paymentBenefit: "Benefitní karty",
-            selectPaymentMethods: "Vyberte způsoby platby *",
+            selectPaymentMethods: "Způsoby platby *",
             atLeastOnePayment: "Vyberte alespoň jeden způsob platby",
             requirements: "Požadavky",
             requirement1: "Licence na provozování",
@@ -513,7 +513,7 @@ function AppContent() {
             descriptionPlaceholder: "Popište váš salon a služby...",
             services: "Služby",
             photos: "Fotografie",
-            photosHelp: "Nahrajte fotografie vašeho salonu (max 5)",
+            photosHelp: "Nahrajte fotografie vašeho salonu (max 10)",
             selectFiles: "Vybrat soubory",
             noFileSelected: "Soubor není vybrán",
             filesSelected: "souborů vybráno",
@@ -528,7 +528,7 @@ function AppContent() {
             selectCity: "Vyberte město",
             selectSalon: "Vyberte salon",
             photo: "Fotografie",
-            photoHelp: "Nahrajte svou profesionální fotografii"
+            photoHelp: "Nahrajte svou profesionální fotografii (max 1)"
           },
           en: {
             adminPanel: "Admin Panel",
@@ -584,7 +584,7 @@ function AppContent() {
             descriptionPlaceholder: "Describe your salon and services...",
             services: "Services",
             photos: "Photos",
-            photosHelp: "Upload photos of your salon (max 5)",
+            photosHelp: "Upload photos of your salon (max 10)",
             selectFiles: "Select Files",
             noFileSelected: "No file selected",
             filesSelected: "files selected",
@@ -599,7 +599,7 @@ function AppContent() {
             selectCity: "Select City",
             selectSalon: "Select Salon",
             photo: "Photo",
-            photoHelp: "Upload your professional photo"
+            photoHelp: "Upload your professional photo (max 1)"
           }
         }}
         onBack={handleBackFromAdmin}
@@ -619,12 +619,16 @@ function AppContent() {
     );
   }
 
-  if (showDashboard) {
+  // Проверяем, находимся ли мы на детальных страницах
+  const isOnDetailPage = location.pathname.startsWith('/salon/') || location.pathname.startsWith('/master/');
+  
+  if (showDashboard && !isOnDetailPage) {
     return (
       <DashboardRouter
         language={currentLanguage}
         onBack={handleBackFromDashboard}
         onLanguageChange={setCurrentLanguage}
+        onNavigate={(path: string) => navigate(path)}
       />
     );
   }
@@ -668,12 +672,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AuthProvider onLogout={() => {
-        // Плавное перенаправление на главную страницу
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 500);
-      }}>
+      <AuthProvider>
         <AppContent />
       </AuthProvider>
     </Router>

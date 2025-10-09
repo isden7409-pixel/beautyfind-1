@@ -1,22 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../components/auth/AuthProvider';
-import { Master, Booking, DashboardStats, WorkingHours, Salon } from '../../types';
+import { Master, Booking, DashboardStats, Salon } from '../../types';
 import { collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { reviewService, userService } from '../../firebase/services';
 import PageHeader from '../../components/PageHeader';
 import MasterProfileEditForm from '../../components/MasterProfileEditForm';
+import { formatExperienceYears } from '../../utils/formatters';
+import { translateServices, translateLanguages } from '../../utils/serviceTranslations';
+import { translateCityToCzech } from '../../utils/cities';
 
 interface MasterDashboardProps {
   language: 'cs' | 'en';
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
+  onNavigate?: (path: string) => void;
 }
 
-const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onLanguageChange }) => {
+const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
   const { userProfile } = useAuth();
-  const navigate = useNavigate();
   const [master, setMaster] = useState<Master | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
@@ -30,6 +32,17 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'schedule' | 'profile' | 'favorites' | 'reviews'>('overview');
   const [editingProfile, setEditingProfile] = useState(false);
+
+  // Helper: format address without city because city is displayed separately
+  const formatAddressWithoutCity = (addr: string | undefined, structured?: { street: string; houseNumber: string; orientationNumber?: string; postalCode: string; city: string; }) => {
+    if (structured) {
+      const num = structured.orientationNumber ? `${structured.houseNumber}/${structured.orientationNumber}` : structured.houseNumber;
+      return `${structured.street} ${num}, ${structured.postalCode}`;
+    }
+    if (!addr) return '';
+    // Convert patterns like "Street 1, 123 45 Brno" -> "Street 1, 123 45"
+    return addr.replace(/,\s*(\d{3}\s?\d{2})\s+.+$/, ', $1');
+  };
   const [editingSchedule, setEditingSchedule] = useState(false);
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
@@ -262,19 +275,6 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } catch (error) {
       console.error('Error updating profile:', error);
       throw error;
-    }
-  };
-
-  const updateSchedule = async (workingHours: WorkingHours[]) => {
-    if (!master) return;
-
-    try {
-      const masterRef = doc(db, 'masters', master.id);
-      await updateDoc(masterRef, { workingHours });
-      setMaster({ ...master, workingHours });
-      setEditingSchedule(false);
-    } catch (error) {
-      console.error('Error updating schedule:', error);
     }
   };
 
@@ -556,80 +556,112 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         {activeTab === 'profile' && (
           <div className="profile-section">
             <h2>{t.profile}</h2>
-            <button 
-              onClick={() => setEditingProfile(!editingProfile)}
-              className="edit-button"
-            >
-              {editingProfile ? t.save : t.edit}
-            </button>
-            
+
             {!editingProfile && (
               <div className="profile-info">
                 <p><strong>{t.profileFields.name}:</strong> {master.name}</p>
                 <p><strong>{t.profileFields.specialty}:</strong> {master.specialty}</p>
-                <p><strong>{t.profileFields.experience}:</strong> {master.experience}</p>
+                <p><strong>{t.profileFields.experience}:</strong> {formatExperienceYears(master.experience, language, false)}</p>
                 <p><strong>{t.profileFields.phone}:</strong> {master.phone}</p>
                 <p><strong>{t.profileFields.email}:</strong> {master.email}</p>
-                <p><strong>{t.profileFields.address}:</strong> {master.address}</p>
-                <p><strong>{t.profileFields.website}:</strong> {master.website}</p>
-                <p><strong>{t.profileFields.description}:</strong> {master.description}</p>
+                {master.city && <p><strong>{language === 'cs' ? 'Město' : 'City'}:</strong> {language === 'cs' ? translateCityToCzech(master.city) : master.city}</p>}
+                {master.address && <p><strong>{t.profileFields.address}:</strong> {formatAddressWithoutCity(master.address, master.structuredAddress || undefined)}</p>}
+                {master.website && (
+                  <p>
+                    <strong>{t.profileFields.website}:</strong>{' '}
+                    <a 
+                      href={master.website.startsWith('http') ? master.website : `https://${master.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="website-link"
+                    >
+                      {master.website}
+                    </a>
+                  </p>
+                )}
+                {master.description && (
+                  <>
+                    <p><strong>{t.profileFields.description}:</strong></p>
+                    <p className="pre-line">{master.description}</p>
+                  </>
+                )}
+                {master.services && master.services.length > 0 && (
+                  <p><strong>{language === 'cs' ? 'Služby' : 'Services'}:</strong> {translateServices(master.services, language).join(', ')}</p>
+                )}
+                {master.languages && master.languages.length > 0 && (
+                  <p><strong>{language === 'cs' ? 'Jazyky' : 'Languages'}:</strong> {translateLanguages(master.languages, language).join(', ')}</p>
+                )}
+                <p><strong>{language === 'cs' ? 'Typ práce' : 'Work Type'}:</strong> {master.isFreelancer ? (language === 'cs' ? 'Samostatný pracovník' : 'Freelancer') : (language === 'cs' ? 'V salonu' : 'In Salon')}</p>
+                {master.salonName && <p><strong>{language === 'cs' ? 'Salon' : 'Salon'}:</strong> {master.salonName}</p>}
+                <p><strong>{language === 'cs' ? 'Pouze na objednání' : 'By appointment only'}:</strong> {master.byAppointment ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
               </div>
             )}
 
-            <MasterProfileEditForm
-              master={master}
-              language={language}
-              translations={{
-                name: t.profileFields.name,
-                email: t.profileFields.email,
-                phone: t.profileFields.phone,
-                specialty: t.profileFields.specialty,
-                experience: t.profileFields.experience,
-                address: t.profileFields.address,
-                website: t.profileFields.website,
-                description: t.profileFields.description,
-                basicInfo: language === 'cs' ? 'Základní informace' : 'Basic Information',
-                location: language === 'cs' ? 'Lokace' : 'Location',
-                servicesLabel: language === 'cs' ? 'Služby' : 'Services',
-                languagesLabel: language === 'cs' ? 'Jazyky' : 'Languages',
-                workingHours: language === 'cs' ? 'Pracovní doba' : 'Working Hours',
-                photo: language === 'cs' ? 'Fotografie' : 'Photo',
-                additionalInfo: language === 'cs' ? 'Další informace' : 'Additional Information',
-                namePlaceholder: language === 'cs' ? 'Zadejte své jméno' : 'Enter your name',
-                emailPlaceholder: language === 'cs' ? 'Zadejte svůj email' : 'Enter your email',
-                phonePlaceholder: language === 'cs' ? 'Zadejte svůj telefon' : 'Enter your phone',
-                specialtyPlaceholder: language === 'cs' ? 'Zadejte svou specializaci' : 'Enter your specialty',
-                experiencePlaceholder: language === 'cs' ? 'Zadejte své zkušenosti' : 'Enter your experience',
-                websitePlaceholder: language === 'cs' ? 'Zadejte URL vašich webových stránek' : 'Enter your website URL',
-                descriptionPlaceholder: language === 'cs' ? 'Popište sebe a své služby' : 'Describe yourself and your services',
-                selectServices: language === 'cs' ? 'Vyberte služby' : 'Select services',
-                selectLanguages: language === 'cs' ? 'Vyberte jazyky' : 'Select languages',
-                byAppointment: language === 'cs' ? 'Pouze na objednání' : 'By appointment only',
-                cancel: t.cancel,
-                save: t.save,
-                saving: language === 'cs' ? 'Ukládání...' : 'Saving...',
-                services: {
-                  'Manicure and Pedicure': language === 'cs' ? 'Manikúra a pedikúra' : 'Manicure and Pedicure',
-                  'Gel Nails': language === 'cs' ? 'Gelové nehty' : 'Gel Nails',
-                  'Nail Art': language === 'cs' ? 'Nail Art' : 'Nail Art',
-                  'Eyebrows & Eyelashes': language === 'cs' ? 'Obličejové chloupky' : 'Eyebrows & Eyelashes',
-                  'Relaxation Massage': language === 'cs' ? 'Relaxační masáž' : 'Relaxation Massage',
-                  'Women\'s Haircuts': language === 'cs' ? 'Dámské střihy' : 'Women\'s Haircuts',
-                  'Men\'s Haircuts and Beards': language === 'cs' ? 'Pánské střihy a vousy' : 'Men\'s Haircuts and Beards',
-                  'Makeup Artist': language === 'cs' ? 'Vizážistka' : 'Makeup Artist',
-                  'Nail Design': language === 'cs' ? 'Nail Design' : 'Nail Design',
-                  'Makeup & Nail Art': language === 'cs' ? 'Makeup & Nail Art' : 'Makeup & Nail Art'
-                },
-                languages: {
-                  'Czech': language === 'cs' ? 'Čeština' : 'Czech',
-                  'English': language === 'cs' ? 'Angličtina' : 'English',
-                  'German': language === 'cs' ? 'Němčina' : 'German',
-                  'Slovak': language === 'cs' ? 'Slovenština' : 'Slovak'
-                }
-              }}
-              onSave={updateProfile}
-              onCancel={() => setEditingProfile(false)}
-            />
+            {!editingProfile && (
+              <button 
+                onClick={() => setEditingProfile(!editingProfile)}
+                className="edit-button profile-edit-button"
+              >
+                {t.edit}
+              </button>
+            )}
+
+            {editingProfile && (
+              <MasterProfileEditForm
+                master={master}
+                language={language}
+                translations={{
+                  name: t.profileFields.name,
+                  email: t.profileFields.email,
+                  phone: t.profileFields.phone,
+                  specialty: t.profileFields.specialty,
+                  experience: t.profileFields.experience,
+                  address: t.profileFields.address,
+                  website: t.profileFields.website,
+                  description: t.profileFields.description,
+                  basicInfo: language === 'cs' ? 'Základní informace' : 'Basic Information',
+                  location: language === 'cs' ? 'Lokace' : 'Location',
+                  servicesLabel: language === 'cs' ? 'Služby' : 'Services',
+                  languagesLabel: language === 'cs' ? 'Jazyky' : 'Languages',
+                  workingHours: language === 'cs' ? 'Pracovní doba' : 'Working Hours',
+                  photo: language === 'cs' ? 'Fotografie' : 'Photo',
+                  additionalInfo: language === 'cs' ? 'Další informace' : 'Additional Information',
+                  namePlaceholder: language === 'cs' ? 'Zadejte své jméno' : 'Enter your name',
+                  emailPlaceholder: language === 'cs' ? 'Zadejte svůj email' : 'Enter your email',
+                  phonePlaceholder: language === 'cs' ? 'Zadejte svůj telefon' : 'Enter your phone',
+                  specialtyPlaceholder: language === 'cs' ? 'Zadejte svou specializaci' : 'Enter your specialty',
+                  experiencePlaceholder: language === 'cs' ? 'Zadejte své zkušenosti' : 'Enter your experience',
+                  websitePlaceholder: language === 'cs' ? 'Zadejte URL vašich webových stránek' : 'Enter your website URL',
+                  descriptionPlaceholder: language === 'cs' ? 'Popište sebe a své služby' : 'Describe yourself and your services',
+                  selectServices: language === 'cs' ? 'Vyberte služby' : 'Select services',
+                  selectLanguages: language === 'cs' ? 'Vyberte jazyky' : 'Select languages',
+                  byAppointment: language === 'cs' ? 'Pouze na objednání' : 'By appointment only',
+                  cancel: t.cancel,
+                  save: t.save,
+                  saving: language === 'cs' ? 'Ukládání...' : 'Saving...',
+                  services: {
+                    'Manicure and Pedicure': language === 'cs' ? 'Manikúra a pedikúra' : 'Manicure and Pedicure',
+                    'Gel Nails': language === 'cs' ? 'Gelové nehty' : 'Gel Nails',
+                    'Nail Art': language === 'cs' ? 'Nail Art' : 'Nail Art',
+                    'Eyebrows & Eyelashes': language === 'cs' ? 'Obličejové chloupky' : 'Eyebrows & Eyelashes',
+                    'Relaxation Massage': language === 'cs' ? 'Relaxační masáž' : 'Relaxation Massage',
+                    'Women\'s Haircuts': language === 'cs' ? 'Dámské střihy' : 'Women\'s Haircuts',
+                    'Men\'s Haircuts and Beards': language === 'cs' ? 'Pánské střihy a vousy' : 'Men\'s Haircuts and Beards',
+                    'Makeup Artist': language === 'cs' ? 'Vizážistka' : 'Makeup Artist',
+                    'Nail Design': language === 'cs' ? 'Nail Design' : 'Nail Design',
+                    'Makeup & Nail Art': language === 'cs' ? 'Makeup & Nail Art' : 'Makeup & Nail Art'
+                  },
+                  languages: {
+                    'Czech': language === 'cs' ? 'Čeština' : 'Czech',
+                    'English': language === 'cs' ? 'Angličtina' : 'English',
+                    'German': language === 'cs' ? 'Němčina' : 'German',
+                    'Slovak': language === 'cs' ? 'Slovenština' : 'Slovak'
+                  }
+                }}
+                onSave={updateProfile}
+                onCancel={() => setEditingProfile(false)}
+              />
+            )}
           </div>
         )}
 

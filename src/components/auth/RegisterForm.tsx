@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { UserProfile } from '../../types';
+import { getRequiredMessage } from '../../utils/form';
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -154,6 +155,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -167,6 +170,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -180,6 +194,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -192,6 +208,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity('')}
           >
             <option value="client">{t.client}</option>
             <option value="salon">{t.salon}</option>
@@ -209,6 +227,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 
@@ -222,6 +242,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin,
             onChange={handleChange}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 

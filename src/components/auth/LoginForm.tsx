@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { UserProfile } from '../../types';
+import { getRequiredMessage } from '../../utils/form';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -107,6 +108,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, language, onGoToRegist
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
         
@@ -119,6 +131,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, language, onGoToRegist
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
+            onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
         </div>
 

@@ -5,6 +5,310 @@
   box-sizing: border-box;
 }
 
+/* Стили для ссылок на веб-сайты - выглядят как обычный текст */
+.website-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.website-link:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.website-link:visited {
+  color: inherit;
+}
+
+.website-link:active {
+  color: inherit;
+}
+
+/* Стили для управления мастерами в салоне */
+.masters-section {
+  margin-top: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-master-button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.add-master-button:hover {
+  background: #45a049;
+}
+
+.master-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.master-form-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.salon-master-form h3 {
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 2px solid #4caf50;
+  padding-bottom: 10px;
+}
+
+.masters-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.salon-master-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.master-card-header {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 15px;
+}
+
+.master-photo {
+  flex-shrink: 0;
+}
+
+.master-photo-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.master-photo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e0e0e0;
+}
+
+.placeholder-content {
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.placeholder-text {
+  font-size: 10px;
+  font-weight: bold;
+  color: #666;
+}
+
+.master-info-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.master-name {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.master-name:hover {
+  color: #007bff;
+}
+
+.master-specialty,
+.master-experience,
+.master-rating {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.master-description-full {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.master-description-full p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+  margin: 0;
+}
+
+.master-services-languages-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: -2px;
+  margin-bottom: 20px;
+}
+
+.services-section,
+.languages-section {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.services-section h5,
+.languages-section h5 {
+  margin: 0 0 8px 0;
+  padding: 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.services-list,
+.languages-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.services-list-two-columns {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.service-badge,
+.language-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Специальные стили для кнопок языков в карточках мастеров */
+.master-card .language-badge,
+.master-services-languages-vertical .language-badge,
+.languages-section .language-badge {
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  width: fit-content !important;
+  line-height: 1.3 !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  border-radius: 8px !important;
+  margin: 2px !important;
+}
+
+.salon-contact-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.salon-contact-info h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.contact-details p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #555;
+}
+
+.master-actions-centered {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.edit-button {
+  background: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.edit-button:hover {
+  background: #1976d2;
+}
+
+.remove-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.remove-button:hover {
+  background: #d32f2f;
+}
+
 /* Стили для структурированного ввода адреса */
 .structured-address-input {
   margin: 0;
@@ -135,7 +439,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 30px;
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -334,6 +638,26 @@
   align-items: center;
   gap: 12px;
   height: 36px; /* фиксированная высота строки */
+}
+
+/* Улучшенное выравнивание для расписания */
+.working-hours-input .wh-row {
+  grid-template-columns: 40px auto auto auto;
+  justify-content: start;
+  gap: 8px;
+}
+
+.working-hours-input .wh-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.working-hours-input .wh-closed {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* отступ между чекбоксом и текстом "Zavřeno" в upravách */
 }
 .wh-day {
   font-weight: 500;
@@ -1799,6 +2123,15 @@ body {
   color: #666;
   width: 100%;
   text-align: left;
+  white-space: pre-line;
+}
+
+.description p {
+  white-space: pre-line;
+}
+
+.pre-line {
+  white-space: pre-line;
 }
 
 .contact-info {
@@ -1863,7 +2196,7 @@ body {
 }
 
 .services-section {
-  margin: 30px 0;
+  margin: 0;
   text-align: left;
 }
 
@@ -2268,7 +2601,7 @@ body {
 
 /* Формы регистрации */
 .registration-form {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   background: white;
   padding: 40px;
@@ -2395,9 +2728,43 @@ body {
   margin-bottom: 30px;
 }
 
+/* FileUpload previews */
+.file-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.file-preview-item {
+  position: relative;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+.file-preview-img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  display: block;
+}
+.file-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  cursor: pointer;
+  line-height: 22px;
+}
+
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 15px;
   margin-top: 10px;
 }
@@ -4313,6 +4680,10 @@ body {
   font-size: 14px;
 }
 
+.profile-edit-button {
+  margin-top: 8px; /* vertical space under Profil heading */
+}
+
 .add-button:hover,
 .edit-button:hover {
   background: #218838;
@@ -4814,4 +5185,80 @@ body {
 .cancel-button:disabled {
   background: #adb5bd;
   cursor: not-allowed;
+}
+
+/* Profile edit form spacing fixes */
+.registration-form .form-section {
+  margin-bottom: 2rem;
+}
+
+.registration-form .form-section h3 {
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.registration-form .form-section:first-child h3 {
+  margin-top: 0;
+}
+
+/* Additional spacing for specific sections */
+.registration-form .form-section h3 + .form-group {
+  margin-top: 0;
+}
+
+/* Fix checkbox alignment */
+.registration-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.registration-form .checkbox-label input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Fix services grid to match registration form */
+.registration-form .services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.registration-form .service-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 14px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 56px;
+  flex-direction: row;
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+.registration-form .service-checkbox:hover {
+  border-color: #667eea;
+  background: #f8f9fa;
+}
+
+.registration-form .service-checkbox input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.registration-form .service-label {
+  margin-left: 8px;
+  position: relative;
+  top: 1px;
+  font-size: 0.75rem;
+  color: #333;
 }

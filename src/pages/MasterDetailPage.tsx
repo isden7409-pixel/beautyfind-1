@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Master, Salon, Language, Review, Booking } from '../types';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import BookingModal from '../components/BookingModal';
@@ -20,7 +22,7 @@ interface MasterDetailPageProps {
 }
 
 const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
-  master,
+  master: initialMaster,
   language,
   translations,
   onBack,
@@ -29,6 +31,19 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   onLanguageChange,
 }) => {
   const t = translations[language];
+
+  // Realtime master data
+  const [currentMaster, setCurrentMaster] = useState<Master>(initialMaster);
+  useEffect(() => { setCurrentMaster(initialMaster); }, [initialMaster]);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'masters', initialMaster.id), (snap) => {
+      if (snap.exists()) {
+        setCurrentMaster({ id: initialMaster.id, ...(snap.data() as any) } as Master);
+      }
+    });
+    return () => unsub();
+  }, [initialMaster.id]);
+  const master = currentMaster;
 
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -227,7 +242,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
 
         {master.description && (
           <div className="description">
-            <p>{master.description}</p>
+            <p className="pre-line">{master.description}</p>
           </div>
         )}
 

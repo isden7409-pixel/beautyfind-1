@@ -1,76 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Salon, Language } from '../types';
-import { translateServices } from '../utils/serviceTranslations';
 import { getRequiredMessage, getValidationMessages } from '../utils/form';
+import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
-
-// Список всех чешских городов
-const CZECH_CITIES = [
-  { value: 'Prague', label: 'Praha' },
-  { value: 'Brno', label: 'Brno' },
-  { value: 'Ostrava', label: 'Ostrava' },
-  { value: 'Plzen', label: 'Plzeň' },
-  { value: 'Liberec', label: 'Liberec' },
-  { value: 'Olomouc', label: 'Olomouc' },
-  { value: 'Budweis', label: 'České Budějovice' },
-  { value: 'Hradec', label: 'Hradec Králové' },
-  { value: 'Pardubice', label: 'Pardubice' },
-  { value: 'Zlín', label: 'Zlín' },
-  { value: 'Havirov', label: 'Havířov' },
-  { value: 'Kladno', label: 'Kladno' },
-  { value: 'Most', label: 'Most' },
-  { value: 'Opava', label: 'Opava' },
-  { value: 'Frydek', label: 'Frýdek-Místek' },
-  { value: 'Karvina', label: 'Karviná' },
-  { value: 'Jihlava', label: 'Jihlava' },
-  { value: 'Teplice', label: 'Teplice' },
-  { value: 'Decin', label: 'Děčín' },
-  { value: 'Chomutov', label: 'Chomutov' },
-  { value: 'Jablonec', label: 'Jablonec nad Nisou' },
-  { value: 'Mlada', label: 'Mladá Boleslav' },
-  { value: 'Prostejov', label: 'Prostějov' },
-  { value: 'Prerov', label: 'Přerov' },
-  { value: 'Trebic', label: 'Třebíč' },
-  { value: 'Ceska', label: 'Česká Lípa' },
-  { value: 'Tabor', label: 'Tábor' },
-  { value: 'Znojmo', label: 'Znojmo' },
-  { value: 'Pribram', label: 'Příbram' },
-  { value: 'Orlova', label: 'Orlová' },
-  { value: 'Cheb', label: 'Cheb' },
-  { value: 'Modrany', label: 'Modřany' },
-  { value: 'Litvinov', label: 'Litvínov' },
-  { value: 'Trinec', label: 'Třinec' },
-  { value: 'Kolin', label: 'Kolín' },
-  { value: 'Kromeriz', label: 'Kroměříž' },
-  { value: 'Sumperk', label: 'Šumperk' },
-  { value: 'Usti', label: 'Ústí nad Labem' },
-  { value: 'Hodonin', label: 'Hodonín' },
-  { value: 'Cesky', label: 'Český Těšín' },
-  { value: 'Kladno', label: 'Kladno' },
-  { value: 'Karvina', label: 'Karviná' },
-  { value: 'Jablonec', label: 'Jablonec nad Nisou' },
-  { value: 'Mlada', label: 'Mladá Boleslav' },
-  { value: 'Prostejov', label: 'Prostějov' },
-  { value: 'Prerov', label: 'Přerov' },
-  { value: 'Trebic', label: 'Třebíč' },
-  { value: 'Ceska', label: 'Česká Lípa' },
-  { value: 'Tabor', label: 'Tábor' },
-  { value: 'Znojmo', label: 'Znojmo' },
-  { value: 'Pribram', label: 'Příbram' },
-  { value: 'Orlova', label: 'Orlová' },
-  { value: 'Cheb', label: 'Cheb' },
-  { value: 'Modrany', label: 'Modřany' },
-  { value: 'Litvinov', label: 'Litvínov' },
-  { value: 'Trinec', label: 'Třinec' },
-  { value: 'Kolin', label: 'Kolín' },
-  { value: 'Kromeriz', label: 'Kroměříž' },
-  { value: 'Sumperk', label: 'Šumperk' },
-  { value: 'Usti', label: 'Ústí nad Labem' },
-  { value: 'Hodonin', label: 'Hodonín' },
-  { value: 'Cesky', label: 'Český Těšín' }
-];
 
 interface SalonProfileEditFormProps {
   salon: Salon;
@@ -103,14 +37,47 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
     reviews: salon.reviews || 0,
     coordinates: salon.coordinates || null,
     byAppointment: salon.byAppointment || false,
-    paymentMethods: salon.paymentMethods || []
+    paymentMethods: salon.paymentMethods || [],
+    languages: salon.languages || []
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const t = translations[language];
   const validationMessages = getValidationMessages(language);
+
+  // Полный список услуг как в форме регистрации
+  const availableServices = [
+    'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial', 
+    'Massage', 'Nail Art', 'Eyebrows', 'Eyelashes', 'Hair Coloring',
+    'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber',
+    'Gel Nails', 'Nail Extensions', 'Coloring', 'Styling', 'Beard Trim',
+    'Event Makeup', 'Bridal Makeup', 'Relaxation Massage', 'Sports Massage',
+    'Lymphatic Massage', 'Women\'s Haircuts', 'Highlights', 'Anti-aging',
+    'Skin Cleansing', 'Men\'s Haircuts and Beards', 'Hot Towel',
+    'Women\'s Haircuts and Coloring', 'Body Treatment', 'Sauna',
+    'Massage Therapy', 'Facial & Body Treatments', 'Men\'s Haircuts'
+  ];
+
+  // Доступные языки как у мастера
+  const availableLanguages = [
+    'Czech', 'English', 'German', 'French', 'Spanish', 'Italian', 
+    'Russian', 'Slovak', 'Polish', 'Ukrainian', 'Portuguese', 'Dutch'
+  ];
+
+  // Чешские города (для выбора города в Lokace)
+  const CZECH_CITIES = [
+    { value: 'Prague', label: 'Praha' },
+    { value: 'Brno', label: 'Brno' },
+    { value: 'Ostrava', label: 'Ostrava' },
+    { value: 'Plzen', label: 'Plzeň' },
+    { value: 'Liberec', label: 'Liberec' },
+    { value: 'Olomouc', label: 'Olomouc' },
+    { value: 'Budweis', label: 'České Budějovice' },
+    { value: 'Hradec', label: 'Hradec Králové' },
+    { value: 'Pardubice', label: 'Pardubice' },
+    { value: 'Zlín', label: 'Zlín' },
+  ];
 
   useEffect(() => {
     setFormData({
@@ -129,7 +96,8 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
       reviews: salon.reviews || 0,
       coordinates: salon.coordinates || null,
       byAppointment: salon.byAppointment || false,
-      paymentMethods: salon.paymentMethods || []
+      paymentMethods: salon.paymentMethods || [],
+      languages: salon.languages || []
     });
   }, [salon]);
 
@@ -181,18 +149,25 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
   };
 
   const handlePhotosChange = (files: FileList | null) => {
-    if (files) {
-      const photoUrls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
+    if (!files || files.length === 0) return;
+
+    setFormData(prev => {
+      const existing = prev.photos || [];
+      const remainingSlots = Math.max(0, 10 - existing.length);
+
+      // Convert new FileList to blob URLs, but respect remainingSlots
+      const newUrls: string[] = [];
+      for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
         const file = files[i];
         const url = URL.createObjectURL(file);
-        photoUrls.push(url);
+        newUrls.push(url);
       }
-      setFormData(prev => ({
-        ...prev,
-        photos: photoUrls
-      }));
-    }
+
+      // If no slots left, keep existing as-is
+      const next = remainingSlots > 0 ? [...existing, ...newUrls] : existing;
+
+      return { ...prev, photos: next };
+    });
   };
 
   const validateForm = () => {
@@ -218,6 +193,10 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
 
     if (formData.services.length === 0) {
       newErrors.services = getRequiredMessage(language);
+    }
+
+    if (!formData.languages || formData.languages.length === 0) {
+      newErrors.languages = language === 'cs' ? 'Vyberte alespoň jeden jazyk' : 'Select at least one language';
     }
 
     setErrors(newErrors);
@@ -276,6 +255,17 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
             onChange={handleInputChange}
             className={errors.email ? 'error' : ''}
             placeholder={translations.emailPlaceholder}
+            onInvalid={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.validity.valueMissing) {
+                target.setCustomValidity(getRequiredMessage(language));
+              } else if (target.validity.typeMismatch) {
+                target.setCustomValidity(language === 'cs' ? 'Zadejte platnou emailovou adresu' : 'Please enter a valid email address');
+              } else {
+                target.setCustomValidity('');
+              }
+            }}
+            onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
@@ -328,35 +318,64 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
       <div className="form-section">
         <h3>{translations.location}</h3>
         
+        <div className="form-group city-field">
+          <label htmlFor="city">{language === 'cs' ? 'Město *' : 'City *'}</label>
+          <select
+            id="city"
+            name="city"
+            value={formData.city}
+            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+            className="form-select"
+            required
+            onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity(getRequiredMessage(language))}
+            onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity('')}
+          >
+            <option value="">{language === 'cs' ? 'Vyberte město' : 'Select city'}</option>
+            {CZECH_CITIES.map(city => (
+              <option key={city.value} value={city.value}>{city.label}</option>
+            ))}
+          </select>
+        </div>
+
         <StructuredAddressInput
           value={formData.structuredAddress || undefined}
           onChange={handleAddressChange}
           language={language}
           translations={translations}
+          city={formData.city}
         />
       </div>
 
       <div className="form-section">
-        <h3>{translations.servicesLabel}</h3>
+        <h3>{translations.workingHours} <span className="required">*</span></h3>
+        
+        <WorkingHoursInput
+          value={formData.workingHours}
+          onChange={handleWorkingHoursChange}
+          language={language}
+          byAppointment={formData.byAppointment}
+          onByAppointmentChange={(value) => setFormData(prev => ({ ...prev, byAppointment: value }))}
+        />
+      </div>
+
+      <div className="form-section">
+        <h3>{translations.servicesLabel} <span className="required">*</span></h3>
         
         <div className="form-group">
-          <label>
-            {translations.selectServices} <span className="required">*</span>
-          </label>
           <div className="services-grid">
-            {Object.keys(translations.services).map((serviceKey) => (
-              <label key={serviceKey} className="service-option">
+            {availableServices.map((service) => (
+              <label key={service} className="service-checkbox">
                 <input
                   type="checkbox"
-                  checked={formData.services.includes(serviceKey)}
+                  checked={formData.services.includes(service)}
                   onChange={(e) => {
                     const selectedServices = e.target.checked
-                      ? [...formData.services, serviceKey]
-                      : formData.services.filter(s => s !== serviceKey);
+                      ? [...formData.services, service]
+                      : formData.services.filter(s => s !== service);
                     handleServicesChange(selectedServices);
                   }}
                 />
-                <span className="service-name">{translations.services[serviceKey]}</span>
+                <span className="service-label">{translateServices([service], language)[0]}</span>
               </label>
             ))}
           </div>
@@ -365,13 +384,57 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>{translations.workingHours}</h3>
-        
-        <WorkingHoursInput
-          value={formData.workingHours}
-          onChange={handleWorkingHoursChange}
-          language={language}
-        />
+        <h3>{translations.languagesLabel} <span className="required">*</span></h3>
+        <div className="form-group">
+          <div className="services-grid">
+            {availableLanguages.map((lang) => (
+              <label key={lang} className="service-checkbox">
+                <input
+                  type="checkbox"
+                  checked={(formData.languages || []).includes(lang)}
+                  onChange={(e) => {
+                const next = e.target.checked
+                      ? ([...(formData.languages || []), lang])
+                      : (formData.languages || []).filter((l: string) => l !== lang);
+                    setFormData(prev => ({ ...prev, languages: next }));
+                  }}
+                />
+                  <span className="service-label">{translateLanguages([lang], language)[0]}</span>
+                </label>
+              ))}
+            </div>
+            {errors.languages && <span className="error-message">{errors.languages}</span>}
+          </div>
+        </div>
+
+      <div className="form-section">
+        <h3>{translations.selectPaymentMethods} <span className="required">*</span></h3>
+        <div className="form-group">
+          <div className="services-grid">
+            {[
+              { key: 'cash', label: translations.paymentCash },
+              { key: 'card', label: translations.paymentCard },
+              { key: 'qr', label: language === 'cs' ? 'QR platba' : 'QR payment' },
+              { key: 'account', label: language === 'cs' ? 'Převod na účet' : 'Bank transfer' },
+              { key: 'voucher', label: language === 'cs' ? 'Dárkový poukaz' : 'Voucher' },
+              { key: 'benefit', label: language === 'cs' ? 'Benefitní karta' : 'Benefit card' },
+            ].map(method => (
+              <label key={method.key} className="service-checkbox">
+                <input
+                  type="checkbox"
+                  checked={(formData.paymentMethods || []).includes(method.key)}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                      ? ([...(formData.paymentMethods || []), method.key])
+                      : (formData.paymentMethods || []).filter(m => m !== method.key);
+                    setFormData(prev => ({ ...prev, paymentMethods: next }));
+                  }}
+                />
+                <span className="service-label">{method.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="form-section">
@@ -382,27 +445,23 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
           multiple={true}
           onChange={handlePhotosChange}
           selectedFiles={null}
+          previewUrls={formData.photos}
+          onRemoveUrl={(url) => setFormData(prev => ({ ...prev, photos: (prev.photos || []).filter(p => p !== url) }))}
+          maxFiles={10}
+          onReorderUrl={(from, to) => {
+            setFormData(prev => {
+              const list = [...(prev.photos || [])];
+              const [moved] = list.splice(from, 1);
+              list.splice(to, 0, moved);
+              return { ...prev, photos: list };
+            });
+          }}
           selectButtonText={language === 'cs' ? 'Vybrat fotografie' : 'Select photos'}
           noFileText={language === 'cs' ? 'Žádné fotografie nebyly vybrány' : 'No photos selected'}
           filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
           fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
         />
-      </div>
-
-      <div className="form-section">
-        <h3>{translations.additionalInfo}</h3>
-        
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="byAppointment"
-              checked={formData.byAppointment}
-              onChange={handleInputChange}
-            />
-            <span className="checkbox-text">{translations.byAppointment}</span>
-          </label>
-        </div>
+        <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašeho salonu (max 10)' : 'Upload photos of your salon (max 10)'}</p>
       </div>
 
       <div className="form-actions">
@@ -416,7 +475,7 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
         </button>
         <button
           type="submit"
-          className="submit-button"
+          className="save-button"
           disabled={submitting}
         >
           {submitting ? translations.saving : translations.save}
