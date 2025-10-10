@@ -31,7 +31,7 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
     experience: master?.experience || '',
     description: master?.description || '',
     services: master?.services || [],
-    languages: master?.languages || ['Czech'],
+    languages: master?.languages || [],
     workingHours: master?.workingHours || [],
     byAppointment: master?.byAppointment || false,
     photo: master?.photo || null as File | string | null,
@@ -41,15 +41,25 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
   const [submitting, setSubmitting] = useState(false);
 
   // Available services and languages
+  // Keep services fully in sync with master/salon registration
   const availableServices = [
-    'Manicure', 'Pedicure', 'Nail Art', 'Nail Extension', 'Gel Polish',
-    'Haircuts', 'Hair Styling', 'Hair Coloring', 'Highlights', 'Balayage',
-    'Facial', 'Eyebrows', 'Eyelashes', 'Makeup', 'Massage',
-    'Barber', 'Beard Trim', 'Mustache', 'Hot Towel', 'Shaving'
+    'Manicure', 'Pedicure', 'Haircut', 'Makeup', 'Facial',
+    'Massage', 'Nail Art', 'Eyebrows', 'Eyelashes', 'Hair Coloring',
+    'Hair Treatment', 'Hair Styling', 'Wedding Makeup', 'Barber',
+    'Gel Nails', 'Nail Extensions', 'Coloring', 'Styling', 'Beard Trim',
+    'Event Makeup', 'Bridal Makeup', 'Relaxation Massage', 'Sports Massage',
+    'Lymphatic Massage', "Women's Haircuts", "Women's Haircut", 'Highlights', 'Anti-aging',
+    'Skin Cleansing', "Men's Haircuts and Beards", 'Hot Towel',
+    "Women's Haircuts and Coloring", 'Body Treatment', 'Sauna',
+    'Massage Therapy', 'Facial & Body Treatments', "Men's Haircuts",
+    'Eyebrow Shaping', 'Eyebrow Shaping & Tinting', 'Balayage', 'Hair Wash',
+    'Skin Treatment', 'Cleansing', 'Lash Extensions', 'Wedding Hairstyles',
+    'Relaxation', 'Therapeutic Massage', 'Aromatherapy', 'Detox'
   ];
 
   const availableLanguages = [
-    'Czech', 'English', 'German', 'Slovak', 'Russian', 'Ukrainian', 'Polish', 'French', 'Spanish', 'Italian'
+    'Czech', 'English', 'German', 'French', 'Spanish', 'Italian',
+    'Russian', 'Slovak', 'Polish', 'Ukrainian', 'Portuguese', 'Dutch'
   ];
 
   const validateForm = () => {
@@ -73,6 +83,12 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
 
     if (!formData.languages || formData.languages.length === 0) {
       newErrors.languages = language === 'cs' ? 'Vyberte alespoň jeden jazyk' : 'Select at least one language';
+    }
+
+    // Working hours are required unless "by appointment"
+    const hasWorkingHours = Array.isArray(formData.workingHours) && (formData.workingHours as any[]).length > 0;
+    if (!formData.byAppointment && !hasWorkingHours) {
+      newErrors.workingHours = language === 'cs' ? 'Pracovní doba je povinná (nebo zvolte Po domluvě)' : 'Working hours are required (or select By appointment)';
     }
 
     setErrors(newErrors);
@@ -113,6 +129,9 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
 
   const handleWorkingHoursChange = (workingHours: any) => {
     setFormData(prev => ({ ...prev, workingHours }));
+    if (errors.workingHours) {
+      setErrors(prev => ({ ...prev, workingHours: '' }));
+    }
   };
 
   const handlePhotoChange = (files: FileList | null) => {
@@ -151,7 +170,6 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
       <form onSubmit={handleSubmit} className="form">
         {/* Basic Information */}
         <div className="form-section">
-          <h4>{language === 'cs' ? 'Základní informace' : 'Basic Information'}</h4>
           
           <div className="form-group">
             <label htmlFor="name">
@@ -239,6 +257,19 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
           </div>
         </div>
 
+        {/* Working Hours - moved above Services */}
+        <div className="form-section working-hours-tight">
+          <h4>{language === 'cs' ? 'Pracovní doba' : 'Working Hours'} <span className="required">*</span></h4>
+          <WorkingHoursInput
+            value={formData.workingHours}
+            onChange={handleWorkingHoursChange}
+            language={language}
+            byAppointment={formData.byAppointment}
+            onByAppointmentChange={(value) => setFormData(prev => ({ ...prev, byAppointment: value }))}
+          />
+          {errors.workingHours && <span className="error-message">{errors.workingHours}</span>}
+        </div>
+
         {/* Services */}
         <div className="form-section">
           <h4>{language === 'cs' ? 'Služby' : 'Services'} <span className="required">*</span></h4>
@@ -279,17 +310,6 @@ const SalonMasterRegistrationForm: React.FC<SalonMasterRegistrationFormProps> = 
           </div>
         </div>
 
-        {/* Working Hours */}
-        <div className="form-section">
-          <h4>{language === 'cs' ? 'Pracovní doba' : 'Working Hours'}</h4>
-          <WorkingHoursInput
-            value={formData.workingHours}
-            onChange={handleWorkingHoursChange}
-            language={language}
-            byAppointment={formData.byAppointment}
-            onByAppointmentChange={(value) => setFormData(prev => ({ ...prev, byAppointment: value }))}
-          />
-        </div>
 
         {/* Photo */}
         <div className="form-section">

@@ -223,7 +223,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         </div>
         
         <div className="master-meta">
-          {master.worksInSalon && masterSalon && (
+          {!master.isFreelancer && masterSalon && (
             <div className="salon-info-row">
               <div className="master-type">{t.inSalon}</div>
               <div className="salon-name clickable" onClick={() => onSalonSelect && onSalonSelect(masterSalon)}>

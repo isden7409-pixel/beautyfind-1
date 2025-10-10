@@ -7,6 +7,7 @@ import MasterCard from '../components/MasterCard';
 import SimpleMapView from '../components/SimpleMapView';
 import { useSalonsData, useMastersData } from '../hooks/useAppData';
 import { masterService } from '../firebase/services';
+import { useCurrentViewMode, useSetCurrentViewMode } from '../store/useStore';
 
 // Тестовые данные салонов
 // Убраны тестовые данные салонов - используются только реальные данные из Firebase
@@ -191,7 +192,10 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
   const masters = mastersData?.masters && mastersData.masters.length > 0 ? mastersData.masters : [];
   const salonsLoading = salonsData?.loading || false;
   const mastersLoading = mastersData?.loading || false;
-  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
+  
+  // Используем глобальный стор вместо локального состояния
+  const viewMode = useCurrentViewMode();
+  const setViewMode = useSetCurrentViewMode();
 
   // Update existing masters with salon names
   useEffect(() => {
@@ -208,11 +212,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
   });
 
   const t = translations[currentLanguage];
-
-  // Обновляем viewMode при изменении initialViewMode
-  useEffect(() => {
-    setViewMode(initialViewMode);
-  }, [initialViewMode]);
 
   // Все мастера из Firestore (включая фрилансеров и мастеров из салонов)
   const allMasters: Master[] = masters;

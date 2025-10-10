@@ -69,8 +69,8 @@
   background: white;
   border-radius: 8px;
   padding: 20px;
-  max-width: 800px;
-  width: 90%;
+  max-width: 1000px; /* расширена форма Přidat mistra */
+  width: 95%;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -2200,6 +2200,11 @@ body {
   text-align: left;
 }
 
+/* Увеличиваем отступ над заголовками Jazyky и Způsoby platby */
+.services-section h3 {
+  margin-top: 20px;
+}
+
 .services-grid {
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
@@ -2368,12 +2373,12 @@ body {
 
 .master-card {
   background: #f8f9fa;
-  padding: 20px;
+  padding: 18px 20px 10px 20px; /* чуть опускаем контент: больше сверху, меньше снизу */
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
-  align-items: center;
+  align-items: center; /* вертикальное выравнивание фото и текста */
   gap: 15px;
 }
 
@@ -2383,21 +2388,26 @@ body {
 }
 
 .master-photo-container {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   position: relative;
 }
 
+/* Небольшой сдвиг вниз, чтобы центр аватара совпадал с центром текстового блока */
+.masters-section .master-photo-container {
+  margin-top: 6px;
+}
+
 .master-photo {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .master-card .master-photo-placeholder {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background-color: #f8f9fa;
   border: 2px dashed #dee2e6;
@@ -2426,6 +2436,21 @@ body {
 .master-info h4 {
   margin: 0 0 5px 0;
   color: #333;
+}
+
+/* Центрируем текстовый блок по высоте круга аватара */
+.masters-section .master-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 80px; /* равен диаметру аватара */
+  margin-top: -10px; /* ещё чуть выше */
+}
+
+.masters-section .master-info h4,
+.masters-section .master-info p,
+.masters-section .master-info .master-rating {
+  margin-top: 0;
 }
 
 .specialty {
@@ -5190,6 +5215,11 @@ body {
 /* Profile edit form spacing fixes */
 .registration-form .form-section {
   margin-bottom: 2rem;
+}
+
+/* Pull working-hours section closer to description in Add Master modal */
+.working-hours-tight {
+  margin-top: -18px; /* ещё ближе к описанию */
 }
 
 .registration-form .form-section h3 {

@@ -3,7 +3,7 @@ import { Salon, Master, Language, Review, Booking } from '../types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import ReviewsSection from '../components/ReviewsSection';
-import { reviewService } from '../firebase/services';
+import { reviewService, masterService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
 import { translateServices, translateSpecialty, translateLanguages } from '../utils/serviceTranslations';
 import { formatExperienceYears } from '../utils/formatters';
@@ -48,10 +48,23 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const salon = currentSalon;
 
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [mastersFromDb, setMastersFromDb] = useState<Master[]>([]);
   useEffect(() => {
     (async () => {
       const data = await reviewService.getBySalon(salon.id);
       setReviews(data);
+    })();
+  }, [salon.id]);
+
+  // Load masters by salonId to ensure fresh and complete data
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await masterService.getBySalon(salon.id);
+        setMastersFromDb(list || []);
+      } catch (e) {
+        setMastersFromDb([]);
+      }
     })();
   }, [salon.id]);
 
@@ -292,14 +305,14 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
           <div className="masters-section">
             <h3>Naši mistři</h3>
             <div className="masters-grid">
-              {salon.masters.map((master: Master) => (
+              {(mastersFromDb.length > 0 ? mastersFromDb : salon.masters).map((master: Master) => (
                 <div
                   key={master.id}
                   className="master-card"
                   onClick={() => onMasterSelect(master)}
                 >
                   <div className="master-photo-container">
-                    {master.photo && master.photo.trim() !== '' && master.photo !== 'undefined' && master.photo !== 'null' ? (
+                    {master.photo && String(master.photo).trim() !== '' && master.photo !== 'undefined' && master.photo !== 'null' ? (
                       <img 
                         src={master.photo} 
                         alt={master.name} 
@@ -322,11 +335,11 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                     </div>
                   </div>
                   <div className="master-info">
-                    <h4>{master.name}</h4>
-                    <p className="specialty">{translateSpecialty(master.specialty, language)}</p>
-                    <p className="experience">{formatExperienceYears(master.experience, language)}</p>
+                    <h4>{master.name || ''}</h4>
+                    <p className="specialty"><strong>{language === 'cs' ? 'Specializace:' : 'Specialization:'}</strong> {translateSpecialty(master.specialty, language)}</p>
+                    <p className="experience"><strong>{language === 'cs' ? 'Zkušenosti:' : 'Experience:'}</strong> {formatExperienceYears(master.experience, language, false)}</p>
                     <span className="master-rating">
-                      ⭐ {master.rating} ({master.reviews} {t.reviews})
+                      ⭐ {Number(master.rating || 0).toFixed(1)} ({Number(master.reviews || 0)} {t.reviews})
                     </span>
                   </div>
                 </div>
