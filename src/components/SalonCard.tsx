@@ -50,9 +50,28 @@ const SalonCard: React.FC<SalonCardProps> = ({
           ⭐ {average} ({count} {t.reviews})
         </div>
         <div className="salon-services">
-          {translateServices(salon.services, language).map(service => (
-            <span key={service} className="service-tag">{service}</span>
-          ))}
+          {(() => {
+            const allServices = translateServices(salon.services, language);
+            const maxVisibleServices = 6; // Максимум услуг для отображения (примерно 2 строки по 3 услуги)
+            
+            if (allServices.length <= maxVisibleServices) {
+              // Если услуг мало, показываем все
+              return allServices.map(service => (
+                <span key={service} className="service-tag">{service}</span>
+              ));
+            } else {
+              // Если услуг много, показываем первые maxVisibleServices и "+X"
+              const visibleServices = allServices.slice(0, maxVisibleServices);
+              const hiddenCount = allServices.length - maxVisibleServices;
+              
+              return [
+                ...visibleServices.map(service => (
+                  <span key={service} className="service-tag">{service}</span>
+                )),
+                <span key="more" className="service-tag">+{hiddenCount}</span>
+              ];
+            }
+          })()}
         </div>
       </div>
       <div className="salon-button-container">

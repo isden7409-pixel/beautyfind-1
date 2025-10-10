@@ -140,6 +140,11 @@ export const salonService = {
       photos: photoUrls,
       masters: [],
       paymentMethods: data.paymentMethods,
+      // Социальные сети
+      whatsapp: data.whatsapp,
+      telegram: data.telegram,
+      instagram: data.instagram,
+      facebook: data.facebook,
     } as Partial<Salon>;
 
     // Добавляем coordinates только если они есть
@@ -330,6 +335,11 @@ export const masterService = {
       services: data.services,
       languages: data.languages,
       paymentMethods: data.paymentMethods,
+      // Социальные сети
+      whatsapp: data.whatsapp,
+      telegram: data.telegram,
+      instagram: data.instagram,
+      facebook: data.facebook,
     } as Partial<Master>;
 
     // Добавляем coordinates только если они есть

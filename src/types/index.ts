@@ -41,6 +41,11 @@ export interface Salon {
   byAppointment?: boolean;
   paymentMethods?: string[];
   languages?: string[];
+  // Социальные сети
+  whatsapp?: string;
+  telegram?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 // Typy pro mistry
@@ -79,6 +84,11 @@ export interface Master {
   bookings?: Booking[];
   byAppointment?: boolean;
   paymentMethods?: string[];
+  // Социальные сети
+  whatsapp?: string;
+  telegram?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 // Типы для отзывов
@@ -182,6 +192,11 @@ export interface SalonRegistration {
   byAppointment?: boolean;
   paymentMethods?: string[];
   languages?: string[];
+  // Социальные сети
+  whatsapp?: string;
+  telegram?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 // Typy pro mistra (registrace)
@@ -203,6 +218,11 @@ export interface MasterRegistration {
   workingHours?: WorkingHours[];
   byAppointment?: boolean;
   paymentMethods?: string[];
+  // Социальные сети
+  whatsapp?: string;
+  telegram?: string;
+  instagram?: string;
+  facebook?: string;
 }
 
 // Типы для поиска и фильтров

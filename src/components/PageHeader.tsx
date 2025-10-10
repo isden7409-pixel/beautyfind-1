@@ -10,6 +10,7 @@ interface PageHeaderProps {
   showBackButton?: boolean;
   onBack?: () => void;
   backText?: string;
+  onNavigateToDashboard?: () => void;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -18,7 +19,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   onLanguageChange,
   showBackButton = false,
   onBack,
-  backText = '← Zpět'
+  backText = '← Zpět',
+  onNavigateToDashboard
 }) => {
   const { currentUser, userProfile, logout } = useAuth();
 
@@ -40,7 +42,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({
           <div className="header-actions">
             {currentUser && userProfile && (
               <div className="user-info">
-                <span className="user-name">
+                <span 
+                  className="user-name clickable"
+                  onClick={() => {
+                    if (onNavigateToDashboard) {
+                      onNavigateToDashboard();
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   {userProfile.name} ({userProfile.type === 'salon' ? 'Salon' : userProfile.type === 'master' ? 'Mistr' : 'Klient'})
                 </span>
                 <button onClick={logout} className="logout-button">

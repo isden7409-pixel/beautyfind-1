@@ -715,6 +715,28 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
                   </p>
                 )}
 
+                {/* Социальные сети */}
+                {salon.whatsapp && (
+                  <p>
+                    <strong>WhatsApp:</strong> {salon.whatsapp}
+                  </p>
+                )}
+                {salon.telegram && (
+                  <p>
+                    <strong>Telegram:</strong> {salon.telegram}
+                  </p>
+                )}
+                {salon.instagram && (
+                  <p>
+                    <strong>Instagram:</strong> {salon.instagram}
+                  </p>
+                )}
+                {salon.facebook && (
+                  <p>
+                    <strong>Facebook:</strong> {salon.facebook}
+                  </p>
+                )}
+
                 {/* Popis */}
                 {salon.description && (
                   <>

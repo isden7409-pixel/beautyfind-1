@@ -66,7 +66,7 @@ const translations = {
     step3Title: "Začněte získávat klienty",
     step3Description: "Váš profil bude zobrazen na vrcholu",
     back: "← Zpět",
-    contact: "Kontakt",
+    contact: "Kontakty",
     services: "Služby",
     languages: "Jazyky",
     location: "Umístění",
@@ -402,6 +402,10 @@ function AppContent() {
         onBack={handleBack}
         onMasterSelect={handleMasterSelect}
         onLanguageChange={setCurrentLanguage}
+        onNavigateToDashboard={() => {
+          navigate('/');
+          setShowDashboard(true);
+        }}
       />
     );
   };
@@ -437,6 +441,10 @@ function AppContent() {
         onSalonSelect={handleSalonSelect}
         salons={salons}
         onLanguageChange={setCurrentLanguage}
+        onNavigateToDashboard={() => {
+          navigate('/');
+          setShowDashboard(true);
+        }}
       />
     );
   };

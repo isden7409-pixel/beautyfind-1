@@ -564,6 +564,21 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
                 <p><strong>{t.profileFields.experience}:</strong> {formatExperienceYears(master.experience, language, false)}</p>
                 <p><strong>{t.profileFields.phone}:</strong> {master.phone}</p>
                 <p><strong>{t.profileFields.email}:</strong> {master.email}</p>
+                
+                {/* Социальные сети */}
+                {master.whatsapp && (
+                  <p><strong>WhatsApp:</strong> {master.whatsapp}</p>
+                )}
+                {master.telegram && (
+                  <p><strong>Telegram:</strong> {master.telegram}</p>
+                )}
+                {master.instagram && (
+                  <p><strong>Instagram:</strong> {master.instagram}</p>
+                )}
+                {master.facebook && (
+                  <p><strong>Facebook:</strong> {master.facebook}</p>
+                )}
+                
                 {master.city && <p><strong>{language === 'cs' ? 'Město' : 'City'}:</strong> {language === 'cs' ? translateCityToCzech(master.city) : master.city}</p>}
                 {master.address && <p><strong>{t.profileFields.address}:</strong> {formatAddressWithoutCity(master.address, master.structuredAddress || undefined)}</p>}
                 {master.website && (

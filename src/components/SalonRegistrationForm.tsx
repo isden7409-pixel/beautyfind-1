@@ -497,6 +497,64 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
           />
         </div>
 
+        {/* Социальные сети */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="whatsapp">WhatsApp</label>
+            <input
+              type="text"
+              id="whatsapp"
+              name="whatsapp"
+              value={formData.whatsapp || ''}
+              onChange={handleInputChange}
+              className="form-input"
+              placeholder={language === 'cs' ? '+420123456789' : '+420123456789'}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="telegram">Telegram</label>
+            <input
+              type="text"
+              id="telegram"
+              name="telegram"
+              value={formData.telegram || ''}
+              onChange={handleInputChange}
+              className="form-input"
+              placeholder={language === 'cs' ? '@uživatelské_jméno' : '@username'}
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+                <label htmlFor="instagram">Instagram</label>
+                <input
+                  type="text"
+                  id="instagram"
+                  name="instagram"
+                  value={formData.instagram || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder={language === 'cs' ? 'uživatelské_jméno' : 'user_name'}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="facebook">Facebook</label>
+            <div className="input-with-prefix">
+              <span className="input-prefix">https://www.facebook.com/</span>
+              <input
+                type="text"
+                id="facebook"
+                name="facebook"
+                value={formData.facebook || ''}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder={language === 'cs' ? 'uzivatel' : 'profile.name'}
+              />
+            </div>
+          </div>
+        </div>
+
 
         <div className="form-group">
           <label htmlFor="description">{t.description}</label>
