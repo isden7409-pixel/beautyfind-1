@@ -21,7 +21,7 @@ const mockSalons: Salon[] = [];
 const translations = {
   cs: {
     title: "BeautyFind.cz",
-    subtitle: "Najděte svůj perfektní kosmetický salon v Česku",
+    subtitle: "Váš průvodce světem krásy v Česku",
     searchPlaceholder: "Hledat salony, služby nebo města...",
     allCities: "Všechna města",
     allServices: "Všechny služby",
