@@ -18,8 +18,8 @@ interface AppState {
   setSearchFilters: (filters: SearchFilters) => void;
   
   // UI state
-  currentViewMode: 'salons' | 'masters';
-  setCurrentViewMode: (mode: 'salons' | 'masters') => void;
+  currentViewMode: 'salons' | 'masters' | 'map';
+  setCurrentViewMode: (mode: 'salons' | 'masters' | 'map') => void;
   
   // Selected items
   selectedSalon: Salon | null;

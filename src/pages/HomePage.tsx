@@ -180,7 +180,7 @@ interface HomePageProps {
   currentLanguage: Language;
   onLanguageChange: (language: Language) => void;
   translations: any;
-  initialViewMode?: 'salons' | 'masters';
+  initialViewMode?: 'salons' | 'masters' | 'map';
   isLoggedIn?: boolean;
   userProfile?: any;
 }
@@ -203,7 +203,6 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
       masterService.updateMastersWithSalonName();
     }
   }, [mastersLoading, masters.length]);
-  const [displayMode, setDisplayMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState<SearchFilters>({
     city: "All",
     service: "All",
@@ -278,6 +277,12 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
             >
               {t.viewMasters}
             </button>
+            <button
+              className={`mode-btn ${viewMode === 'map' ? 'active' : ''}`}
+              onClick={() => setViewMode('map')}
+            >
+              {t.mapView}
+            </button>
           </div>
           <SearchAndFilters
             filters={filters}
@@ -291,36 +296,24 @@ const HomePage: React.FC<HomePageProps> = ({ onSalonSelect, onMasterSelect, onAd
         {isLoading && (
           <div className="loading">{t.loading}...</div>
         )}
-        <div className="view-toggle">
-          <button
-            className={`view-toggle-btn ${displayMode === 'list' ? 'active' : ''}`}
-            onClick={() => setDisplayMode('list')}
-          >
-            📋 {t.listView}
-          </button>
-          <button
-            className={`view-toggle-btn ${displayMode === 'map' ? 'active' : ''}`}
-            onClick={() => setDisplayMode('map')}
-          >
-            🗺️ {t.mapView}
-          </button>
-        </div>
         <h2>
           {viewMode === 'salons'
             ? t.foundSalons.replace('{count}', filteredSalons.length.toString())
-            : t.foundMasters.replace('{count}', filteredMasters.length.toString())
+            : viewMode === 'masters'
+            ? t.foundMasters.replace('{count}', filteredMasters.length.toString())
+            : `Nalezeno ${filteredSalons.length} ${currentLanguage === 'cs' ? 'salonů' : 'salons'} a ${filteredMasters.filter(m => m.isFreelancer).length} ${currentLanguage === 'cs' ? 'mistrů' : 'masters'}`
           }
         </h2>
         
-        {displayMode === 'map' ? (
+        {viewMode === 'map' ? (
           <SimpleMapView
             salons={filteredSalons}
-            masters={filteredMasters}
+            masters={filteredMasters.filter(m => m.isFreelancer)}
             language={currentLanguage}
             translations={translations}
             onSalonSelect={onSalonSelect}
             onMasterSelect={onMasterSelect}
-            selectedType={viewMode}
+            selectedType="map"
             filters={filters}
           />
         ) : viewMode === 'salons' ? (

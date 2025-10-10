@@ -11,7 +11,7 @@ interface SimpleMapViewProps {
   translations: any;
   onSalonSelect: (salon: Salon) => void;
   onMasterSelect: (master: Master) => void;
-  selectedType: 'salons' | 'masters';
+  selectedType: 'salons' | 'masters' | 'map';
   filters: SearchFilters;
 }
 
@@ -549,6 +549,231 @@ ${master.salonName}
                     transition: all 0.2s ease;
                     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
                   " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)'">${t.viewDetails}</button>
+                </div>
+              </div>
+            `;
+          
+          marker.bindPopup(popupContent, {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
+            autoOpen: false,
+            className: 'custom-popup',
+            maxWidth: 300,
+            minWidth: 250
+          });
+
+          newMarkers.push(marker);
+        }
+      });
+    } else if (selectedType === 'map') {
+      // Показываем и салоны, и мастеров-фрилансеров на одной карте
+      
+      // Добавляем маркеры салонов
+      geoSalons.forEach((salon) => {
+        let lat: number | null = null;
+        let lng: number | null = null;
+        if (salon.coordinates) {
+          lat = salon.coordinates.lat;
+          lng = salon.coordinates.lng;
+        } else if (salon.city) {
+          const c = getCityCoordinates(salon.city);
+          lat = c.lat;
+          lng = c.lng;
+        }
+        if (lat !== null && lng !== null) {
+          const L = (window as any).L;
+          
+          const salonIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+              <div style="
+                background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 18px;
+                font-weight: bold;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+              ">
+                🏢
+              </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
+          });
+          
+          const marker = L.marker([lat, lng], { icon: salonIcon }).addTo(map);
+          
+          marker.on('click', function() {
+            // Обработка клика по маркеру салона
+          });
+          
+          const addressText = salon.structuredAddress
+            ? require('../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
+            : (require('../utils/cities').translateAddressToCzech(salon.address || '', salon.city) || translateCity(salon.city));
+
+          const popupContent = `
+              <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                <div style="position: relative; height: 140px; overflow: hidden; border-radius: 12px 12px 0 0;">
+                  <img src="${salon.image}" alt="${salon.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    ⭐ ${salon.rating} (${salon.reviews})
+                  </div>
+                </div>
+                <div style="padding: 16px; background: white;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${salon.name}</h3>
+                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px; display: flex; align-items: center;">
+                    <span style="margin-right: 6px;">📍</span>
+                    <span>${addressText || ''}</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px;">
+                    ${translateServices(salon.services, language).slice(0, 3).map(service => 
+                      `<span style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
+                    ).join('')}
+                    ${salon.services.length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${salon.services.length - 3} ${language === 'cs' ? 'další' : 'more'}</span>` : ''}
+                  </div>
+                  <div style="margin: 0 0 16px 0; display: flex; align-items: center; color: #666; font-size: 13px;">
+                    <span style="margin-right: 6px;">👥</span>
+                    <span>${salon.masters.length} ${salon.masters.length === 1 ? (language === 'cs' ? 'mistr' : 'master') : (language === 'cs' ? 'mistrů' : 'masters')}</span>
+                  </div>
+                  <button onclick="window.selectSalon('${salon.id}')" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; 
+                    border: none; 
+                    padding: 12px 20px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-size: 14px;
+                    font-weight: 600;
+                    width: 100%;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                  " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)'">${t.viewDetails}</button>
+                </div>
+              </div>
+            `;
+          
+          marker.bindPopup(popupContent, {
+            closeButton: true,
+            autoClose: true,
+            closeOnClick: true,
+            autoOpen: false,
+            className: 'custom-popup',
+            maxWidth: 300,
+            minWidth: 250
+          });
+
+          newMarkers.push(marker);
+        }
+      });
+
+      // Добавляем маркеры мастеров-фрилансеров
+      geoMasters.filter(master => master.isFreelancer).forEach((master) => {
+        let lat: number | null = null;
+        let lng: number | null = null;
+        if (master.coordinates) {
+          lat = master.coordinates.lat;
+          lng = master.coordinates.lng;
+        } else if (master.city) {
+          const c = getCityCoordinates(master.city);
+          lat = c.lat;
+          lng = c.lng;
+        }
+        if (lat !== null && lng !== null) {
+          const L = (window as any).L;
+          
+          const masterIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
+              <div style="
+                background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+              ">
+                🏠
+              </div>
+            `,
+            iconSize: [35, 35],
+            iconAnchor: [17.5, 17.5],
+            popupAnchor: [0, -17.5]
+          });
+          
+          const marker = L.marker([lat, lng], { icon: masterIcon }).addTo(map);
+          
+          marker.on('click', function() {
+            // Обработка клика по маркеру мастера
+          });
+          
+          const masterAddressText = master.structuredAddress
+            ? require('../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
+            : (require('../utils/cities').translateAddressToCzech(master.address || '', master.city) || translateCity(master.city) || master.address || master.city || '');
+
+          const placeholderHtml = '<div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.9); border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; flex-direction: column;"><div style="font-size: 24px; margin-bottom: 2px;">👤</div><div style="font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;">' + (language === 'cs' ? 'MISTR' : 'MASTER') + '</div></div>';
+          
+          const photoHtml = master.photo && master.photo.trim() !== '' 
+            ? '<img src="' + master.photo + '" alt="' + master.name + '" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' + '<div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,255,255,0.9); border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; align-items: center; justify-content: center; flex-direction: column;"><div style="font-size: 24px; margin-bottom: 2px;">👤</div><div style="font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d;">' + (language === 'cs' ? 'MISTR' : 'MASTER') + '</div></div>'
+            : placeholderHtml;
+
+          const popupContent = `
+              <div style="padding: 0; max-width: 280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                <div style="position: relative; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0;">
+                  ${photoHtml}
+                  <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    ⭐ ${master.rating} (${master.reviews})
+                  </div>
+                </div>
+                <div style="padding: 16px; background: white; text-align: center;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: 600; line-height: 1.3;">${master.name}</h3>
+                  <div style="margin: 0 0 12px 0; color: #666; font-size: 14px;">
+                    <span style="margin-right: 6px;">📍</span>
+                    <span>${masterAddressText || ''}</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 13px;">
+                    <span style="margin-right: 6px;">⏱️</span>
+                    <span>${master.experience} ${language === 'cs' ? 'let zkušeností' : 'experience'}</span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; text-align: center;">
+                    <span style="display: inline-block; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                      ${t.freelancer}
+                    </span>
+                  </div>
+                  <div style="margin: 0 0 12px 0; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                    ${translateServices(master.services || [master.specialty], language).slice(0, 3).map(service => 
+                      `<span style="display: inline-block; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 4px 8px; border-radius: 16px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">${service}</span>`
+                    ).join('')}
+                    ${(master.services || [master.specialty]).length > 3 ? `<span style="display: inline-block; background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 16px; font-size: 11px;">+${(master.services || [master.specialty]).length - 3} ${language === 'cs' ? 'další' : 'more'}</span>` : ''}
+                  </div>
+                  <button onclick="window.selectMaster('${master.id}')" style="
+                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); 
+                    color: white; 
+                    border: none; 
+                    padding: 12px 20px; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-size: 14px;
+                    font-weight: 600;
+                    width: 100%;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+                  " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 107, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 107, 107, 0.3)'">${t.viewDetails}</button>
                 </div>
               </div>
             `;

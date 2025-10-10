@@ -2906,11 +2906,11 @@ body {
 /* Карта */
 .map-container {
   height: 700px;
-  width: 100%;
+  width: 95%;
   border-radius: 15px;
   overflow: visible;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  margin: 20px 0;
+  margin: 20px auto;
   position: relative;
   z-index: 1;
 }

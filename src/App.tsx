@@ -318,6 +318,11 @@ function AppContent() {
     navigate('/');
   };
 
+  const handleBackFromMap = () => {
+    setCurrentViewMode('map');
+    navigate('/');
+  };
+
   const handleAdminPanel = () => {
     setShowAdminPanel(true);
   };

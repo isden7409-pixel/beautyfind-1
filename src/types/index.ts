@@ -218,7 +218,7 @@ export interface SearchFilters {
 export type Language = 'cs' | 'en';
 
 // Типы для режимов просмотра
-export type ViewMode = 'salons' | 'masters';
+export type ViewMode = 'salons' | 'masters' | 'map';
 
 // Типы для премиум функций
 export interface PremiumFeature {
