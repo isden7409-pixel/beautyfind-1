@@ -100,6 +100,9 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .master-card-header {
@@ -175,7 +178,7 @@
 }
 
 .master-description-full {
-  margin: 15px 0;
+  margin: 0px 0 10px 0;
   padding: 15px;
   background: #f8f9fa;
   border-radius: 6px;
@@ -191,20 +194,20 @@
 .master-services-languages-vertical {
   display: flex;
   flex-direction: column;
-  gap: -2px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .services-section,
 .languages-section {
-  margin: 0;
+  margin: 10px 0 0 0;
   padding: 0;
   width: 100%;
 }
 
 .services-section h5,
 .languages-section h5 {
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
   padding: 0;
   color: #333;
   font-size: 14px;
@@ -284,6 +287,8 @@
   display: flex;
   gap: 10px;
   justify-content: center;
+  margin-top: auto;
+  padding-top: 15px;
 }
 
 .edit-button {
@@ -2325,11 +2330,19 @@ body {
 }
 
 /* Специальные стили для проблемных секций с большим нижним отступом */
-.services-section, .languages-section {
+.services-section {
   background: #f8f9fa;
-  padding: 20px 20px 10px 20px !important; /* уменьшаем нижний padding */
+  padding: 20px 20px 20px 20px !important; /* увеличенный нижний padding для services */
   border-radius: 10px;
-  margin: 20px 0;
+  margin: 0; /* убираем отступы */
+  text-align: left;
+}
+
+.languages-section {
+  background: #f8f9fa;
+  padding: 20px 20px 10px 20px !important; /* оригинальный нижний padding для languages */
+  border-radius: 10px;
+  margin: 0; /* убираем отступы */
   text-align: left;
 }
 
@@ -2460,6 +2473,12 @@ body {
   max-width: 100% !important;
   width: 100% !important;
   box-sizing: border-box !important;
+}
+
+.service-count-badge {
+  background: #667eea !important;
+  color: white !important;
+  font-weight: bold !important;
 }
 
 /* Страница деталей салона */

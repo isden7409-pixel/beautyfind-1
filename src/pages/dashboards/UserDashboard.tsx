@@ -29,7 +29,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'favorites' | 'bookings' | 'profile' | 'reviews'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'bookings' | 'profile' | 'reviews'>('profile');
   const [editingProfile, setEditingProfile] = useState(false);
 
   const loadFavorites = useCallback(async () => {
@@ -197,7 +197,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
   const translations = {
     cs: {
       title: 'Můj účet',
-      back: 'Zpět',
+      back: 'Hlavní stránka',
       favorites: 'Oblíbené',
       bookings: 'Rezervace',
       profile: 'Profil',
@@ -232,7 +232,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     },
     en: {
       title: 'My Account',
-      back: 'Back',
+      back: 'Main Page',
       favorites: 'Favorites',
       bookings: 'Bookings',
       profile: 'Profile',
@@ -312,10 +312,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
 
       <div className="dashboard-tabs">
         <button 
-          className={activeTab === 'favorites' ? 'active' : ''}
-          onClick={() => setActiveTab('favorites')}
+          className={activeTab === 'profile' ? 'active' : ''}
+          onClick={() => setActiveTab('profile')}
         >
-          {t.favorites}
+          {t.profile}
         </button>
         <button 
           className={activeTab === 'bookings' ? 'active' : ''}
@@ -324,10 +324,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
           {t.bookings}
         </button>
         <button 
-          className={activeTab === 'profile' ? 'active' : ''}
-          onClick={() => setActiveTab('profile')}
+          className={activeTab === 'favorites' ? 'active' : ''}
+          onClick={() => setActiveTab('favorites')}
         >
-          {t.profile}
+          {t.favorites}
         </button>
         <button 
           className={activeTab === 'reviews' ? 'active' : ''}

@@ -359,6 +359,7 @@ function AppContent() {
 
   const handleBackFromDashboard = () => {
     setShowDashboard(false);
+    setCurrentViewMode('salons'); // Устанавливаем режим списка салонов при возврате
   };
 
   const handleOpenAuth = () => {

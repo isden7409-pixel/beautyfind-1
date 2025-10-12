@@ -88,7 +88,7 @@ const SalonMasterCard: React.FC<SalonMasterCardProps> = ({
           <div className="languages-section">
             <h5>{language === 'cs' ? 'Jazyky' : 'Languages'}</h5>
             <div className="languages-list">
-              {translateLanguages(master.languages, language).map((lang, index) => (
+              {translateLanguages(master.languages, language).slice(0, 3).map((lang, index) => (
                 <span 
                   key={index}
                   style={{
@@ -114,6 +114,31 @@ const SalonMasterCard: React.FC<SalonMasterCardProps> = ({
                   {lang}
                 </span>
               ))}
+              {master.languages.length > 3 && (
+                <span 
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    height: '18px',
+                    width: 'auto',
+                    lineHeight: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '6px',
+                    margin: '2px',
+                    background: '#e3f2fd',
+                    color: '#1976d2',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                    textAlign: 'center',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  +{master.languages.length - 3}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -122,9 +147,14 @@ const SalonMasterCard: React.FC<SalonMasterCardProps> = ({
           <div className="services-section">
             <h5>{language === 'cs' ? 'Služby' : 'Services'}</h5>
             <div className="services-list-two-columns">
-              {translateServices(master.services, language).map((service, index) => (
+              {translateServices(master.services, language).slice(0, 3).map((service, index) => (
                 <span key={index} className="service-badge">{service}</span>
               ))}
+              {master.services.length > 3 && (
+                <span className="service-badge service-count-badge">
+                  +{master.services.length - 3}
+                </span>
+              )}
             </div>
           </div>
         )}

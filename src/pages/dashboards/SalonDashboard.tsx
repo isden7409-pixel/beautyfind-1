@@ -385,7 +385,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
   const translations = {
     cs: {
       title: 'Kabinet salonu',
-      back: 'Zpět',
+      back: 'Hlavní stránka',
       overview: 'Přehled',
       masters: 'Mistři',
       bookings: 'Rezervace',
@@ -422,7 +422,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     },
     en: {
       title: 'Salon Dashboard',
-      back: 'Back',
+      back: 'Main Page',
       overview: 'Overview',
       masters: 'Masters',
       bookings: 'Bookings',

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { getRequiredMessage } from '../utils/form';
 import { useAuth } from './auth/AuthProvider';
-import FileUpload from './FileUpload';
 
 interface ClientRegistrationFormProps {
   language: Language;
@@ -24,12 +23,10 @@ const ClientRegistrationForm: React.FC<ClientRegistrationFormProps> = ({
     phone: '',
     password: '',
     confirmPassword: '',
-    photo: null as File | null,
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [photoFile, setPhotoFile] = useState<FileList | null>(null);
 
   const t = translations[language];
 
@@ -41,20 +38,6 @@ const ClientRegistrationForm: React.FC<ClientRegistrationFormProps> = ({
     }));
   };
 
-  const handlePhotoChange = (files: FileList | null) => {
-    setPhotoFile(files);
-    if (files && files[0]) {
-      setFormData(prev => ({
-        ...prev,
-        photo: files[0]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        photo: null
-      }));
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,23 +167,6 @@ const ClientRegistrationForm: React.FC<ClientRegistrationFormProps> = ({
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="photo">{language === 'cs' ? 'Fotografie' : 'Photo'}</label>
-          <FileUpload
-            id="photo"
-            multiple={false}
-            accept="image/*"
-            onChange={handlePhotoChange}
-            selectedFiles={photoFile}
-            selectButtonText={language === 'cs' ? 'Vybrat fotografii' : 'Select photo'}
-            noFileText={language === 'cs' ? 'Žádná fotografie nebyla vybrána' : 'No photo selected'}
-            filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
-            fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
-            className="form-file"
-            required={false}
-          />
-          <p className="form-help">{language === 'cs' ? 'Fotografie je volitelná' : 'Photo is optional'}</p>
-        </div>
 
         {passwordError && <div className="form-error" role="alert">{passwordError}</div>}
 

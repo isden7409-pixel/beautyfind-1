@@ -281,7 +281,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
   const translations = {
     cs: {
       title: 'Kabinet mistra',
-      back: 'Zpět',
+      back: 'Hlavní stránka',
       overview: 'Přehled',
       bookings: 'Rezervace',
       schedule: 'Rozvrh',
@@ -330,7 +330,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     },
     en: {
       title: 'Master Dashboard',
-      back: 'Back',
+      back: 'Main Page',
       overview: 'Overview',
       bookings: 'Bookings',
       schedule: 'Schedule',
