@@ -5,6 +5,8 @@ import { translateServices, translateLanguages } from '../utils/serviceTranslati
 import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
+import { uploadMultipleFiles } from '../firebase/upload';
+import { useAuth } from './auth/AuthProvider';
 
 interface SalonProfileEditFormProps {
   salon: Salon;
@@ -21,6 +23,7 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  const { userProfile } = useAuth();
   const [formData, setFormData] = useState({
     name: salon.name || '',
     email: salon.email || '',
@@ -39,6 +42,7 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
     byAppointment: salon.byAppointment || false,
     paymentMethods: salon.paymentMethods || [],
     languages: salon.languages || [],
+    priceList: salon.priceList || [],
     // Социальные сети
     whatsapp: salon.whatsapp || '',
     telegram: salon.telegram || '',
@@ -103,6 +107,7 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
       byAppointment: salon.byAppointment || false,
       paymentMethods: salon.paymentMethods || [],
       languages: salon.languages || [],
+      priceList: salon.priceList || [],
       // Социальные сети
       whatsapp: salon.whatsapp || '',
       telegram: salon.telegram || '',
@@ -158,26 +163,30 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
     }));
   };
 
-  const handlePhotosChange = (files: FileList | null) => {
+  const handlePhotosChange = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    setFormData(prev => {
-      const existing = prev.photos || [];
-      const remainingSlots = Math.max(0, 10 - existing.length);
+    const existing = formData.photos || [];
+    const remainingSlots = Math.max(0, 10 - existing.length);
 
-      // Convert new FileList to blob URLs, but respect remainingSlots
-      const newUrls: string[] = [];
-      for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
-        const file = files[i];
-        const url = URL.createObjectURL(file);
-        newUrls.push(url);
-      }
+    if (remainingSlots <= 0) return;
 
-      // If no slots left, keep existing as-is
-      const next = remainingSlots > 0 ? [...existing, ...newUrls] : existing;
-
-      return { ...prev, photos: next };
-    });
+    try {
+      // Получаем только файлы, которые помещаются в лимит
+      const filesToUpload = Array.from(files).slice(0, remainingSlots);
+      
+      // Загружаем файлы в Firebase Storage
+      const newUrls = await uploadMultipleFiles(filesToUpload, `salons/photos/${userProfile?.uid || salon.id}`);
+      
+      // Обновляем formData с новыми URLs
+      setFormData(prev => ({
+        ...prev,
+        photos: [...existing, ...newUrls]
+      }));
+    } catch (error) {
+      console.error('Error uploading salon photos:', error);
+      alert(language === 'cs' ? 'Chyba při nahrávání fotek' : 'Error uploading photos');
+    }
   };
 
   const validateForm = () => {
@@ -506,7 +515,7 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>{translations.photos}</h3>
+        <h3>{language === 'cs' ? 'Fotografie salonu' : 'Salon Photos'}</h3>
         
         <FileUpload
           id="salon-photos"
@@ -530,6 +539,46 @@ const SalonProfileEditForm: React.FC<SalonProfileEditFormProps> = ({
           fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
         />
         <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašeho salonu (max 10)' : 'Upload photos of your salon (max 10)'}</p>
+      </div>
+
+      <div className="form-section">
+        <h3>{language === 'cs' ? 'Ceník' : 'Price List'}</h3>
+        
+        <FileUpload
+          id="salon-price-list"
+          multiple={true}
+          accept="image/*"
+          onChange={async (files) => {
+            if (!files || files.length === 0) return;
+            
+            const existing = formData.priceList || [];
+            const remainingSlots = Math.max(0, 3 - existing.length);
+            
+            if (remainingSlots <= 0) return;
+            
+            try {
+              const filesToUpload = Array.from(files).slice(0, remainingSlots);
+              const newUrls = await uploadMultipleFiles(filesToUpload, `salons/price-list/${userProfile?.uid || salon.id}`);
+              
+              setFormData(prev => ({
+                ...prev,
+                priceList: [...existing, ...newUrls]
+              }));
+            } catch (error) {
+              console.error('Error uploading price list:', error);
+              alert(language === 'cs' ? 'Chyba při nahrávání ceníku' : 'Error uploading price list');
+            }
+          }}
+          selectedFiles={null}
+          previewUrls={formData.priceList}
+          onRemoveUrl={(url) => setFormData(prev => ({ ...prev, priceList: (prev.priceList || []).filter(p => p !== url) }))}
+          maxFiles={3}
+          selectButtonText={language === 'cs' ? 'Vybrat fotografie' : 'Select photos'}
+          noFileText={language === 'cs' ? 'Žádné fotografie nebyly vybrány' : 'No photos selected'}
+          filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
+          fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
+        />
+        <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašeho ceníku (max 3)' : 'Upload photos of your price list (max 3)'}</p>
       </div>
 
       <div className="form-actions">

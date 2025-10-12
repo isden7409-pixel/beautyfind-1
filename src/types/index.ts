@@ -46,6 +46,8 @@ export interface Salon {
   telegram?: string;
   instagram?: string;
   facebook?: string;
+  // Ценник
+  priceList?: string[];
 }
 
 // Typy pro mistry
@@ -89,6 +91,8 @@ export interface Master {
   telegram?: string;
   instagram?: string;
   facebook?: string;
+  // Ценник
+  priceList?: string[];
 }
 
 // Типы для отзывов
@@ -188,7 +192,7 @@ export interface SalonRegistration {
   openHours: string;
   workingHours?: WorkingHours[];
   services: string[];
-  photos: File[];
+  photos: File[] | string[];
   byAppointment?: boolean;
   paymentMethods?: string[];
   languages?: string[];
@@ -197,6 +201,8 @@ export interface SalonRegistration {
   telegram?: string;
   instagram?: string;
   facebook?: string;
+  // Ценник
+  priceList?: File[] | string[];
 }
 
 // Typy pro mistra (registrace)
@@ -209,7 +215,7 @@ export interface MasterRegistration {
   description: string;
   services: string[];
   languages: string[];
-  photo: File;
+  photo: File | string;
   isFreelancer: boolean;
   salonId?: string;
   city?: string;
@@ -223,6 +229,8 @@ export interface MasterRegistration {
   telegram?: string;
   instagram?: string;
   facebook?: string;
+  // Ценник
+  priceList?: File[] | string[];
 }
 
 // Типы для поиска и фильтров

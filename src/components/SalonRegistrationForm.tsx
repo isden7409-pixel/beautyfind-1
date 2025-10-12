@@ -8,6 +8,7 @@ import StructuredAddressInput from './StructuredAddressInput';
 import { salonService } from '../firebase/services';
 import { useAuth } from './auth/AuthProvider';
 import { auth } from '../firebase/config';
+import { uploadMultipleFiles } from '../firebase/upload';
 
 // Список всех чешских городов
 const CZECH_CITIES = [
@@ -80,7 +81,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { currentUser, signUp, signIn, logout } = useAuth();
+  const { currentUser, signUp, signIn, logout, userProfile } = useAuth();
   const [formData, setFormData] = useState<SalonRegistration>({
     name: '',
     city: '',
@@ -95,13 +96,15 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     byAppointment: false,
     services: [],
     photos: [],
-    paymentMethods: []
+    paymentMethods: [],
+    priceList: []
   });
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<FileList | null>(null);
+  const [priceListFiles, setPriceListFiles] = useState<FileList | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -166,7 +169,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     setFormData(prev => ({ ...prev, languages: updated }));
   };
 
-  const handlePhotoChange = (files: FileList | null) => {
+  const handlePhotoChange = async (files: FileList | null) => {
     // Добавляем новые файлы к уже выбранным, не заменяя их (до 10)
     const dataTransfer = new DataTransfer();
     const existing = photoFiles ? Array.from(photoFiles) : [];
@@ -181,20 +184,103 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
     all.forEach(f => limited.items.add(f));
 
     setPhotoFiles(limited.files);
-    setFormData(prev => ({
-      ...prev,
-      photos: Array.from(limited.files)
-    }));
+    
+    try {
+      const fileArray = Array.from(limited.files);
+      const urls = await uploadMultipleFiles(fileArray, `salons/photos/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({
+        ...prev,
+        photos: urls
+      }));
+    } catch (error) {
+      console.error('Error uploading salon photos:', error);
+      setFormData(prev => ({
+        ...prev,
+        photos: Array.from(limited.files)
+      }));
+    }
   };
 
-  const handleRemoveSelectedFile = (index: number) => {
+  const handleRemoveSelectedFile = async (index: number) => {
     if (!photoFiles) return;
     const dt = new DataTransfer();
     Array.from(photoFiles).forEach((f, i) => {
       if (i !== index) dt.items.add(f);
     });
+    
     setPhotoFiles(dt.files);
-    setFormData(prev => ({ ...prev, photos: Array.from(dt.files) }));
+    
+    if (dt.files.length === 0) {
+      setFormData(prev => ({ ...prev, photos: [] }));
+      return;
+    }
+    
+    try {
+      const fileArray = Array.from(dt.files);
+      const urls = await uploadMultipleFiles(fileArray, `salons/photos/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({ ...prev, photos: urls }));
+    } catch (error) {
+      console.error('Error re-uploading salon photos:', error);
+      setFormData(prev => ({ ...prev, photos: Array.from(dt.files) }));
+    }
+  };
+
+  const handlePriceListChange = async (files: FileList | null) => {
+    // Добавляем новые файлы к уже выбранным, не заменяя их (до 3)
+    const dataTransfer = new DataTransfer();
+    const existing = priceListFiles ? Array.from(priceListFiles) : [];
+    existing.forEach(f => dataTransfer.items.add(f));
+
+    if (files) {
+      Array.from(files).forEach(f => dataTransfer.items.add(f));
+    }
+    // Ограничиваем 3
+    const limited = new DataTransfer();
+    const all = Array.from(dataTransfer.files).slice(0, 3);
+    all.forEach(f => limited.items.add(f));
+
+    setPriceListFiles(limited.files);
+    
+    try {
+      const fileArray = Array.from(limited.files);
+      const urls = await uploadMultipleFiles(fileArray, `salons/price-list/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({
+        ...prev,
+        priceList: urls
+      }));
+    } catch (error) {
+      console.error('Error uploading price list files:', error);
+      // В случае ошибки сохраняем файлы как есть
+      setFormData(prev => ({
+        ...prev,
+        priceList: Array.from(limited.files)
+      }));
+    }
+  };
+
+  const handleRemovePriceListFile = async (index: number) => {
+    if (!priceListFiles) return;
+    
+    const dt = new DataTransfer();
+    Array.from(priceListFiles).forEach((f, i) => {
+      if (i !== index) dt.items.add(f);
+    });
+    
+    setPriceListFiles(dt.files);
+    
+    if (dt.files.length === 0) {
+      setFormData(prev => ({ ...prev, priceList: [] }));
+      return;
+    }
+    
+    try {
+      const fileArray = Array.from(dt.files);
+      const urls = await uploadMultipleFiles(fileArray, `salons/price-list/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({ ...prev, priceList: urls }));
+    } catch (error) {
+      console.error('Error re-uploading price list files:', error);
+      setFormData(prev => ({ ...prev, priceList: Array.from(dt.files) }));
+    }
   };
 
   const [submitting, setSubmitting] = useState(false);
@@ -326,11 +412,13 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         openHours: '',
         workingHours: undefined,
         services: [],
-        photos: []
+        photos: [],
+        priceList: []
       });
       setSelectedServices([]);
       setSelectedPaymentMethods([]);
       setPhotoFiles(null);
+      setPriceListFiles(null);
       setPassword('');
       setConfirmPassword('');
     } catch (error) {
@@ -659,7 +747,7 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
         </div>
 
         <div className="form-group">
-          <label htmlFor="photos">{t.photos}</label>
+          <label htmlFor="photos">{language === 'cs' ? 'Fotografie salonu' : 'Salon Photos'}</label>
           <FileUpload
             id="photos"
             multiple={true}
@@ -685,6 +773,25 @@ const SalonRegistrationForm: React.FC<SalonRegistrationFormProps> = ({
             className="form-file"
           />
           <p className="form-help">{t.photosHelp}</p>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="priceList">{language === 'cs' ? 'Ceník' : 'Price List'}</label>
+          <FileUpload
+            id="priceList"
+            multiple={true}
+            accept="image/*"
+            onChange={handlePriceListChange}
+            selectedFiles={priceListFiles}
+            onRemoveFile={handleRemovePriceListFile}
+            maxFiles={3}
+            selectButtonText={t.selectFiles}
+            noFileText={t.noFileSelected}
+            filesSelectedText={t.filesSelected}
+            fileSelectedText={t.fileSelected}
+            className="form-file"
+          />
+          <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašeho ceníku (max 3)' : 'Upload photos of your price list (max 3)'}</p>
         </div>
 
         <div className="form-buttons">

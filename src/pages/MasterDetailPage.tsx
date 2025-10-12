@@ -51,6 +51,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [map, setMap] = useState<any>(null);
+  const [selectedPriceListImage, setSelectedPriceListImage] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -456,6 +457,28 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           </div>
         )}
 
+        {/* Секция ценника */}
+        {/* Для мастеров в салонах показываем ценник салона, для фрилансеров - их ценник */}
+        {((!master.isFreelancer && masterSalon && masterSalon.priceList && masterSalon.priceList.length > 0) || 
+          (master.isFreelancer && master.priceList && master.priceList.length > 0)) && (
+          <div className="price-list-section">
+            <h3>{language === 'cs' ? 'Ceník' : 'Price List'}</h3>
+            <div className="price-list-photos">
+              {(!master.isFreelancer && masterSalon ? masterSalon.priceList : master.priceList)?.map((photo, index) => (
+                <div key={index} className="price-list-photo">
+                  <img 
+                    src={photo} 
+                    alt={`${language === 'cs' ? 'Ceník' : 'Price List'} ${index + 1}`}
+                    className="price-list-image"
+                    onClick={() => setSelectedPriceListImage(photo)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="master-book-button-container">
           <button 
             onClick={handleBookingClick} 
@@ -489,6 +512,27 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
           onClose={handleBookingClose}
           onBookingSuccess={handleBookingSuccess}
         />
+      )}
+
+      {/* Модальное окно для увеличенного изображения ценника */}
+      {selectedPriceListImage && (
+        <div className="price-list-modal-overlay" onClick={() => setSelectedPriceListImage(null)}>
+          <div className="price-list-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="price-list-modal-image-container">
+              <img 
+                src={selectedPriceListImage} 
+                alt={language === 'cs' ? 'Ceník' : 'Price List'}
+                className="price-list-modal-image"
+              />
+              <button 
+                className="price-list-modal-close"
+                onClick={() => setSelectedPriceListImage(null)}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

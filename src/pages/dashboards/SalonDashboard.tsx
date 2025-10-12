@@ -748,6 +748,9 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
                 {/* Pouze na objednání */}
                 <p><strong>{language === 'cs' ? 'Pouze na objednání' : 'By appointment only'}:</strong> {salon.byAppointment ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
 
+                {/* Ceník */}
+                <p><strong>{language === 'cs' ? 'Ceník' : 'Price List'}:</strong> {salon.priceList && salon.priceList.length > 0 ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
+
                 {/* Služby */}
                 {salon.services && salon.services.length > 0 && (
                   <p><strong>{language === 'cs' ? 'Služby' : 'Services'}:</strong> {translateServices(salon.services, language).join(', ')}</p>

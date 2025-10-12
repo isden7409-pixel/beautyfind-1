@@ -95,9 +95,17 @@ export const salonService = {
 
   // Create salon from registration form (handles photo upload)
   async createFromRegistration(data: SalonRegistration, ownerId?: string): Promise<string> {
-    const photoUrls = data.photos && data.photos.length
-      ? await uploadMultipleFiles(data.photos, 'salon_photos')
-      : [];
+    // Проверяем, являются ли photos уже URL-адресами или это файлы для загрузки
+    let photoUrls: string[] = [];
+    if (data.photos && data.photos.length) {
+      if (typeof data.photos[0] === 'string') {
+        // Уже загружены, это URL-адреса
+        photoUrls = data.photos as string[];
+      } else {
+        // Это файлы, нужно загрузить
+        photoUrls = await uploadMultipleFiles(data.photos as File[], 'salon_photos');
+      }
+    }
 
     // Геокодируем адрес (приоритет структурированному адресу)
     let coordinates = undefined;
@@ -105,6 +113,18 @@ export const salonService = {
       coordinates = await geocodeStructuredAddress(data.structuredAddress);
     } else if (data.address && data.city) {
       coordinates = await geocodeAddress(`${data.address}, ${data.city}`);
+    }
+
+    // Обрабатываем priceList
+    let priceListUrls: string[] = [];
+    if (data.priceList && data.priceList.length) {
+      if (typeof data.priceList[0] === 'string') {
+        // Уже загружены, это URL-адреса
+        priceListUrls = data.priceList as string[];
+      } else {
+        // Это файлы, нужно загрузить
+        priceListUrls = await uploadMultipleFiles(data.priceList as File[], 'salon_price_list');
+      }
     }
 
     // Нормализуем workingHours: Firestore не принимает undefined
@@ -140,6 +160,7 @@ export const salonService = {
       photos: photoUrls,
       masters: [],
       paymentMethods: data.paymentMethods,
+      priceList: priceListUrls,
       // Социальные сети
       whatsapp: data.whatsapp,
       telegram: data.telegram,
@@ -279,10 +300,16 @@ export const masterService = {
   async createFromRegistration(data: MasterRegistration): Promise<string> {
     console.log('Creating master from registration, paymentMethods:', data.paymentMethods);
     let photoUrl = '';
-    // MasterRegistration.photo в форме мы храним как File (один файл)
-    if (data.photo && (data.photo as File).size !== undefined) {
-      const urls = await uploadMultipleFiles([data.photo], 'master_photos');
-      photoUrl = urls[0] || '';
+    // Проверяем, является ли photo уже URL-адресом или это файл для загрузки
+    if (data.photo) {
+      if (typeof data.photo === 'string') {
+        // Уже загружен, это URL-адрес
+        photoUrl = data.photo;
+      } else if ((data.photo as File).size !== undefined) {
+        // Это файл, нужно загрузить
+        const urls = await uploadMultipleFiles([data.photo as File], 'master_photos');
+        photoUrl = urls[0] || '';
+      }
     }
 
     // Подготовим координаты и адрес
@@ -315,6 +342,18 @@ export const masterService = {
       }
     }
 
+    // Обрабатываем priceList
+    let priceListUrls: string[] = [];
+    if (data.priceList && data.priceList.length) {
+      if (typeof data.priceList[0] === 'string') {
+        // Уже загружены, это URL-адреса
+        priceListUrls = data.priceList as string[];
+      } else {
+        // Это файлы, нужно загрузить
+        priceListUrls = await uploadMultipleFiles(data.priceList as File[], 'master_price_list');
+      }
+    }
+
     // Нормализуем workingHours: Firestore не принимает undefined
     const normalizedMasterWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
 
@@ -335,6 +374,7 @@ export const masterService = {
       services: data.services,
       languages: data.languages,
       paymentMethods: data.paymentMethods,
+      priceList: priceListUrls,
       // Социальные сети
       whatsapp: data.whatsapp,
       telegram: data.telegram,

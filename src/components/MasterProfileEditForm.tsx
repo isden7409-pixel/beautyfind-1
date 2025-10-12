@@ -5,6 +5,8 @@ import FileUpload from './FileUpload';
 import WorkingHoursInput from './WorkingHoursInput';
 import StructuredAddressInput from './StructuredAddressInput';
 import { getRequiredMessage, getValidationMessages } from '../utils/form';
+import { uploadSingleFile, uploadMultipleFiles } from '../firebase/upload';
+import { useAuth } from './auth/AuthProvider';
 
 interface MasterProfileEditFormProps {
   master: Master;
@@ -21,6 +23,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  const { userProfile } = useAuth();
   const [formData, setFormData] = useState({
     name: master.name || '',
     email: master.email || '',
@@ -45,6 +48,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
     salonName: master.salonName || '',
     byAppointment: master.byAppointment || false,
     paymentMethods: master.paymentMethods || [],
+    priceList: master.priceList || [],
     // Социальные сети
     whatsapp: master.whatsapp || '',
     telegram: master.telegram || '',
@@ -103,6 +107,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       salonName: master.salonName || '',
       byAppointment: master.byAppointment || false,
       paymentMethods: master.paymentMethods || [],
+      priceList: master.priceList || [],
       // Социальные сети
       whatsapp: master.whatsapp || '',
       telegram: master.telegram || '',
@@ -165,14 +170,22 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
     }));
   };
 
-  const handlePhotoChange = (files: FileList | null) => {
+  const handlePhotoChange = async (files: FileList | null) => {
     if (files && files.length > 0) {
       const file = files[0];
-      const url = URL.createObjectURL(file);
-      setFormData(prev => ({
-        ...prev,
-        photo: url
-      }));
+      
+      try {
+        // Загружаем файл в Firebase Storage
+        const url = await uploadSingleFile(file, `masters/photo/${userProfile?.uid || master.id}`);
+        
+        setFormData(prev => ({
+          ...prev,
+          photo: url
+        }));
+      } catch (error) {
+        console.error('Error uploading master photo:', error);
+        alert(language === 'cs' ? 'Chyba při nahrávání fotky' : 'Error uploading photo');
+      }
     }
   };
 
@@ -557,7 +570,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>{translations.photo}</h3>
+        <h3>{language === 'cs' ? 'Fotografie mistra' : 'Master Photo'}</h3>
         
         <FileUpload
           id="master-photo"
@@ -573,6 +586,46 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
           fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
         />
         <p className="form-help">{language === 'cs' ? 'Nahrajte svou profesionální fotografii (max 1)' : 'Upload your professional photo (max 1)'}</p>
+      </div>
+
+      <div className="form-section">
+        <h3>{language === 'cs' ? 'Ceník' : 'Price List'}</h3>
+        
+        <FileUpload
+          id="master-price-list"
+          multiple={true}
+          accept="image/*"
+          onChange={async (files) => {
+            if (!files || files.length === 0) return;
+            
+            const existing = formData.priceList || [];
+            const remainingSlots = Math.max(0, 3 - existing.length);
+            
+            if (remainingSlots <= 0) return;
+            
+            try {
+              const filesToUpload = Array.from(files).slice(0, remainingSlots);
+              const newUrls = await uploadMultipleFiles(filesToUpload, `masters/price-list/${userProfile?.uid || master.id}`);
+              
+              setFormData(prev => ({
+                ...prev,
+                priceList: [...existing, ...newUrls]
+              }));
+            } catch (error) {
+              console.error('Error uploading price list:', error);
+              alert(language === 'cs' ? 'Chyba při nahrávání ceníku' : 'Error uploading price list');
+            }
+          }}
+          selectedFiles={null}
+          previewUrls={formData.priceList}
+          onRemoveUrl={(url) => setFormData(prev => ({ ...prev, priceList: (prev.priceList || []).filter(p => p !== url) }))}
+          maxFiles={3}
+          selectButtonText={language === 'cs' ? 'Vybrat fotografie' : 'Select photos'}
+          noFileText={language === 'cs' ? 'Žádné fotografie nebyly vybrány' : 'No photos selected'}
+          filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
+          fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
+        />
+        <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašeho ceníku (max 3)' : 'Upload photos of your price list (max 3)'}</p>
       </div>
 
       <div className="form-actions">

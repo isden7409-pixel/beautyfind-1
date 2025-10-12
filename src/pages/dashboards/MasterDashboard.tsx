@@ -609,6 +609,9 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
                 <p><strong>{language === 'cs' ? 'Typ práce' : 'Work Type'}:</strong> {master.isFreelancer ? (language === 'cs' ? 'Samostatný pracovník' : 'Freelancer') : (language === 'cs' ? 'V salonu' : 'In Salon')}</p>
                 {master.salonName && <p><strong>{language === 'cs' ? 'Salon' : 'Salon'}:</strong> {master.salonName}</p>}
                 <p><strong>{language === 'cs' ? 'Pouze na objednání' : 'By appointment only'}:</strong> {master.byAppointment ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
+                
+                {/* Ceník */}
+                <p><strong>{language === 'cs' ? 'Ceník' : 'Price List'}:</strong> {master.priceList && master.priceList.length > 0 ? (language === 'cs' ? 'Ano' : 'Yes') : (language === 'cs' ? 'Ne' : 'No')}</p>
               </div>
             )}
 

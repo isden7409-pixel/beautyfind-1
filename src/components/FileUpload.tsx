@@ -21,6 +21,8 @@ interface FileUploadProps {
   // DnD reorder support
   onReorderUrl?: (fromIndex: number, toIndex: number) => void;
   onReorderFile?: (fromIndex: number, toIndex: number) => void;
+  // Подпись под кнопкой загрузки
+  uploadHint?: string;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -40,7 +42,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onRemoveFile,
   maxFiles,
   onReorderUrl,
-  onReorderFile
+  onReorderFile,
+  uploadHint
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragItemRef = useRef<{ type: 'url' | 'file'; index: number } | null>(null);
@@ -96,6 +99,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
           {getFileStatusText()}
         </span>
       </div>
+      
+      {uploadHint && (
+        <div className="file-upload-hint">
+          {uploadHint}
+        </div>
+      )}
 
       {(previewUrls?.length || (selectedFiles && selectedFiles.length)) ? (
         <div className="file-preview-grid">
