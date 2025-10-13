@@ -3,7 +3,7 @@ import { useAuth } from '../../components/auth/AuthProvider';
 import { Salon, Master, Booking, DashboardStats } from '../../types';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { reviewService, userService } from '../../firebase/services';
+import { reviewService, userService, salonService } from '../../firebase/services';
 import { uploadSingleFile } from '../../firebase/upload';
 import PageHeader from '../../components/PageHeader';
 import SalonProfileEditForm from '../../components/SalonProfileEditForm';
@@ -16,9 +16,11 @@ interface SalonDashboardProps {
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
   onNavigate?: (path: string) => void;
+  onOpenRegistration?: () => void;
+  onOpenPremium?: () => void;
 }
 
-const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
+const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate, onOpenRegistration, onOpenPremium }) => {
   const { userProfile } = useAuth();
   const [salon, setSalon] = useState<Salon | null>(null);
   const [masters, setMasters] = useState<Master[]>([]);
@@ -333,6 +335,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           isFreelancer: false,
           rating: 0,
           reviews: 0,
+          ownerId: userProfile?.uid, // Добавляем ownerId для связи с пользователем
           createdAt: new Date(),
           updatedAt: new Date()
         });
@@ -489,6 +492,20 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
         showBackButton={true}
         onBack={onBack}
         backText={t.back || 'Back'}
+        leftButtons={[
+          { label: language === 'cs' ? 'Registrace' : 'Registration', onClick: () => onOpenRegistration && onOpenRegistration() },
+          { label: language === 'cs' ? 'Prémiové funkce' : 'Premium Features', onClick: () => onOpenPremium && onOpenPremium() }
+        ]}
+        userNameClickable={true}
+        onNavigateToDashboard={async () => {
+          if (onNavigate && userProfile) {
+            // Получаем салон по ownerId (userProfile.uid)
+            const salon = await salonService.getByOwnerId(userProfile.uid);
+            if (salon) {
+              onNavigate(`/salon/${salon.id}`);
+            }
+          }
+        }}
       />
 
       <div className="dashboard-stats">

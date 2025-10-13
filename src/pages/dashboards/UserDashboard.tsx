@@ -12,9 +12,11 @@ interface UserDashboardProps {
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
   onNavigate?: (path: string) => void;
+  onOpenRegistration?: () => void;
+  onOpenPremium?: () => void;
 }
 
-const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
+const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate, onOpenRegistration, onOpenPremium }) => {
   const { userProfile } = useAuth();
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
@@ -289,6 +291,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
         showBackButton={true}
         onBack={onBack}
         backText={t.back || 'Back'}
+        leftButtons={[
+          { label: language === 'cs' ? 'Registrace' : 'Registration', onClick: () => onOpenRegistration && onOpenRegistration() },
+          { label: language === 'cs' ? 'Prémiové funkce' : 'Premium Features', onClick: () => onOpenPremium && onOpenPremium() }
+        ]}
+        userNameClickable={false}
       />
 
       <div className="dashboard-stats">

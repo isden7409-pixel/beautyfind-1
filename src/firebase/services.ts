@@ -219,6 +219,22 @@ export const masterService = {
     return null;
   },
 
+  // Get master by owner ID
+  async getByOwnerId(ownerId: string): Promise<Master | null> {
+    const q = query(
+      collection(db, MASTERS_COLLECTION),
+      where('ownerId', '==', ownerId)
+    );
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      return {
+        id: querySnapshot.docs[0].id,
+        ...querySnapshot.docs[0].data()
+      } as Master;
+    }
+    return null;
+  },
+
   // Get masters by city
   async getByCity(city: string): Promise<Master[]> {
     const q = query(
@@ -297,7 +313,7 @@ export const masterService = {
   },
 
   // Create master from registration form (handles photo upload)
-  async createFromRegistration(data: MasterRegistration): Promise<string> {
+  async createFromRegistration(data: MasterRegistration, ownerId?: string): Promise<string> {
     console.log('Creating master from registration, paymentMethods:', data.paymentMethods);
     let photoUrl = '';
     // Проверяем, является ли photo уже URL-адресом или это файл для загрузки
@@ -400,6 +416,11 @@ export const masterService = {
         }
       } catch (error) {
       }
+    }
+
+    // Добавляем ownerId если передан
+    if (ownerId) {
+      masterBase.ownerId = ownerId;
     }
 
     const master = masterBase as Omit<Master, 'id'>;

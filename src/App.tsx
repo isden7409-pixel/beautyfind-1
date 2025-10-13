@@ -145,7 +145,7 @@ const translations = {
   },
   en: {
     title: "BeautyFind.cz",
-    subtitle: "Find your perfect beauty salon in Czech Republic",
+    subtitle: "The Czech Beauty Guide",
     searchPlaceholder: "Search for salons, services, or cities...",
     allCities: "All Cities",
     allServices: "All Services",
@@ -276,6 +276,9 @@ function AppContent() {
   const [showPremiumFeatures, setShowPremiumFeatures] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [prevPathForPremium, setPrevPathForPremium] = useState<string | null>(null);
+  const [prevPathForAdmin, setPrevPathForAdmin] = useState<string | null>(null);
+  const [premiumFromAdmin, setPremiumFromAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -306,16 +309,24 @@ function AppContent() {
   };
 
   const handleBack = () => {
-    setSelectedSalon(null);
-    setSelectedMaster(null);
-    setCurrentViewMode('salons');
-    navigate('/');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      setSelectedSalon(null);
+      setSelectedMaster(null);
+      setCurrentViewMode('salons');
+      navigate('/');
+    }
   };
 
   const handleBackFromMaster = () => {
-    setSelectedMaster(null);
-    setCurrentViewMode('masters');
-    navigate('/');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      setSelectedMaster(null);
+      setCurrentViewMode('masters');
+      navigate('/');
+    }
   };
 
   const handleBackFromMap = () => {
@@ -324,36 +335,81 @@ function AppContent() {
   };
 
   const handleAdminPanel = () => {
+    setPrevPathForAdmin(location.pathname);
     setShowAdminPanel(true);
   };
 
   const goToRegistration = () => {
+    setPrevPathForAdmin(location.pathname);
     setShowAdminPanel(true);
   };
 
   const handleBackFromAdmin = () => {
+    const target = prevPathForAdmin;
     setShowAdminPanel(false);
-    // После регистрации салона/мастера пользователь должен попасть в кабинет
-    setShowDashboard(true);
+    if (target) {
+      setPrevPathForAdmin(null);
+      navigate(target);
+    }
   };
 
   const handleGoToHome = () => {
     setShowAdminPanel(false);
     setShowDashboard(false);
     setShowAuthModal(false);
+    setShowPremiumFeatures(false);
+    setPrevPathForAdmin(null);
+    setPrevPathForPremium(null);
+    setPremiumFromAdmin(false);
+    navigate('/');
   };
 
 
   const handlePremiumFeatures = () => {
+    setPrevPathForPremium(location.pathname);
     setShowPremiumFeatures(true);
   };
 
   const handleBackFromPremium = () => {
+    if (premiumFromAdmin) {
+      setShowPremiumFeatures(false);
+      setShowAdminPanel(true);
+      setPremiumFromAdmin(false);
+      return;
+    }
+    const target = prevPathForPremium;
     setShowPremiumFeatures(false);
+    if (target) {
+      setPrevPathForPremium(null);
+      if (target !== location.pathname) navigate(target);
+    }
+  };
+
+  const handleBackFromAdminHeader = () => {
+    setShowAdminPanel(false);
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      handleGoToHome();
+    }
   };
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
+    setShowDashboard(true);
+  };
+
+  const handleAuthSuccessFromAdmin = () => {
+    setShowAuthModal(false);
+    setShowAdminPanel(false);
+    setPrevPathForAdmin(null);
+    setShowDashboard(true);
+  };
+
+  const handleAuthSuccessFromPremium = () => {
+    setShowAuthModal(false);
+    setShowPremiumFeatures(false);
+    setPrevPathForPremium(null);
     setShowDashboard(true);
   };
 
@@ -469,167 +525,194 @@ function AppContent() {
 
   if (showAdminPanel) {
     return (
-      <AdminPanel
-        language={currentLanguage}
-        onLanguageChange={setCurrentLanguage}
-        translations={{
-          cs: {
-            adminPanel: "Admin Panel",
-            back: "← Zpět",
-            backToHome: "← Zpět",
-            registerSalon: "Zaregistrovat salon",
-            registerMaster: "Registrovat mistra",
-            salonRegistrationInfo: "Registrace nového salonu",
-            masterRegistrationInfo: "Registrace nového mistra",
-            salonRegistrationDescription: "Zaregistrujte svůj salon a získejte více klientů",
-            masterRegistrationDescription: "Zaregistrujte se jako mistr a najděte nové klienty",
-            clientRegistrationDescription: "Zaregistrujte se jako klient a najděte nejlepší salony a mistry",
-            benefits: "Výhody",
-            benefit1: "Všechny salony a mistři na jednom místě",
-            benefit2: "Najděte mistra poblíž vás",
-            benefit3: "Rychlé rezervace",
-            benefit4: "Vyhledávání podle recenzí",
-            benefit5: "Snadné porovnání cen",
-            masterBenefit1: "Nové klienty a zákazníky",
-            masterBenefit2: "Profesionální prezentace",
-            masterBenefit3: "Snadné řízení rezervací",
-            masterBenefit4: "Marketing a reklama",
-            masterRequirement3: "Kvalifikace a certifikáty",
-            salonBenefit1: "Zvýšení viditelnosti salonu",
-            salonBenefit2: "Více klientů a zákazníků",
-            salonBenefit3: "Snadné řízení rezervací",
-            salonBenefit4: "Prezentace všech služeb a mistrů",
-            paymentMethods: "Způsoby platby",
-            paymentCash: "Platba v hotovosti",
-            paymentCard: "Platba kartou",
-            paymentQR: "QR kód",
-            paymentAccount: "Platba na účet",
-            paymentVoucher: "Dárkový poukaz",
-            paymentBenefit: "Benefitní karty",
-            selectPaymentMethods: "Způsoby platby *",
-            atLeastOnePayment: "Vyberte alespoň jeden způsob platby",
-            requirements: "Požadavky",
-            requirement1: "Licence na provozování",
-            requirement2: "Profesionální vybavení",
-            requirement3: "Kvalifikované zaměstnance",
-            requirement4: "Dodržování hygienických standardů",
-            startSalonRegistration: "Začít registraci salonu",
-            startMasterRegistration: "Začít registraci mistra",
-            salonName: "Název salonu",
-            city: "Město",
-            address: "Adresa",
-            phone: "Telefon",
-            email: "Email",
-            website: "Webové stránky",
-            openHours: "Otevírací doba",
-            openHoursPlaceholder: "Po-Pá: 9:00-20:00, So: 10:00-18:00",
-            description: "Popis",
-            descriptionPlaceholder: "Popište váš salon a služby...",
-            services: "Služby",
-            photos: "Fotografie",
-            photosHelp: "Nahrajte fotografie vašeho salonu (max 10)",
-            selectFiles: "Vybrat soubory",
-            noFileSelected: "Soubor není vybrán",
-            filesSelected: "souborů vybráno",
-            fileSelected: "soubor vybrán",
-            cancel: "Zrušit",
-            register: "Registrovat",
-            registrationSuccess: "Registrace byla úspěšná!",
-            masterName: "Jméno mistra",
-            specialty: "Specializace",
-            experience: "Zkušenosti",
-            freelancer: "Samostatný pracovník",
-            selectCity: "Vyberte město",
-            selectSalon: "Vyberte salon",
-            photo: "Fotografie",
-            photoHelp: "Nahrajte svou profesionální fotografii (max 1)"
-          },
-          en: {
-            adminPanel: "Admin Panel",
-            back: "← Back",
-            backToHome: "← Back",
-            registerSalon: "Register Salon",
-            registerMaster: "Register Master",
-            salonRegistrationInfo: "New Salon Registration",
-            masterRegistrationInfo: "New Master Registration",
-            salonRegistrationDescription: "Register your salon and get more clients",
-            masterRegistrationDescription: "Register as a master and find new clients",
-            clientRegistrationDescription: "Register as a client and find the best salons and masters",
-            benefits: "Benefits",
-            benefit1: "All salons and masters in one place",
-            benefit2: "Find a master near you",
-            benefit3: "Quick booking",
-            benefit4: "Search by reviews",
-            benefit5: "Easy price comparison",
-            masterBenefit1: "New clients and customers",
-            masterBenefit2: "Professional presentation",
-            masterBenefit3: "Easy booking management",
-            masterBenefit4: "Marketing and advertising",
-            masterRequirement3: "Qualifications and certificates",
-            salonBenefit1: "Increase salon visibility",
-            salonBenefit2: "More clients and customers",
-            salonBenefit3: "Easy booking management",
-            salonBenefit4: "Showcase all services and masters",
-            paymentMethods: "Payment methods",
-            paymentCash: "Cash payment",
-            paymentCard: "Card payment",
-            paymentQR: "QR code",
-            paymentAccount: "Bank transfer",
-            paymentVoucher: "Gift voucher",
-            paymentBenefit: "Benefit cards",
-            selectPaymentMethods: "Select payment methods *",
-            atLeastOnePayment: "Select at least one payment method",
-            requirements: "Requirements",
-            requirement1: "Business license",
-            requirement2: "Professional equipment",
-            requirement3: "Qualified staff",
-            requirement4: "Hygiene standards compliance",
-            startSalonRegistration: "Start Salon Registration",
-            startMasterRegistration: "Start Master Registration",
-            salonName: "Salon Name",
-            city: "City",
-            address: "Address",
-            phone: "Phone",
-            email: "Email",
-            website: "Website",
-            openHours: "Opening Hours",
-            openHoursPlaceholder: "Mon-Fri: 9:00-20:00, Sat: 10:00-18:00",
-            description: "Description",
-            descriptionPlaceholder: "Describe your salon and services...",
-            services: "Services",
-            photos: "Photos",
-            photosHelp: "Upload photos of your salon (max 10)",
-            selectFiles: "Select Files",
-            noFileSelected: "No file selected",
-            filesSelected: "files selected",
-            fileSelected: "file selected",
-            cancel: "Cancel",
-            register: "Register",
-            registrationSuccess: "Registration successful!",
-            masterName: "Master Name",
-            specialty: "Specialty",
-            experience: "Experience",
-            freelancer: "Freelancer",
-            selectCity: "Select City",
-            selectSalon: "Select Salon",
-            photo: "Photo",
-            photoHelp: "Upload your professional photo (max 1)"
-          }
-        }}
-        onBack={handleBackFromAdmin}
-        onGoToHome={handleGoToHome}
-      />
+      <>
+        <AdminPanel
+          language={currentLanguage}
+          onLanguageChange={setCurrentLanguage}
+          translations={{
+            cs: {
+              adminPanel: "Admin Panel",
+              back: "← Zpět",
+              backToHome: "← Zpět",
+              registerSalon: "Zaregistrovat salon",
+              registerMaster: "Registrovat mistra",
+              salonRegistrationInfo: "Registrace nového salonu",
+              masterRegistrationInfo: "Registrace nového mistra",
+              salonRegistrationDescription: "Zaregistrujte svůj salon a získejte více klientů",
+              masterRegistrationDescription: "Zaregistrujte se jako mistr a najděte nové klienty",
+              clientRegistrationDescription: "Zaregistrujte se jako klient a najděte nejlepší salony a mistry",
+              benefits: "Výhody",
+              benefit1: "Všechny salony a mistři na jednom místě",
+              benefit2: "Najděte mistra poblíž vás",
+              benefit3: "Rychlé rezervace",
+              benefit4: "Vyhledávání podle recenzí",
+              benefit5: "Snadné porovnání cen",
+              masterBenefit1: "Nové klienty a zákazníky",
+              masterBenefit2: "Profesionální prezentace",
+              masterBenefit3: "Snadné řízení rezervací",
+              masterBenefit4: "Marketing a reklama",
+              masterRequirement3: "Kvalifikace a certifikáty",
+              salonBenefit1: "Zvýšení viditelnosti salonu",
+              salonBenefit2: "Více klientů a zákazníků",
+              salonBenefit3: "Snadné řízení rezervací",
+              salonBenefit4: "Prezentace všech služeb a mistrů",
+              paymentMethods: "Způsoby platby",
+              paymentCash: "Platba v hotovosti",
+              paymentCard: "Platba kartou",
+              paymentQR: "QR kód",
+              paymentAccount: "Platba na účet",
+              paymentVoucher: "Dárkový poukaz",
+              paymentBenefit: "Benefitní karty",
+              selectPaymentMethods: "Způsoby platby *",
+              atLeastOnePayment: "Vyberte alespoň jeden způsob platby",
+              requirements: "Požadavky",
+              requirement1: "Licence na provozování",
+              requirement2: "Profesionální vybavení",
+              requirement3: "Kvalifikované zaměstnance",
+              requirement4: "Dodržování hygienických standardů",
+              startSalonRegistration: "Začít registraci salonu",
+              startMasterRegistration: "Začít registraci mistra",
+              salonName: "Název salonu",
+              city: "Město",
+              address: "Adresa",
+              phone: "Telefon",
+              email: "Email",
+              website: "Webové stránky",
+              openHours: "Otevírací doba",
+              openHoursPlaceholder: "Po-Pá: 9:00-20:00, So: 10:00-18:00",
+              description: "Popis",
+              descriptionPlaceholder: "Popište váš salon a služby...",
+              services: "Služby",
+              photos: "Fotografie",
+              photosHelp: "Nahrajte fotografie vašeho salonu (max 10)",
+              selectFiles: "Vybrat soubory",
+              noFileSelected: "Soubor není vybrán",
+              filesSelected: "souborů vybráno",
+              fileSelected: "soubor vybrán",
+              cancel: "Zrušit",
+              register: "Registrovat",
+              registrationSuccess: "Registrace byla úspěšná!",
+              masterName: "Jméno mistra",
+              specialty: "Specializace",
+              experience: "Zkušenosti",
+              freelancer: "Samostatný pracovník",
+              selectCity: "Vyberte město",
+              selectSalon: "Vyberte salon",
+              photo: "Fotografie",
+              photoHelp: "Nahrajte svou profesionální fotografii (max 1)"
+            },
+            en: {
+              adminPanel: "Admin Panel",
+              back: "← Back",
+              backToHome: "← Back",
+              registerSalon: "Register Salon",
+              registerMaster: "Register Master",
+              salonRegistrationInfo: "New Salon Registration",
+              masterRegistrationInfo: "New Master Registration",
+              salonRegistrationDescription: "Register your salon and get more clients",
+              masterRegistrationDescription: "Register as a master and find new clients",
+              clientRegistrationDescription: "Register as a client and find the best salons and masters",
+              benefits: "Benefits",
+              benefit1: "All salons and masters in one place",
+              benefit2: "Find a master near you",
+              benefit3: "Quick booking",
+              benefit4: "Search by reviews",
+              benefit5: "Easy price comparison",
+              masterBenefit1: "New clients and customers",
+              masterBenefit2: "Professional presentation",
+              masterBenefit3: "Easy booking management",
+              masterBenefit4: "Marketing and advertising",
+              masterRequirement3: "Qualifications and certificates",
+              salonBenefit1: "Increase salon visibility",
+              salonBenefit2: "More clients and customers",
+              salonBenefit3: "Easy booking management",
+              salonBenefit4: "Showcase all services and masters",
+              paymentMethods: "Payment methods",
+              paymentCash: "Cash payment",
+              paymentCard: "Card payment",
+              paymentQR: "QR code",
+              paymentAccount: "Bank transfer",
+              paymentVoucher: "Gift voucher",
+              paymentBenefit: "Benefit cards",
+              selectPaymentMethods: "Select payment methods *",
+              atLeastOnePayment: "Select at least one payment method",
+              requirements: "Requirements",
+              requirement1: "Business license",
+              requirement2: "Professional equipment",
+              requirement3: "Qualified staff",
+              requirement4: "Hygiene standards compliance",
+              startSalonRegistration: "Start Salon Registration",
+              startMasterRegistration: "Start Master Registration",
+              salonName: "Salon Name",
+              city: "City",
+              address: "Address",
+              phone: "Phone",
+              email: "Email",
+              website: "Website",
+              openHours: "Opening Hours",
+              openHoursPlaceholder: "Mon-Fri: 9:00-20:00, Sat: 10:00-18:00",
+              description: "Description",
+              descriptionPlaceholder: "Describe your salon and services...",
+              services: "Services",
+              photos: "Photos",
+              photosHelp: "Upload photos of your salon (max 10)",
+              selectFiles: "Select Files",
+              noFileSelected: "No file selected",
+              filesSelected: "files selected",
+              fileSelected: "file selected",
+              cancel: "Cancel",
+              register: "Register",
+              registrationSuccess: "Registration successful!",
+              masterName: "Master Name",
+              specialty: "Specialty",
+              experience: "Experience",
+              freelancer: "Freelancer",
+              selectCity: "Select City",
+              selectSalon: "Select Salon",
+              photo: "Photo",
+              photoHelp: "Upload your professional photo (max 1)"
+            }
+          }}
+          onBack={handleBackFromAdmin}
+          onGoToHome={handleGoToHome}
+          onOpenAuth={handleOpenAuth}
+          onOpenPremium={() => { setShowAdminPanel(false); setPrevPathForPremium('/admin'); setShowPremiumFeatures(true); setPremiumFromAdmin(true); }}
+          onOpenDashboard={() => { setShowAdminPanel(false); setShowPremiumFeatures(false); setPrevPathForAdmin(null); setPrevPathForPremium(null); setShowDashboard(true); }}
+        />
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccessFromAdmin}
+          language={currentLanguage}
+          onGoToRegistration={goToRegistration}
+        />
+      </>
     );
   }
 
   if (showPremiumFeatures) {
     return (
-      <PremiumFeaturesPage
-        language={currentLanguage}
-        translations={translations}
-        onBack={handleBackFromPremium}
-        onLanguageChange={setCurrentLanguage}
-      />
+      <>
+        <PremiumFeaturesPage
+          language={currentLanguage}
+          translations={translations}
+          onBack={handleBackFromPremium}
+          onLanguageChange={setCurrentLanguage}
+          onOpenAuth={handleOpenAuth}
+          onOpenRegistration={handleAdminPanel}
+          isLoggedIn={!!(currentUser && userProfile)}
+          userName={userProfile?.name}
+          onOpenDashboard={() => { setShowPremiumFeatures(false); setShowDashboard(true); }}
+          onGoHome={handleGoToHome}
+        />
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccessFromPremium}
+          language={currentLanguage}
+          onGoToRegistration={goToRegistration}
+        />
+      </>
     );
   }
 
@@ -643,6 +726,8 @@ function AppContent() {
         onBack={handleBackFromDashboard}
         onLanguageChange={setCurrentLanguage}
         onNavigate={(path: string) => navigate(path)}
+        onOpenRegistration={handleAdminPanel}
+        onOpenPremium={handlePremiumFeatures}
       />
     );
   }

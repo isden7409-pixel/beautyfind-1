@@ -93,6 +93,7 @@ export interface Master {
   facebook?: string;
   // Ценник
   priceList?: string[];
+  ownerId?: string; // ID владельца мастера (uid пользователя)
 }
 
 // Типы для отзывов

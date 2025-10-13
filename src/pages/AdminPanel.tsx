@@ -13,6 +13,9 @@ interface AdminPanelProps {
   onBack: () => void;
   onLanguageChange: (language: Language) => void;
   onGoToHome: () => void; // Новая функция для перехода на главную страницу
+  onOpenAuth?: () => void;
+  onOpenPremium?: () => void;
+  onOpenDashboard?: () => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -21,6 +24,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onBack,
   onLanguageChange,
   onGoToHome,
+  onOpenAuth,
+  onOpenPremium,
+  onOpenDashboard,
 }) => {
   const [activeTab, setActiveTab] = useState<'salon' | 'master' | 'client'>('salon');
   const [showForm, setShowForm] = useState(false);
@@ -74,14 +80,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   if (showForm) {
     return (
       <div className="admin-panel">
-        <PageHeader
-          title=""
-          currentLanguage={language}
-          onLanguageChange={onLanguageChange}
-          showBackButton={true}
-          onBack={handleCancel}
-          backText={language === 'cs' ? 'Zpět' : 'Back'}
-        />
+        <div className="admin-hero-wrap">
+          <PageHeader
+            title={""}
+            currentLanguage={language}
+            onLanguageChange={onLanguageChange}
+            showBackButton={false}
+            showUserInfo={false}
+            leftButtons={[
+              { label: language === 'cs' ? 'Hlavní stránka' : 'Main Page', onClick: onGoToHome },
+              {
+                label: isLoggedIn
+                  ? (language === 'cs' ? `Můj účet (${userProfile?.name || 'Uživatel'})` : `My Account (${userProfile?.name || 'User'})`)
+                  : (language === 'cs' ? 'Přihlášení' : 'Login'),
+                onClick: () => {
+                  if (isLoggedIn) {
+                    onOpenDashboard && onOpenDashboard();
+                  } else {
+                    onOpenAuth && onOpenAuth();
+                  }
+                }
+              },
+              { label: language === 'cs' ? 'Prémiové funkce' : 'Premium Features', onClick: () => onOpenPremium && onOpenPremium() }
+            ]}
+            userNameClickable={false}
+          />
+          <div className="admin-hero-section">
+            <h1 className="admin-hero-title">BeautyFind.cz</h1>
+            <p className="admin-hero-subtitle">{language === 'cs' ? 'Váš průvodce světem krásy v Česku' : 'Your guide to beauty in Czechia'}</p>
+          </div>
+        </div>
         
         {activeTab === 'salon' ? (
           <SalonRegistrationForm
@@ -112,14 +140,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <div className="admin-panel">
+      <div className="admin-hero-wrap">
         <PageHeader
-          title=""
+          title={""}
           currentLanguage={language}
           onLanguageChange={onLanguageChange}
-          showBackButton={true}
-          onBack={onGoToHome}
-          backText={language === 'cs' ? 'Zpět' : 'Back'}
+          showBackButton={false}
+          showUserInfo={false}
+          leftButtons={[
+            { label: language === 'cs' ? 'Hlavní stránka' : 'Main Page', onClick: onGoToHome },
+            {
+              label: isLoggedIn
+                ? (language === 'cs' ? `Můj účet (${userProfile?.name || 'Uživatel'})` : `My Account (${userProfile?.name || 'User'})`)
+                : (language === 'cs' ? 'Přihlášení' : 'Login'),
+              onClick: () => {
+                if (isLoggedIn) {
+                  onOpenDashboard && onOpenDashboard();
+                } else {
+                  onOpenAuth && onOpenAuth();
+                }
+              }
+            },
+            { label: language === 'cs' ? 'Prémiové funkce' : 'Premium Features', onClick: () => onOpenPremium && onOpenPremium() }
+          ]}
+          userNameClickable={false}
         />
+        <div className="admin-hero-section">
+          <h1 className="admin-hero-title">BeautyFind.cz</h1>
+          <p className="admin-hero-subtitle">{language === 'cs' ? 'Váš průvodce světem krásy v Česku' : 'Your guide to beauty in Czechia'}</p>
+        </div>
+      </div>
 
       <div className="admin-content">
 

@@ -7,6 +7,12 @@ interface PremiumFeaturesPageProps {
   translations: any;
   onBack: () => void;
   onLanguageChange: (language: Language) => void;
+  onOpenAuth?: () => void;
+  onOpenRegistration?: () => void;
+  isLoggedIn?: boolean;
+  userName?: string;
+  onOpenDashboard?: () => void;
+  onGoHome?: () => void;
 }
 
 const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
@@ -14,6 +20,12 @@ const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
   translations,
   onBack,
   onLanguageChange,
+  onOpenAuth,
+  onOpenRegistration,
+  isLoggedIn,
+  userName,
+  onOpenDashboard,
+  onGoHome,
 }) => {
 
   const [selectedType, setSelectedType] = useState<'salon' | 'master'>('salon');
@@ -79,20 +91,40 @@ const PremiumFeaturesPage: React.FC<PremiumFeaturesPageProps> = ({
   return (
     <div className="premium-features-page">
       <PageHeader
-        title={`⭐ ${language === 'cs' ? 'Prémiové funkce' : 'Premium Features'}`}
+        title={''}
         currentLanguage={language}
         onLanguageChange={onLanguageChange}
-        showBackButton={true}
-        onBack={onBack}
-        backText={language === 'cs' ? '← Zpět' : '← Back'}
+        showBackButton={false}
+        showUserInfo={false}
+        leftButtons={[
+          { label: language === 'cs' ? 'Hlavní stránka' : 'Main Page', onClick: onGoHome || (() => {}) },
+          { 
+            label: isLoggedIn ? (language === 'cs' ? `Můj účet (${userName || 'Uživatel'})` : `My Account (${userName || 'User'})`) : (language === 'cs' ? 'Přihlášení' : 'Login'), 
+            onClick: () => {
+              if (isLoggedIn) {
+                onOpenDashboard && onOpenDashboard();
+              } else {
+                onOpenAuth && onOpenAuth();
+              }
+            }
+          },
+          { label: language === 'cs' ? 'Registrace' : 'Registration', onClick: () => onOpenRegistration && onOpenRegistration() }
+        ]}
+        userNameClickable={false}
       />
-      <div className="premium-subtitle">
-        <p>
-          {language === 'cs' 
-            ? 'Zvyšte svou viditelnost a přilákejte více klientů' 
-            : 'Increase your visibility and attract more clients'
-          }
-        </p>
+      {/* Hero block like on Registrace */}
+      <div className="admin-hero-wrap">
+        <div className="admin-hero-section">
+          <h1 className="admin-hero-title">BeautyFind.cz</h1>
+          <p className="admin-hero-subtitle">{language === 'cs' ? 'Váš průvodce světem krásy v Česku' : 'Your guide to beauty in Czechia'}</p>
+        </div>
+      </div>
+      <div className="premium-inline-title">
+        <span>
+          {language === 'cs'
+            ? '⭐ Prémiové funkce - zvyšte svou viditelnost a přilákejte více klientů'
+            : '⭐ Premium Features - increase your visibility and attract more clients'}
+        </span>
       </div>
 
       <div className="premium-type-selector">

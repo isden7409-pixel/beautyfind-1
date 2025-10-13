@@ -3,7 +3,7 @@ import { useAuth } from '../../components/auth/AuthProvider';
 import { Master, Booking, DashboardStats, Salon } from '../../types';
 import { collection, query, where, getDocs, doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { reviewService, userService } from '../../firebase/services';
+import { reviewService, userService, masterService } from '../../firebase/services';
 import PageHeader from '../../components/PageHeader';
 import MasterProfileEditForm from '../../components/MasterProfileEditForm';
 import { formatExperienceYears } from '../../utils/formatters';
@@ -15,9 +15,11 @@ interface MasterDashboardProps {
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
   onNavigate?: (path: string) => void;
+  onOpenRegistration?: () => void;
+  onOpenPremium?: () => void;
 }
 
-const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
+const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate, onOpenRegistration, onOpenPremium }) => {
   const { userProfile } = useAuth();
   const [master, setMaster] = useState<Master | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -69,6 +71,14 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         // Найден профиль в коллекции masters
         masterData = masterSnapshot.docs[0].data() as Master;
         masterData.id = masterSnapshot.docs[0].id;
+        
+        // Если у мастера нет ownerId, добавляем его
+        if (!masterData.ownerId && userProfile.uid) {
+          console.log('Adding ownerId to existing master:', masterData.id);
+          const masterRef = doc(db, 'masters', masterData.id);
+          await updateDoc(masterRef, { ownerId: userProfile.uid });
+          masterData.ownerId = userProfile.uid;
+        }
       } else {
         // Если профиль не найден в masters, создаем базовый профиль из данных пользователя
         console.log('Master profile not found in masters collection, creating from user profile');
@@ -95,7 +105,8 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           structuredAddress: undefined,
           coordinates: undefined,
           salonId: undefined,
-          salonName: undefined
+          salonName: undefined,
+          ownerId: userProfile.uid // Добавляем ownerId
         };
         
         // Сохраняем базовый профиль в коллекцию masters
@@ -409,6 +420,25 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         showBackButton={true}
         onBack={onBack}
         backText={t.back || 'Back'}
+        leftButtons={[
+          { label: language === 'cs' ? 'Registrace' : 'Registration', onClick: () => onOpenRegistration && onOpenRegistration() },
+          { label: language === 'cs' ? 'Prémiové funkce' : 'Premium Features', onClick: () => onOpenPremium && onOpenPremium() }
+        ]}
+        userNameClickable={true}
+        onNavigateToDashboard={async () => {
+          if (onNavigate && userProfile) {
+            console.log('MasterDashboard: Trying to navigate, userProfile.uid:', userProfile.uid);
+            // Получаем мастера по ownerId (userProfile.uid)
+            const master = await masterService.getByOwnerId(userProfile.uid);
+            console.log('MasterDashboard: Found master:', master);
+            if (master) {
+              console.log('MasterDashboard: Navigating to:', `/master/${master.id}`);
+              onNavigate(`/master/${master.id}`);
+            } else {
+              console.log('MasterDashboard: No master found for ownerId:', userProfile.uid);
+            }
+          }
+        }}
       />
 
       <div className="dashboard-stats">

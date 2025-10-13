@@ -9,9 +9,11 @@ interface DashboardRouterProps {
   onBack: () => void;
   onLanguageChange: (language: 'cs' | 'en') => void;
   onNavigate?: (path: string) => void;
+  onOpenRegistration?: () => void;
+  onOpenPremium?: () => void;
 }
 
-const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange, onNavigate }) => {
+const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onLanguageChange, onNavigate, onOpenRegistration, onOpenPremium }) => {
   const { userProfile, currentUser, loading, isLoggingOut } = useAuth();
 
   console.log('DashboardRouter - Auth state:', { userProfile, currentUser, loading });
@@ -63,11 +65,11 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ language, onBack, onL
 
   switch (userProfile.type) {
     case 'client':
-      return <UserDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
+      return <UserDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} onOpenRegistration={onOpenRegistration} onOpenPremium={onOpenPremium} />;
     case 'master':
-      return <MasterDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
+      return <MasterDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} onOpenRegistration={onOpenRegistration} onOpenPremium={onOpenPremium} />;
     case 'salon':
-      return <SalonDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} />;
+      return <SalonDashboard language={language} onBack={onBack} onLanguageChange={onLanguageChange} onNavigate={onNavigate} onOpenRegistration={onOpenRegistration} onOpenPremium={onOpenPremium} />;
     default:
       return (
         <div className="dashboard">

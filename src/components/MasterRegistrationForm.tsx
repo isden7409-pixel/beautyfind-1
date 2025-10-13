@@ -359,7 +359,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         ownerId = auth.currentUser?.uid || undefined;
       }
 
-      const id = await masterService.createFromRegistration({ ...formData, isFreelancer: true });
+      const id = await masterService.createFromRegistration({ ...formData, isFreelancer: true }, ownerId);
       // Master created successfully
       
       // Вызываем onSubmit с данными ДО очистки формы

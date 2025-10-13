@@ -1,3 +1,11 @@
+/* Однострочный заголовок для страницы Prémiové funkce */
+.premium-inline-title {
+  text-align: center;
+  margin-top: -30px; /* поднято на 20px ближе к герою */
+  color: white;
+  font-size: 26px;
+  font-weight: 600;
+}
 /* Основные стили */
 * {
   margin: 0;
@@ -715,6 +723,10 @@
   flex-shrink: 0;
 }
 
+:root {
+  --bf-hero-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 body {
   font-family: 'Arial', sans-serif;
 }
@@ -722,7 +734,7 @@ body {
 .App {
   text-align: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bf-hero-gradient);
   color: white;
 }
 
@@ -3772,7 +3784,7 @@ body {
 }
 
 .premium-info {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05); /* более прозрачный фон */
   padding: 40px;
   border-radius: 20px;
   backdrop-filter: blur(10px);
@@ -3918,7 +3930,7 @@ body {
 
 /* Premium packages section for masters */
 .premium-packages-section {
-  background: #f8f9fa;
+  background: transparent; /* убираем фон, используем градиент страницы */
   padding: 60px 20px;
   margin-top: 40px;
 }
@@ -3944,8 +3956,8 @@ body {
 }
 
 .premium-package {
-  background: white;
-  border: 2px solid #e9ecef;
+  background: rgba(255,255,255,0.9); /* полупрозрачный белый фон */
+  border: 2px solid rgba(255,255,255,0.3); /* полупрозрачная рамка */
   border-radius: 15px;
   padding: 30px;
   text-align: center;
@@ -4621,7 +4633,7 @@ body {
 .premium-features-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 0px 20px 20px 20px; /* убрал верхний отступ */
   text-align: center;
 }
 
@@ -4680,7 +4692,7 @@ body {
 }
 
 .premium-package {
-  background: white;
+  background: rgba(255,255,255,0.9); /* полупрозрачный белый фон */
   border-radius: 20px;
   padding: 30px;
   text-align: center;
@@ -4760,7 +4772,7 @@ body {
 }
 
 .premium-info {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05); /* более прозрачный фон */
   border-radius: 20px;
   padding: 40px;
   color: white;
@@ -5080,8 +5092,8 @@ body {
   content: '';
   position: absolute;
   right: 0;
-  top: 20%;
-  height: 60%;
+  top: 0;
+  height: 100%;
   width: 1px;
   background-color: #e0e0e0;
 }
@@ -5264,6 +5276,75 @@ body {
   color: #333;
 }
 
+/* Градиент как на главной для верхней синей полосы на странице Registrace */
+/* Общий градиентный контейнер для хедера и героя на Registrace */
+.admin-hero-wrap {
+  background: var(--bf-hero-gradient);
+  background-repeat: no-repeat;
+  background-position: top center; /* тот же срез */
+  background-size: 100% 140vh; /* растягиваем область, чтобы было больше синего */
+  background-attachment: fixed; /* стабилизируем восприятие градиента */
+}
+
+.admin-panel .page-header {
+  background: transparent; /* просвечивает общий градиент .admin-hero-wrap */
+  color: white;
+}
+
+/* Увеличенная высота верхнего градиентного блока на Registrace */
+.admin-panel .page-header {
+  padding: 20px 20px; /* как на главной, ниже поднимем контент геро-секции */
+}
+
+/* Центрированный заголовок под хедером (как на главной) */
+/* Общие стили заголовка, используются и на главной, и здесь */
+.page-header .page-title {
+  font-size: 64px;
+  line-height: 1.1;
+  font-weight: 800;
+  margin: 0;
+  color: white;
+}
+
+.page-header .page-subtitle {
+  font-size: 26px;
+  margin: 10px 0 0 0;
+  color: white;
+}
+
+/* Отдельная секция под хедером на Registrace с тем же градиентом */
+.admin-hero-section {
+  /* тот же градиент уже задан на .admin-hero-wrap */
+  padding: 20px 20px 70px 20px; /* выше к хедеру, больше отступ снизу */
+  text-align: center;
+}
+
+.admin-hero-title {
+  font-size: 3rem; /* как на главной */
+  line-height: 1.1;
+  font-weight: 800;
+  margin: 0;
+  color: white;
+}
+
+.admin-hero-subtitle {
+  font-size: 1.2rem; /* как на главной */
+  margin: 10px 0 0 0;
+  color: white;
+}
+
+/* Поднять герой на странице Prémiové funkce ближе к хедеру */
+.premium-features-page .admin-hero-section {
+  padding-top: 0px;
+  margin-top: -10px; /* ещё выше на столько же */
+  padding-bottom: 100px; /* компенсируем высоту */
+}
+
+/* Убираем отдельный градиент у admin-hero-wrap на странице Premium Features */
+.premium-features-page .admin-hero-wrap {
+  background: transparent; /* используем градиент от .premium-features-page */
+}
+
 .premium-features-page .page-header .page-title {
   color: white;
 }
@@ -5279,6 +5360,23 @@ body {
 /* Черный заголовок для dashboard страницы */
 .dashboard .page-header .page-title {
   color: #333;
+  font-size: 40px;
+}
+
+/* Приводим кнопки в dashboard к формату кнопки из Registrace (размеры/форма), но с читаемыми цветами на белом фоне */
+.dashboard .page-header .admin-btn {
+  padding: 8px 16px; /* такие же отступы */
+  border: 2px solid #667eea; /* видимая рамка на белом */
+  background: transparent;
+  color: #667eea;
+  border-radius: 20px; /* та же форма */
+  font-weight: 600;
+  font-size: 0.9rem; /* тот же размер шрифта */
+  transition: all 0.3s ease;
+}
+
+.dashboard .page-header .admin-btn:hover {
+  background: rgba(102, 126, 234, 0.08);
 }
 
 /* Loading states */
@@ -5316,23 +5414,33 @@ body {
 
 /* Стили кнопки "Назад" для белого хедера салонов и мастеров */
 .salon-detail-page .page-header .back-button,
-.master-detail-page .page-header .back-button,
-.dashboard .page-header .back-button {
+.master-detail-page .page-header .back-button {
   background: #6A75D4;
   color: white;
   border: 2px solid #6A75D4;
   font-weight: 600;
 }
 
+/* Кнопка "Hlavní stránka" в дашборде должна выглядеть как admin-btn */
+.dashboard .page-header .back-button {
+  padding: 8px 16px; /* такие же отступы */
+  border: 2px solid #667eea; /* видимая рамка на белом */
+  background: transparent;
+  color: #667eea;
+  border-radius: 20px; /* та же форма */
+  font-weight: 600;
+  font-size: 0.9rem; /* тот же размер шрифта */
+  transition: all 0.3s ease;
+}
 
 .salon-detail-page .page-header .back-button:hover,
-.master-detail-page .page-header .back-button:hover,
-.dashboard .page-header .back-button:hover {
+.master-detail-page .page-header .back-button:hover {
   background: #5A65C4;
   border-color: #5A65C4;
   color: white;
   box-shadow: 0 4px 15px rgba(106, 117, 212, 0.4);
 }
+
 
 /* Стили кнопки "Назад" для прозрачного хедера премиум функций */
 .premium-features-page .page-header .back-button {
@@ -5388,6 +5496,17 @@ body {
   gap: 20px;
 }
 
+/* Полная ширина хедера на страницах: Prémiové funkce, Registrace, Dashboard */
+.premium-features-page .page-header-content,
+.admin-panel .page-header-content,
+.dashboard .page-header-content {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 /* Трехколоночная структура шапки */
 .header-left {
   flex: 0 0 auto;
@@ -5396,7 +5515,12 @@ body {
   justify-content: flex-start;
   margin-left: 0;
   padding-left: 0;
-  gap: 16px; /* Отступ между кнопкой Zpět и заголовком */
+  gap: 10px; /* Одинаковое расстояние между всеми кнопками */
+}
+
+.header-left-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .header-center {
@@ -5717,4 +5841,11 @@ body {
   top: 1px;
   font-size: 0.75rem;
   color: #333;
+}
+
+/* ИСПРАВЛЕНИЕ: Кнопка Hlavní stránka в дашборде должна иметь такой же hover как admin-btn */
+.dashboard .page-header .back-button:hover {
+  background: rgba(102, 126, 234, 0.08) !important;
+  border-color: #667eea !important;
+  color: #667eea !important;
 }
