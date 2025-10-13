@@ -51,7 +51,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
   const [userReviews, setUserReviews] = useState<any[]>([]);
 
   const loadMasterData = useCallback(async () => {
-    if (!userProfile) return;
+    if (!userProfile?.uid) return;
 
     try {
       setLoading(true);
@@ -157,7 +157,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } finally {
       setLoading(false);
     }
-  }, [userProfile]);
+  }, [userProfile?.uid, userProfile?.email]);
 
   const loadFavorites = useCallback(async () => {
     if (!userProfile) return;
@@ -197,7 +197,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } catch (error) {
       console.error('Error loading favorites:', error);
     }
-  }, [userProfile]);
+  }, [userProfile?.uid, userProfile?.email]);
 
   const removeFavorite = async (itemId: string, itemType: 'master' | 'salon') => {
     if (!userProfile) return;
@@ -246,7 +246,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } catch (error) {
       console.error('Error loading user reviews:', error);
     }
-  }, [userProfile]);
+  }, [userProfile?.uid, userProfile?.email]);
 
   useEffect(() => {
     console.log('MasterDashboard useEffect - userProfile:', userProfile);
@@ -257,7 +257,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     } else if (userProfile && userProfile.type !== 'master') {
       console.log('User is not a master, type:', userProfile.type);
     }
-  }, [userProfile, loadMasterData, loadFavorites, loadUserReviews]);
+  }, [userProfile?.uid, userProfile?.type]);
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
     try {
