@@ -5599,6 +5599,12 @@ body {
   gap: 10px;
 }
 
+.header-right-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: 10px;
+}
+
 .header-center {
   flex: 1;
   display: flex;

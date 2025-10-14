@@ -13,6 +13,7 @@ interface PageHeaderProps {
   backText?: string;
   onNavigateToDashboard?: () => void;
   leftButtons?: Array<{ label: string; onClick: () => void }>; // extra buttons next to back on the left
+  rightButtons?: Array<{ label: string; onClick: () => void }>; // extra buttons next to back on the right
   userNameClickable?: boolean;
   showUserInfo?: boolean; // скрыть блок с именем пользователя и кнопкой выхода
 }
@@ -27,6 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   backText = '← Zpět',
   onNavigateToDashboard,
   leftButtons = [],
+  rightButtons = [],
   userNameClickable = true,
   showUserInfo = true
 }) => {
@@ -45,6 +47,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             <div className="header-left-buttons">
               {leftButtons.map((btn, idx) => (
                 <button key={idx} onClick={btn.onClick} className="admin-btn">
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {rightButtons && rightButtons.length > 0 && (
+            <div className="header-right-buttons">
+              {rightButtons.map((btn, idx) => (
+                <button key={idx} onClick={btn.onClick} className="back-button">
                   {btn.label}
                 </button>
               ))}

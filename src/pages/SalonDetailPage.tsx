@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Salon, Master, Language, Review, Booking } from '../types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -11,6 +12,7 @@ import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PhotoCarousel from '../components/PhotoCarousel';
 import PageHeader from '../components/PageHeader';
 import FavoriteButton from '../components/FavoriteButton';
+import { useSetCurrentViewMode } from '../store/useStore';
 // import { FaWhatsapp, FaTelegram, FaInstagram, FaFacebook } from 'react-icons/fa';
 
 interface SalonDetailPageProps {
@@ -33,6 +35,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   onNavigateToDashboard,
 }) => {
   const t = translations[language];
+  const setCurrentViewMode = useSetCurrentViewMode();
+  const navigate = useNavigate();
   
   // Realtime salon data (auto-updates card after profile save)
   const [currentSalon, setCurrentSalon] = useState<Salon>(initialSalon);
@@ -80,6 +84,11 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const [selectedPriceListImage, setSelectedPriceListImage] = useState<string | null>(null);
   const [selectedPriceListIndex, setSelectedPriceListIndex] = useState<number | null>(null);
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
 
   const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
@@ -101,6 +110,11 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   const handleBookingClose = () => {
     setShowBookingModal(false);
+  };
+
+  const handleGoToSalonsList = () => {
+    setCurrentViewMode('salons');
+    navigate('/');
   };
 
   // Price list navigation functions
@@ -272,6 +286,12 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
         onBack={onBack}
         backText="Zpět"
         onNavigateToDashboard={onNavigateToDashboard}
+        rightButtons={[
+          {
+            label: language === 'cs' ? 'Seznam salonů' : 'Salon List',
+            onClick: handleGoToSalonsList
+          }
+        ]}
       />
       <div className="salon-detail-content">
         <div className="salon-gallery">

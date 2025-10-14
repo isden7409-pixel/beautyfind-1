@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Master, Salon, Language, Review, Booking } from '../types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -10,6 +11,7 @@ import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
 import PageHeader from '../components/PageHeader';
 import FavoriteButton from '../components/FavoriteButton';
+import { useSetCurrentViewMode } from '../store/useStore';
 // import { FaWhatsapp, FaTelegram, FaInstagram, FaFacebook } from 'react-icons/fa';
 
 interface MasterDetailPageProps {
@@ -34,6 +36,8 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   onNavigateToDashboard,
 }) => {
   const t = translations[language];
+  const setCurrentViewMode = useSetCurrentViewMode();
+  const navigate = useNavigate();
 
   // Realtime master data
   const [currentMaster, setCurrentMaster] = useState<Master>(initialMaster);
@@ -54,6 +58,11 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   const [selectedPriceListImage, setSelectedPriceListImage] = useState<string | null>(null);
   const [selectedPriceListIndex, setSelectedPriceListIndex] = useState<number | null>(null);
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -160,6 +169,11 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
     setShowBookingModal(false);
   };
 
+  const handleGoToMastersList = () => {
+    setCurrentViewMode('masters');
+    navigate('/');
+  };
+
   const masterSalon = master.salonId ? salons.find(s => s.id === master.salonId) : null;
 
   // Price list navigation functions
@@ -245,6 +259,12 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         onBack={onBack}
         backText="Zpět"
         onNavigateToDashboard={onNavigateToDashboard}
+        rightButtons={[
+          {
+            label: language === 'cs' ? 'Seznam mistrů' : 'Master List',
+            onClick: handleGoToMastersList
+          }
+        ]}
       />
 
       <div className="master-detail-content">

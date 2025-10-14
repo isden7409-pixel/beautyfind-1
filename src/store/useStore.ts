@@ -98,7 +98,8 @@ export const useAppStore = create<AppState>()(
       name: 'beautyfind-store',
       partialize: (state) => ({
         language: state.language,
-        searchFilters: state.searchFilters
+        searchFilters: state.searchFilters,
+        currentViewMode: state.currentViewMode
       })
     }
   )
