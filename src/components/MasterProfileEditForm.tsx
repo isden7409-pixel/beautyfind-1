@@ -48,6 +48,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
     salonName: master.salonName || '',
     byAppointment: master.byAppointment || false,
     paymentMethods: master.paymentMethods || [],
+    galleryPhotos: master.galleryPhotos || [],
     priceList: master.priceList || [],
     // Социальные сети
     whatsapp: master.whatsapp || '',
@@ -107,6 +108,7 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
       salonName: master.salonName || '',
       byAppointment: master.byAppointment || false,
       paymentMethods: master.paymentMethods || [],
+      galleryPhotos: master.galleryPhotos || [],
       priceList: master.priceList || [],
       // Социальные сети
       whatsapp: master.whatsapp || '',
@@ -586,6 +588,46 @@ const MasterProfileEditForm: React.FC<MasterProfileEditFormProps> = ({
           fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
         />
         <p className="form-help">{language === 'cs' ? 'Nahrajte svou profesionální fotografii (max 1)' : 'Upload your professional photo (max 1)'}</p>
+      </div>
+
+      <div className="form-section">
+        <h3>{language === 'cs' ? 'Galerie prací' : 'Work Gallery'}</h3>
+        
+        <FileUpload
+          id="master-gallery"
+          multiple={true}
+          accept="image/*"
+          onChange={async (files) => {
+            if (!files || files.length === 0) return;
+            
+            const existing = formData.galleryPhotos || [];
+            const remainingSlots = Math.max(0, 15 - existing.length);
+            
+            if (remainingSlots <= 0) return;
+            
+            try {
+              const filesToUpload = Array.from(files).slice(0, remainingSlots);
+              const newUrls = await uploadMultipleFiles(filesToUpload, `masters/gallery/${userProfile?.uid || master.id}`);
+              
+              setFormData(prev => ({
+                ...prev,
+                galleryPhotos: [...existing, ...newUrls]
+              }));
+            } catch (error) {
+              console.error('Error uploading gallery:', error);
+              alert(language === 'cs' ? 'Chyba při nahrávání galerie' : 'Error uploading gallery');
+            }
+          }}
+          selectedFiles={null}
+          previewUrls={formData.galleryPhotos}
+          onRemoveUrl={(url) => setFormData(prev => ({ ...prev, galleryPhotos: (prev.galleryPhotos || []).filter(p => p !== url) }))}
+          maxFiles={15}
+          selectButtonText={language === 'cs' ? 'Vybrat fotografie' : 'Select photos'}
+          noFileText={language === 'cs' ? 'Žádné fotografie nebyly vybrány' : 'No photos selected'}
+          filesSelectedText={language === 'cs' ? 'fotografií vybráno' : 'photos selected'}
+          fileSelectedText={language === 'cs' ? 'fotografie vybrána' : 'photo selected'}
+        />
+        <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašich prací do galerie (max 15)' : 'Upload photos of your work to gallery (max 15)'}</p>
       </div>
 
       <div className="form-section">

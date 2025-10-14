@@ -48,6 +48,8 @@ export interface Salon {
   facebook?: string;
   // Ценник
   priceList?: string[];
+  // Галерея
+  galleryPhotos?: string[];
 }
 
 // Typy pro mistry
@@ -93,6 +95,8 @@ export interface Master {
   facebook?: string;
   // Ценник
   priceList?: string[];
+  // Галерея
+  galleryPhotos?: string[];
   ownerId?: string; // ID владельца мастера (uid пользователя)
 }
 
@@ -204,6 +208,8 @@ export interface SalonRegistration {
   facebook?: string;
   // Ценник
   priceList?: File[] | string[];
+  // Галерея
+  galleryPhotos?: File[] | string[];
 }
 
 // Typy pro mistra (registrace)
@@ -232,6 +238,8 @@ export interface MasterRegistration {
   facebook?: string;
   // Ценник
   priceList?: File[] | string[];
+  // Галерея
+  galleryPhotos?: File[] | string[];
 }
 
 // Типы для поиска и фильтров

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Salon, Master, Language, Review, Booking } from '../types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -78,6 +78,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const [marker, setMarker] = useState<any>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedPriceListImage, setSelectedPriceListImage] = useState<string | null>(null);
+  const [selectedPriceListIndex, setSelectedPriceListIndex] = useState<number | null>(null);
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
   
 
   const handleAddReview = async (newReview: Omit<Review, 'id'>) => {
@@ -100,6 +102,73 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const handleBookingClose = () => {
     setShowBookingModal(false);
   };
+
+  // Price list navigation functions
+  const handlePrevPriceImage = useCallback(() => {
+    if (selectedPriceListIndex === null || !salon.priceList) return;
+    const newIndex = selectedPriceListIndex === 0 
+      ? salon.priceList.length - 1 
+      : selectedPriceListIndex - 1;
+    setSelectedPriceListIndex(newIndex);
+  }, [selectedPriceListIndex, salon.priceList]);
+
+  const handleNextPriceImage = useCallback(() => {
+    if (selectedPriceListIndex === null || !salon.priceList) return;
+    const newIndex = selectedPriceListIndex === salon.priceList.length - 1 
+      ? 0 
+      : selectedPriceListIndex + 1;
+    setSelectedPriceListIndex(newIndex);
+  }, [selectedPriceListIndex, salon.priceList]);
+
+  // Gallery navigation functions
+  const handlePrevGalleryImage = useCallback(() => {
+    if (selectedGalleryIndex === null || !salon.galleryPhotos) return;
+    const newIndex = selectedGalleryIndex === 0 
+      ? salon.galleryPhotos.length - 1 
+      : selectedGalleryIndex - 1;
+    setSelectedGalleryIndex(newIndex);
+  }, [selectedGalleryIndex, salon.galleryPhotos]);
+
+  const handleNextGalleryImage = useCallback(() => {
+    if (selectedGalleryIndex === null || !salon.galleryPhotos) return;
+    const newIndex = selectedGalleryIndex === salon.galleryPhotos.length - 1 
+      ? 0 
+      : selectedGalleryIndex + 1;
+    setSelectedGalleryIndex(newIndex);
+  }, [selectedGalleryIndex, salon.galleryPhotos]);
+
+  // Keyboard navigation for gallery and price list
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedGalleryIndex !== null) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handlePrevGalleryImage();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleNextGalleryImage();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          setSelectedGalleryIndex(null);
+        }
+      } else if (selectedPriceListIndex !== null) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handlePrevPriceImage();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleNextPriceImage();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          setSelectedPriceListImage(null);
+          setSelectedPriceListIndex(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedGalleryIndex, selectedPriceListIndex, handlePrevGalleryImage, handleNextGalleryImage, handlePrevPriceImage, handleNextPriceImage]);
 
   // Initialize map
   useEffect(() => {
@@ -363,6 +432,26 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
             </div>
           )}
 
+          {/* Секция галереи */}
+          {salon.galleryPhotos && salon.galleryPhotos.length > 0 && (
+            <div className="price-list-section">
+              <h3>{language === 'cs' ? 'Galerie' : 'Gallery'}</h3>
+              <div className="price-list-photos">
+                {salon.galleryPhotos.map((photo, index) => (
+                  <div key={index} className="price-list-photo">
+                    <img 
+                      src={photo} 
+                      alt={`${language === 'cs' ? 'Galerie' : 'Gallery'} ${index + 1}`}
+                      className="price-list-image"
+                      onClick={() => setSelectedGalleryIndex(index)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Секция ценника */}
           {salon.priceList && salon.priceList.length > 0 && (
             <div className="price-list-section">
@@ -374,7 +463,10 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
                       src={photo} 
                       alt={`${language === 'cs' ? 'Ceník' : 'Price List'} ${index + 1}`}
                       className="price-list-image"
-                      onClick={() => setSelectedPriceListImage(photo)}
+                      onClick={() => {
+                        setSelectedPriceListImage(photo);
+                        setSelectedPriceListIndex(index);
+                      }}
                       style={{ cursor: 'pointer' }}
                     />
                   </div>
@@ -466,18 +558,96 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
       />
 
       {/* Модальное окно для увеличенного изображения ценника */}
-      {selectedPriceListImage && (
-        <div className="price-list-modal-overlay" onClick={() => setSelectedPriceListImage(null)}>
+        {selectedPriceListImage && (
+          <div className="price-list-modal-overlay" onClick={() => {
+            setSelectedPriceListImage(null);
+            setSelectedPriceListIndex(null);
+          }}>
+            <div className="price-list-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="price-list-modal-image-container">
+                <img 
+                  src={selectedPriceListIndex !== null && salon.priceList ? salon.priceList[selectedPriceListIndex] : selectedPriceListImage} 
+                  alt={language === 'cs' ? 'Ceník' : 'Price List'}
+                  className="price-list-modal-image"
+                />
+                
+                {/* Navigation arrows */}
+                {salon.priceList && salon.priceList.length > 1 && (
+                  <>
+                    <button 
+                      className="gallery-modal-arrow gallery-modal-arrow-left"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrevPriceImage();
+                      }}
+                    >
+                      ‹
+                    </button>
+                    <button 
+                      className="gallery-modal-arrow gallery-modal-arrow-right"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNextPriceImage();
+                      }}
+                    >
+                      ›
+                    </button>
+                    <div className="gallery-modal-counter">
+                      {selectedPriceListIndex !== null ? selectedPriceListIndex + 1 : 1} / {salon.priceList.length}
+                    </div>
+                  </>
+                )}
+                
+                <button 
+                  className="price-list-modal-close"
+                  onClick={() => {
+                    setSelectedPriceListImage(null);
+                    setSelectedPriceListIndex(null);
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* Модальное окно для галереи с навигацией */}
+      {selectedGalleryIndex !== null && salon.galleryPhotos && (
+        <div className="price-list-modal-overlay" onClick={() => setSelectedGalleryIndex(null)}>
           <div className="price-list-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="price-list-modal-image-container">
               <img 
-                src={selectedPriceListImage} 
-                alt={language === 'cs' ? 'Ceník' : 'Price List'}
+                src={salon.galleryPhotos[selectedGalleryIndex]} 
+                alt={`${language === 'cs' ? 'Galerie' : 'Gallery'} ${selectedGalleryIndex + 1}`}
                 className="price-list-modal-image"
               />
+              
+              {/* Navigation arrows */}
+              <button 
+                className="gallery-modal-arrow gallery-modal-arrow-left"
+                onClick={handlePrevGalleryImage}
+                aria-label={language === 'cs' ? 'Předchozí foto' : 'Previous photo'}
+              >
+                ‹
+              </button>
+              <button 
+                className="gallery-modal-arrow gallery-modal-arrow-right"
+                onClick={handleNextGalleryImage}
+                aria-label={language === 'cs' ? 'Další foto' : 'Next photo'}
+              >
+                ›
+              </button>
+
+              {/* Counter */}
+              <div className="gallery-modal-counter">
+                {selectedGalleryIndex + 1} / {salon.galleryPhotos.length}
+              </div>
+
+              {/* Close button */}
               <button 
                 className="price-list-modal-close"
-                onClick={() => setSelectedPriceListImage(null)}
+                onClick={() => setSelectedGalleryIndex(null)}
               >
                 ×
               </button>

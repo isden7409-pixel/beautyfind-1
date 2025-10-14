@@ -3099,6 +3099,82 @@ body {
   background: rgba(255, 255, 255, 1);
 }
 
+/* Gallery modal navigation arrows */
+.gallery-modal-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 39px;
+  height: 39px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  transition: background 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.gallery-modal-arrow:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-modal-arrow-left {
+  left: -70px;
+}
+
+.gallery-modal-arrow-right {
+  right: -70px;
+}
+
+/* Gallery counter */
+.gallery-modal-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+/* Responsive arrows for smaller screens */
+@media (max-width: 1200px) {
+  .gallery-modal-arrow-left {
+    left: 10px;
+  }
+  
+  .gallery-modal-arrow-right {
+    right: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-modal-arrow {
+    width: 31px;
+    height: 31px;
+    font-size: 22px;
+  }
+  
+  .gallery-modal-counter {
+    font-size: 12px;
+    padding: 6px 12px;
+    bottom: 10px;
+  }
+}
 
 .price-list-photo {
   border-radius: 8px;

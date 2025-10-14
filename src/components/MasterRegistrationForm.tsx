@@ -101,6 +101,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     workingHours: undefined,
     byAppointment: false,
     paymentMethods: [],
+    galleryPhotos: [],
     priceList: []
   });
 
@@ -108,6 +109,7 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null);
   const [priceListFiles, setPriceListFiles] = useState<FileList | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -270,6 +272,63 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
     }
   };
 
+  const handleGalleryChange = async (files: FileList | null) => {
+    // Добавляем новые файлы к уже выбранным, не заменяя их (до 15)
+    const dataTransfer = new DataTransfer();
+    const existing = galleryFiles ? Array.from(galleryFiles) : [];
+    existing.forEach(f => dataTransfer.items.add(f));
+
+    if (files) {
+      Array.from(files).forEach(f => dataTransfer.items.add(f));
+    }
+    // Ограничиваем 15
+    const limited = new DataTransfer();
+    const all = Array.from(dataTransfer.files).slice(0, 15);
+    all.forEach(f => limited.items.add(f));
+
+    setGalleryFiles(limited.files);
+    
+    try {
+      const fileArray = Array.from(limited.files);
+      const urls = await uploadMultipleFiles(fileArray, `masters/gallery/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({
+        ...prev,
+        galleryPhotos: urls
+      }));
+    } catch (error) {
+      console.error('Error uploading gallery files:', error);
+      setFormData(prev => ({
+        ...prev,
+        galleryPhotos: Array.from(limited.files)
+      }));
+    }
+  };
+
+  const handleRemoveGalleryFile = async (index: number) => {
+    if (!galleryFiles) return;
+    
+    const dt = new DataTransfer();
+    Array.from(galleryFiles).forEach((f, i) => {
+      if (i !== index) dt.items.add(f);
+    });
+    
+    setGalleryFiles(dt.files);
+    
+    if (dt.files.length === 0) {
+      setFormData(prev => ({ ...prev, galleryPhotos: [] }));
+      return;
+    }
+    
+    try {
+      const fileArray = Array.from(dt.files);
+      const urls = await uploadMultipleFiles(fileArray, `masters/gallery/${userProfile?.uid || 'temp'}`);
+      setFormData(prev => ({ ...prev, galleryPhotos: urls }));
+    } catch (error) {
+      console.error('Error re-uploading gallery files:', error);
+      setFormData(prev => ({ ...prev, galleryPhotos: Array.from(dt.files) }));
+    }
+  };
+
   const [submitting, setSubmitting] = useState(false);
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [servicesError, setServicesError] = useState<string | null>(null);
@@ -383,12 +442,14 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
         workingHours: undefined,
         byAppointment: false,
         paymentMethods: [],
+        galleryPhotos: [],
         priceList: []
       });
       setSelectedServices([]);
       setSelectedLanguages([]);
       setSelectedPaymentMethods([]);
       setPhotoFile(null);
+      setGalleryFiles(null);
       setPriceListFiles(null);
       setPassword('');
       setConfirmPassword('');
@@ -783,6 +844,25 @@ const MasterRegistrationForm: React.FC<MasterRegistrationFormProps> = ({
             required={false}
           />
           <p className="form-help">{t.photoHelp}</p>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="gallery">{language === 'cs' ? 'Galerie prací' : 'Work Gallery'}</label>
+          <FileUpload
+            id="gallery"
+            multiple={true}
+            accept="image/*"
+            onChange={handleGalleryChange}
+            selectedFiles={galleryFiles}
+            onRemoveFile={handleRemoveGalleryFile}
+            maxFiles={15}
+            selectButtonText={t.selectFiles}
+            noFileText={t.noFileSelected}
+            filesSelectedText={t.filesSelected}
+            fileSelectedText={t.fileSelected}
+            className="form-file"
+          />
+          <p className="form-help">{language === 'cs' ? 'Nahrajte fotografie vašich prací do galerie (max 15)' : 'Upload photos of your work to gallery (max 15)'}</p>
         </div>
 
         <div className="form-group">

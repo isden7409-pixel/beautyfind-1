@@ -127,6 +127,18 @@ export const salonService = {
       }
     }
 
+    // Обрабатываем galleryPhotos
+    let galleryPhotosUrls: string[] = [];
+    if (data.galleryPhotos && data.galleryPhotos.length) {
+      if (typeof data.galleryPhotos[0] === 'string') {
+        // Уже загружены, это URL-адреса
+        galleryPhotosUrls = data.galleryPhotos as string[];
+      } else {
+        // Это файлы, нужно загрузить
+        galleryPhotosUrls = await uploadMultipleFiles(data.galleryPhotos as File[], 'salon_gallery');
+      }
+    }
+
     // Нормализуем workingHours: Firestore не принимает undefined
     const normalizedSalonWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
 
@@ -160,6 +172,7 @@ export const salonService = {
       photos: photoUrls,
       masters: [],
       paymentMethods: data.paymentMethods,
+      galleryPhotos: galleryPhotosUrls,
       priceList: priceListUrls,
       // Социальные сети
       whatsapp: data.whatsapp,
@@ -370,6 +383,18 @@ export const masterService = {
       }
     }
 
+    // Обрабатываем galleryPhotos
+    let galleryPhotosUrls: string[] = [];
+    if (data.galleryPhotos && data.galleryPhotos.length) {
+      if (typeof data.galleryPhotos[0] === 'string') {
+        // Уже загружены, это URL-адреса
+        galleryPhotosUrls = data.galleryPhotos as string[];
+      } else {
+        // Это файлы, нужно загрузить
+        galleryPhotosUrls = await uploadMultipleFiles(data.galleryPhotos as File[], 'master_gallery');
+      }
+    }
+
     // Нормализуем workingHours: Firestore не принимает undefined
     const normalizedMasterWorkingHours = data.byAppointment ? null : (Array.isArray(data.workingHours) ? data.workingHours : null);
 
@@ -390,6 +415,7 @@ export const masterService = {
       services: data.services,
       languages: data.languages,
       paymentMethods: data.paymentMethods,
+      galleryPhotos: galleryPhotosUrls,
       priceList: priceListUrls,
       // Социальные сети
       whatsapp: data.whatsapp,
