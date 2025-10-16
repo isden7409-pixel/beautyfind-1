@@ -6,6 +6,10 @@ import { db } from '../firebase/config';
 import ReviewsSection from '../components/ReviewsSection';
 import { reviewService, masterService } from '../firebase/services';
 import SalonBookingModal from '../components/SalonBookingModal';
+import { SalonBookingModalSimple } from '../components/booking/SalonBookingModalSimple';
+import { SalonBookingModalWithMasters } from '../components/booking/SalonBookingModalWithMasters';
+import { PopularityBadge } from '../components/PopularityBadge';
+import { useAuth } from '../components/auth/AuthProvider';
 import { translateServices, translateSpecialty, translateLanguages } from '../utils/serviceTranslations';
 import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
@@ -37,6 +41,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   const t = translations[language];
   const setCurrentViewMode = useSetCurrentViewMode();
   const navigate = useNavigate();
+  const { userProfile } = useAuth();
   
   // Realtime salon data (auto-updates card after profile save)
   const [currentSalon, setCurrentSalon] = useState<Salon>(initialSalon);
@@ -77,6 +82,8 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
 
   const reviewsCount = reviews.length;
   const averageRating = reviewsCount > 0 ? Number((reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviewsCount).toFixed(1)) : 0;
+
+  const hasMasters = mastersFromDb.length > 0;
 
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
@@ -567,15 +574,41 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
         />
       </div>
 
-      {/* Salon Booking Modal */}
-      <SalonBookingModal
-        salon={salon}
-        isOpen={showBookingModal}
-        onClose={handleBookingClose}
-        onBookingSuccess={handleBookingSuccess}
-        language={language}
-        translations={translations}
-      />
+      {/* Salon Booking Modal - NEW */}
+      {userProfile && (
+        hasMasters ? (
+          <SalonBookingModalWithMasters
+            salon={salon}
+            masters={mastersFromDb}
+            isOpen={showBookingModal}
+            onClose={handleBookingClose}
+            onBookingComplete={() => {
+              handleBookingClose();
+              alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+            }}
+            currentUserId={userProfile.uid}
+            currentUserName={userProfile.name}
+            currentUserEmail={userProfile.email}
+            currentUserPhone={userProfile.phone}
+            language={language}
+          />
+        ) : (
+          <SalonBookingModalSimple
+            salon={salon}
+            isOpen={showBookingModal}
+            onClose={handleBookingClose}
+            onBookingComplete={() => {
+              handleBookingClose();
+              alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+            }}
+            currentUserId={userProfile.uid}
+            currentUserName={userProfile.name}
+            currentUserEmail={userProfile.email}
+            currentUserPhone={userProfile.phone}
+            language={language}
+          />
+        )
+      )}
 
       {/* Модальное окно для увеличенного изображения ценника */}
         {selectedPriceListImage && (

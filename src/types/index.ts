@@ -1,3 +1,5 @@
+import { SalonAnalytics, MasterAnalytics } from './booking';
+
 // Структурированный адрес для Чехии
 export interface StructuredAddress {
   street: string; // název ulice
@@ -50,6 +52,8 @@ export interface Salon {
   priceList?: string[];
   // Галерея
   galleryPhotos?: string[];
+  // Аналитика
+  analytics?: SalonAnalytics;
 }
 
 // Typy pro mistry
@@ -98,6 +102,8 @@ export interface Master {
   // Галерея
   galleryPhotos?: string[];
   ownerId?: string; // ID владельца мастера (uid пользователя)
+  // Аналитика
+  analytics?: MasterAnalytics;
 }
 
 // Типы для отзывов

@@ -6,6 +6,9 @@ import { db } from '../firebase/config';
 import ReviewsSection from '../components/ReviewsSection';
 import { reviewService } from '../firebase/services';
 import BookingModal from '../components/BookingModal';
+import { MasterBookingModal } from '../components/booking/MasterBookingModal';
+import { PopularityBadge } from '../components/PopularityBadge';
+import { useAuth } from '../components/auth/AuthProvider';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import { formatExperienceYears } from '../utils/formatters';
 import WorkingHoursDisplay from '../components/WorkingHoursDisplay';
@@ -38,6 +41,7 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
   const t = translations[language];
   const setCurrentViewMode = useSetCurrentViewMode();
   const navigate = useNavigate();
+  const { userProfile } = useAuth();
 
   // Realtime master data
   const [currentMaster, setCurrentMaster] = useState<Master>(initialMaster);
@@ -623,14 +627,20 @@ const MasterDetailPage: React.FC<MasterDetailPageProps> = ({
         />
       </div>
 
-      {showBookingModal && (
-        <BookingModal
+      {showBookingModal && userProfile && (
+        <MasterBookingModal
           master={master}
           isOpen={showBookingModal}
-          language={language}
-          translations={translations}
           onClose={handleBookingClose}
-          onBookingSuccess={handleBookingSuccess}
+          onBookingComplete={() => {
+            handleBookingClose();
+            alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+          }}
+          currentUserId={userProfile.uid}
+          currentUserName={userProfile.name}
+          currentUserEmail={userProfile.email}
+          currentUserPhone={userProfile.phone}
+          language={language}
         />
       )}
 

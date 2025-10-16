@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Master, Language } from '../types';
 import { translateServices, translateLanguages } from '../utils/serviceTranslations';
 import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
 import { formatExperienceYears } from '../utils/formatters';
+import { useAuth } from './auth/AuthProvider';
 import LazyImage from './LazyImage';
+import { PopularityBadge } from './PopularityBadge';
+import { MasterBookingModal } from './booking/MasterBookingModal';
 
 interface MasterCardProps {
   master: Master;
@@ -23,6 +26,9 @@ const MasterCard: React.FC<MasterCardProps> = ({
 }) => {
   const t = translations[language];
   const { count, average } = useReviewSummary('master', master.id);
+  const { userProfile } = useAuth();
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  
   const displayAddress = master.structuredAddress
     ? formatStructuredAddressCzech(master.structuredAddress)
     : translateAddressToCzech(master.address || '', master.city);
@@ -66,6 +72,16 @@ const MasterCard: React.FC<MasterCardProps> = ({
         )}
       </div>
       <div className="master-info-main">
+        {/* Бейдж популярности */}
+        {master.analytics?.favoritesCount && master.analytics.favoritesCount >= 20 && (
+          <div className="mb-2">
+            <PopularityBadge 
+              favoritesCount={master.analytics.favoritesCount}
+              language={language}
+            />
+          </div>
+        )}
+        
         <h3>{master.name}</h3>
         <div className="master-meta-main">
           <div className="master-type-container">
@@ -115,8 +131,48 @@ const MasterCard: React.FC<MasterCardProps> = ({
         <div className="master-rating-main">
           ⭐ {average} ({count} {t.reviews})
         </div>
+        {/* Счетчик избранного */}
+        {master.analytics?.favoritesCount && master.analytics.favoritesCount > 0 && (
+          <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+            <span>❤️</span>
+            <span>{master.analytics.favoritesCount} {language === 'cs' ? 'lidí má v oblíbených' : 'people favorited'}</span>
+          </div>
+        )}
+        
         <button className="view-details-btn">{t.viewDetails}</button>
+        
+        {/* Кнопка Rezervace */}
+        {userProfile && master.isFreelancer && (
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowBookingModal(true);
+            }}
+            className="view-details-btn"
+            style={{ backgroundColor: '#ec4899', color: 'white', marginTop: '8px' }}
+          >
+            📅 {language === 'cs' ? 'Rezervace' : 'Booking'}
+          </button>
+        )}
       </div>
+
+      {/* Модальное окно резервации */}
+      {userProfile && master.isFreelancer && (
+        <MasterBookingModal
+          master={master}
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          onBookingComplete={() => {
+            setShowBookingModal(false);
+            alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+          }}
+          currentUserId={userProfile.uid}
+          currentUserName={userProfile.name}
+          currentUserEmail={userProfile.email}
+          currentUserPhone={userProfile.phone}
+          language={language}
+        />
+      )}
     </div>
   );
 };

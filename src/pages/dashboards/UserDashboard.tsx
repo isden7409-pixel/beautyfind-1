@@ -6,6 +6,7 @@ import { db } from '../../firebase/config';
 import { userService } from '../../firebase/services';
 import PageHeader from '../../components/PageHeader';
 import ClientProfileEditForm from '../../components/ClientProfileEditForm';
+import { UserBookingsTab } from '../../components/dashboard/UserBookingsTab';
 
 interface UserDashboardProps {
   language: 'cs' | 'en';
@@ -31,7 +32,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'favorites' | 'bookings' | 'profile' | 'reviews'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'rezervace' | 'favorites' | 'reviews'>('profile');
   const [editingProfile, setEditingProfile] = useState(false);
 
   const loadFavorites = useCallback(async () => {
@@ -200,10 +201,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     cs: {
       title: 'Můj účet',
       back: 'Hlavní stránka',
-      favorites: 'Oblíbené',
-      bookings: 'Rezervace',
       profile: 'Profil',
+      rezervace: 'Moje rezervace',
+      favorites: 'Oblíbené',
       reviews: 'Moje recenze',
+      bookings: 'Rezervace',
       totalBookings: 'Celkem rezervací',
       pendingBookings: 'Čekající',
       completedBookings: 'Dokončené',
@@ -235,10 +237,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     en: {
       title: 'My Account',
       back: 'Main Page',
-      favorites: 'Favorites',
-      bookings: 'Bookings',
       profile: 'Profile',
+      rezervace: 'My Bookings',
+      favorites: 'Favorites',
       reviews: 'My Reviews',
+      bookings: 'Bookings',
       totalBookings: 'Total Bookings',
       pendingBookings: 'Pending',
       completedBookings: 'Completed',
@@ -325,10 +328,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
           {t.profile}
         </button>
         <button 
-          className={activeTab === 'bookings' ? 'active' : ''}
-          onClick={() => setActiveTab('bookings')}
+          className={activeTab === 'rezervace' ? 'active' : ''}
+          onClick={() => setActiveTab('rezervace')}
         >
-          {t.bookings}
+          {t.rezervace}
         </button>
         <button 
           className={activeTab === 'favorites' ? 'active' : ''}
@@ -345,6 +348,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
       </div>
 
       <div className="dashboard-content">
+        {activeTab === 'rezervace' && userProfile && (
+          <UserBookingsTab
+            user={userProfile}
+            language={language}
+          />
+        )}
+
         {activeTab === 'favorites' && (
           <div className="favorites-section">
             <div className="favorites-content">
@@ -424,7 +434,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
           </div>
         )}
 
-        {activeTab === 'bookings' && (
+        {activeTab === 'rezervace' && (
           <div className="bookings-section">
             <h2>{t.bookings}</h2>
             {bookings.length === 0 ? (

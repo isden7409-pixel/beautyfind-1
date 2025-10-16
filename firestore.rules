@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // USERS
+    // ============================================================================
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // SALONS
+    // ============================================================================
+    match /salons/{salonId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid == resource.data.ownerId || 
+         request.auth.uid == request.resource.data.ownerId);
+    }
+    
+    // ============================================================================
+    // MASTERS
+    // ============================================================================
+    match /masters/{masterId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid == resource.data.ownerId || 
+         request.auth.uid == request.resource.data.ownerId);
+    }
+    
+    // ============================================================================
+    // REVIEWS
+    // ============================================================================
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - SERVICES
+    // ============================================================================
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && 
+        request.resource.data.providerId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - SCHEDULES
+    // ============================================================================
+    match /schedules/{scheduleId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+        (request.resource.data.providerId == request.auth.uid ||
+         // Для салонов - проверяем, что пользователь владелец салона
+         (request.resource.data.providerType == 'salon' && 
+          exists(/databases/$(database)/documents/salons/$(request.resource.data.providerId)) &&
+          get(/databases/$(database)/documents/salons/$(request.resource.data.providerId)).data.ownerId == request.auth.uid) ||
+         // Для мастеров - проверяем, что пользователь владелец мастера
+         (request.resource.data.providerType == 'master' && 
+          exists(/databases/$(database)/documents/masters/$(request.resource.data.providerId)) &&
+          get(/databases/$(database)/documents/masters/$(request.resource.data.providerId)).data.ownerId == request.auth.uid));
+      allow update, delete: if request.auth != null && 
+        (resource.data.providerId == request.auth.uid ||
+         // Для салонов - проверяем, что пользователь владелец салона
+         (resource.data.providerType == 'salon' && 
+          exists(/databases/$(database)/documents/salons/$(resource.data.providerId)) &&
+          get(/databases/$(database)/documents/salons/$(resource.data.providerId)).data.ownerId == request.auth.uid) ||
+         // Для мастеров - проверяем, что пользователь владелец мастера
+         (resource.data.providerType == 'master' && 
+          exists(/databases/$(database)/documents/masters/$(resource.data.providerId)) &&
+          get(/databases/$(database)/documents/masters/$(resource.data.providerId)).data.ownerId == request.auth.uid));
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - BOOKINGS
+    // ============================================================================
+    match /bookings/{bookingId} {
+      allow read: if request.auth != null && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.providerId == request.auth.uid);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.providerId == request.auth.uid);
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - SETTINGS
+    // ============================================================================
+    match /bookingSettings/{settingsId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && 
+        settingsId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - EMAIL TEMPLATES
+    // ============================================================================
+    match /emailTemplates/{templateId} {
+      allow read: if request.auth != null && templateId == request.auth.uid;
+      allow create, update: if request.auth != null && templateId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - BLOCKED TIME
+    // ============================================================================
+    match /blockedTime/{blockedId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - BOOKING HISTORY
+    // ============================================================================
+    match /bookingHistory/{historyId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - WAITING LIST
+    // ============================================================================
+    match /waitingList/{entryId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - FAVORITE HISTORY
+    // ============================================================================
+    match /favoriteHistory/{historyId} {
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.targetId == request.auth.uid);
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // BOOKING SYSTEM - CONFIRMATIONS
+    // ============================================================================
+    match /bookingConfirmations/{confirmId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+
+
+

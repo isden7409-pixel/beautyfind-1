@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Salon, Language } from '../types';
 import { translateServices } from '../utils/serviceTranslations';
 import { translateAddressToCzech, formatStructuredAddressCzech } from '../utils/cities';
 import { useReviewSummary } from '../hooks/useReviewSummary';
+import { useAuth } from './auth/AuthProvider';
 import PhotoCarousel from './PhotoCarousel';
+import { PopularityBadge } from './PopularityBadge';
+import { SalonBookingModalSimple } from './booking/SalonBookingModalSimple';
+import { SalonBookingModalWithMasters } from './booking/SalonBookingModalWithMasters';
 
 interface SalonCardProps {
   salon: Salon;
@@ -20,9 +24,14 @@ const SalonCard: React.FC<SalonCardProps> = ({
 }) => {
   const t = translations[language];
   const { count, average } = useReviewSummary('salon', salon.id);
+  const { userProfile } = useAuth();
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  
   const displayAddress = salon.structuredAddress
     ? formatStructuredAddressCzech(salon.structuredAddress)
     : translateAddressToCzech(salon.address || '', salon.city);
+  
+  const hasMasters = salon.masters && salon.masters.length > 0;
 
   return (
     <div 
@@ -40,6 +49,16 @@ const SalonCard: React.FC<SalonCardProps> = ({
         language={language}
       />
       <div className="salon-info">
+        {/* Бейдж популярности */}
+        {salon.analytics?.favoritesCount && salon.analytics.favoritesCount >= 20 && (
+          <div className="mb-2">
+            <PopularityBadge 
+              favoritesCount={salon.analytics.favoritesCount}
+              language={language}
+            />
+          </div>
+        )}
+        
         <h3>{salon.name}</h3>
         {displayAddress && (
           <p className="salon-address">
@@ -49,6 +68,13 @@ const SalonCard: React.FC<SalonCardProps> = ({
         <div className="salon-rating">
           ⭐ {average} ({count} {t.reviews})
         </div>
+        {/* Счетчик избранного */}
+        {salon.analytics?.favoritesCount && salon.analytics.favoritesCount > 0 && (
+          <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+            <span>❤️</span>
+            <span>{salon.analytics.favoritesCount} {language === 'cs' ? 'lidí má v oblíbených' : 'people favorited'}</span>
+          </div>
+        )}
         <div className="salon-services">
           {(() => {
             const allServices = translateServices(salon.services, language);
@@ -84,7 +110,57 @@ const SalonCard: React.FC<SalonCardProps> = ({
         >
           {t.viewDetails}
         </button>
+        
+        {/* Кнопка Rezervace */}
+        {userProfile && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowBookingModal(true);
+            }}
+            className="view-details-btn"
+            style={{ backgroundColor: '#ec4899', color: 'white', marginTop: '8px' }}
+          >
+            📅 {language === 'cs' ? 'Rezervace' : 'Booking'}
+          </button>
+        )}
       </div>
+
+      {/* Модальное окно резервации */}
+      {userProfile && (
+        hasMasters ? (
+          <SalonBookingModalWithMasters
+            salon={salon}
+            masters={salon.masters || []}
+            isOpen={showBookingModal}
+            onClose={() => setShowBookingModal(false)}
+            onBookingComplete={() => {
+              setShowBookingModal(false);
+              alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+            }}
+            currentUserId={userProfile.uid}
+            currentUserName={userProfile.name}
+            currentUserEmail={userProfile.email}
+            currentUserPhone={userProfile.phone}
+            language={language}
+          />
+        ) : (
+          <SalonBookingModalSimple
+            salon={salon}
+            isOpen={showBookingModal}
+            onClose={() => setShowBookingModal(false)}
+            onBookingComplete={() => {
+              setShowBookingModal(false);
+              alert(language === 'cs' ? 'Rezervace vytvořena!' : 'Booking created!');
+            }}
+            currentUserId={userProfile.uid}
+            currentUserName={userProfile.name}
+            currentUserEmail={userProfile.email}
+            currentUserPhone={userProfile.phone}
+            language={language}
+          />
+        )
+      )}
     </div>
   );
 };

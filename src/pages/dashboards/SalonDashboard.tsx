@@ -10,6 +10,10 @@ import SalonProfileEditForm from '../../components/SalonProfileEditForm';
 import SalonMasterRegistrationForm from '../../components/SalonMasterRegistrationForm';
 import SalonMasterCard from '../../components/SalonMasterCard';
 import { translateServices, translateLanguages } from '../../utils/serviceTranslations';
+import { ServiceManagement } from '../../components/ServiceManagement';
+import { ScheduleManagement } from '../../components/ScheduleManagement';
+import { SalonBookingsTab } from '../../components/dashboard/SalonBookingsTab';
+import { SalonAnalytics } from '../../components/dashboard/SalonAnalytics';
 
 interface SalonDashboardProps {
   language: 'cs' | 'en';
@@ -34,7 +38,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'masters' | 'bookings' | 'profile' | 'favorites' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'masters' | 'reviews'>('analytika');
   const [editingProfile, setEditingProfile] = useState(false);
   const [showMasterForm, setShowMasterForm] = useState(false);
   const [editingMaster, setEditingMaster] = useState<Master | null>(null);
@@ -389,10 +393,15 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     cs: {
       title: 'Kabinet salonu',
       back: 'Hlavní stránka',
-      overview: 'Přehled',
-      masters: 'Mistři',
-      bookings: 'Rezervace',
+      analytika: 'Analytika',
       profile: 'Profil',
+      sluzby: 'Naše služby',
+      rozvrh: 'Rozvrh',
+      rezervace: 'Rezervace',
+      masters: 'Mistři',
+      reviews: 'Recenze',
+      overview: 'Přehled',
+      bookings: 'Rezervace',
       favorites: 'Oblíbené',
       totalBookings: 'Celkem rezervací',
       pendingBookings: 'Čekající',
@@ -426,10 +435,15 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     en: {
       title: 'Salon Dashboard',
       back: 'Main Page',
-      overview: 'Overview',
-      masters: 'Masters',
-      bookings: 'Bookings',
+      analytika: 'Analytics',
       profile: 'Profile',
+      sluzby: 'Our Services',
+      rozvrh: 'Schedule',
+      rezervace: 'Bookings',
+      masters: 'Masters',
+      reviews: 'Reviews',
+      overview: 'Overview',
+      bookings: 'Bookings',
       favorites: 'Favorites',
       totalBookings: 'Total Bookings',
       pendingBookings: 'Pending',
@@ -537,22 +551,10 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
 
       <div className="dashboard-tabs">
         <button 
-          className={activeTab === 'overview' ? 'active' : ''}
-          onClick={() => setActiveTab('overview')}
+          className={activeTab === 'analytika' ? 'active' : ''}
+          onClick={() => setActiveTab('analytika')}
         >
-          {t.overview}
-        </button>
-        <button 
-          className={activeTab === 'masters' ? 'active' : ''}
-          onClick={() => setActiveTab('masters')}
-        >
-          {t.masters}
-        </button>
-        <button 
-          className={activeTab === 'bookings' ? 'active' : ''}
-          onClick={() => setActiveTab('bookings')}
-        >
-          {t.bookings}
+          {t.analytika}
         </button>
         <button 
           className={activeTab === 'profile' ? 'active' : ''}
@@ -561,21 +563,73 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           {t.profile}
         </button>
         <button 
-          className={activeTab === 'favorites' ? 'active' : ''}
-          onClick={() => setActiveTab('favorites')}
+          className={activeTab === 'sluzby' ? 'active' : ''}
+          onClick={() => setActiveTab('sluzby')}
         >
-          {t.favorites}
+          {t.sluzby}
+        </button>
+        <button 
+          className={activeTab === 'rozvrh' ? 'active' : ''}
+          onClick={() => setActiveTab('rozvrh')}
+        >
+          {t.rozvrh}
+        </button>
+        <button 
+          className={activeTab === 'rezervace' ? 'active' : ''}
+          onClick={() => setActiveTab('rezervace')}
+        >
+          {t.rezervace}
+        </button>
+        <button 
+          className={activeTab === 'masters' ? 'active' : ''}
+          onClick={() => setActiveTab('masters')}
+        >
+          {t.masters}
         </button>
         <button 
           className={activeTab === 'reviews' ? 'active' : ''}
           onClick={() => setActiveTab('reviews')}
         >
-          {language === 'cs' ? 'Moje recenze' : 'My Reviews'}
+          {t.reviews}
         </button>
       </div>
 
       <div className="dashboard-content">
-        {activeTab === 'overview' && (
+        {activeTab === 'analytika' && (
+          <SalonAnalytics 
+            salon={salon} 
+            masters={masters}
+            language={language} 
+          />
+        )}
+
+        {activeTab === 'sluzby' && (
+          <ServiceManagement
+            providerId={salon.id}
+            providerType="salon"
+            masters={masters}
+            language={language}
+          />
+        )}
+
+        {activeTab === 'rozvrh' && (
+          <ScheduleManagement
+            providerId={salon.id}
+            providerType="salon"
+            masters={masters}
+            language={language}
+          />
+        )}
+
+        {activeTab === 'rezervace' && (
+          <SalonBookingsTab
+            salon={salon}
+            masters={masters}
+            language={language}
+          />
+        )}
+
+        {activeTab === 'analytika' && (
           <div className="overview-section">
             <h2>Přehled</h2>
             <div className="salon-info">
@@ -643,7 +697,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           </div>
         )}
 
-        {activeTab === 'bookings' && (
+        {activeTab === 'rezervace' && (
           <div className="bookings-section">
             <h2>{t.bookings}</h2>
             {bookings.length === 0 ? (
@@ -865,7 +919,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           </div>
         )}
 
-        {activeTab === 'favorites' && (
+        {false && (
           <div className="favorites-section">
             
             <div className="favorites-content">

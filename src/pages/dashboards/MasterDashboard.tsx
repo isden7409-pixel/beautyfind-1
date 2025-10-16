@@ -9,6 +9,10 @@ import MasterProfileEditForm from '../../components/MasterProfileEditForm';
 import { formatExperienceYears } from '../../utils/formatters';
 import { translateServices, translateLanguages } from '../../utils/serviceTranslations';
 import { translateCityToCzech } from '../../utils/cities';
+import { ServiceManagement } from '../../components/ServiceManagement';
+import { ScheduleManagement } from '../../components/ScheduleManagement';
+import { MasterBookingsTab } from '../../components/dashboard/MasterBookingsTab';
+import { MasterAnalytics } from '../../components/dashboard/MasterAnalytics';
 
 interface MasterDashboardProps {
   language: 'cs' | 'en';
@@ -32,7 +36,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'schedule' | 'profile' | 'favorites' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'reviews'>('analytika');
   const [editingProfile, setEditingProfile] = useState(false);
 
   // Helper: format address without city because city is displayed separately
@@ -293,10 +297,15 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     cs: {
       title: 'Kabinet mistra',
       back: 'Hlavní stránka',
+      analytika: 'Analytika',
+      profile: 'Profil',
+      sluzby: 'Moje služby',
+      rozvrh: 'Rozvrh',
+      rezervace: 'Rezervace',
+      reviews: 'Recenze',
       overview: 'Přehled',
       bookings: 'Rezervace',
       schedule: 'Rozvrh',
-      profile: 'Profil',
       favorites: 'Oblíbené',
       totalBookings: 'Celkem rezervací',
       pendingBookings: 'Čekající',
@@ -329,7 +338,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       specialty: 'Specializace',
       experience: 'Zkušenosti',
       rating: 'Hodnocení',
-      reviews: 'recenzí',
+      reviewsCount: 'recenzí',
       scheduleEditingMessage: 'Úprava rozvrhu bude implementována zde',
       name: 'Jméno',
       phone: 'Telefon',
@@ -342,10 +351,15 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     en: {
       title: 'Master Dashboard',
       back: 'Main Page',
+      analytika: 'Analytics',
+      profile: 'Profile',
+      sluzby: 'My Services',
+      rozvrh: 'Schedule',
+      rezervace: 'Bookings',
+      reviews: 'Reviews',
       overview: 'Overview',
       bookings: 'Bookings',
       schedule: 'Schedule',
-      profile: 'Profile',
       favorites: 'Favorites',
       totalBookings: 'Total Bookings',
       pendingBookings: 'Pending',
@@ -378,7 +392,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       specialty: 'Specialty',
       experience: 'Experience',
       rating: 'Rating',
-      reviews: 'reviews',
+      reviewsCount: 'reviews',
       scheduleEditingMessage: 'Schedule editing will be implemented here',
       name: 'Name',
       phone: 'Phone',
@@ -470,22 +484,10 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
 
       <div className="dashboard-tabs">
         <button 
-          className={activeTab === 'overview' ? 'active' : ''}
-          onClick={() => setActiveTab('overview')}
+          className={activeTab === 'analytika' ? 'active' : ''}
+          onClick={() => setActiveTab('analytika')}
         >
-          {t.overview}
-        </button>
-        <button 
-          className={activeTab === 'bookings' ? 'active' : ''}
-          onClick={() => setActiveTab('bookings')}
-        >
-          {t.bookings}
-        </button>
-        <button 
-          className={activeTab === 'schedule' ? 'active' : ''}
-          onClick={() => setActiveTab('schedule')}
-        >
-          {t.schedule}
+          {t.analytika}
         </button>
         <button 
           className={activeTab === 'profile' ? 'active' : ''}
@@ -494,21 +496,63 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           {t.profile}
         </button>
         <button 
-          className={activeTab === 'favorites' ? 'active' : ''}
-          onClick={() => setActiveTab('favorites')}
+          className={activeTab === 'sluzby' ? 'active' : ''}
+          onClick={() => setActiveTab('sluzby')}
         >
-          {t.favorites}
+          {t.sluzby}
+        </button>
+        <button 
+          className={activeTab === 'rozvrh' ? 'active' : ''}
+          onClick={() => setActiveTab('rozvrh')}
+        >
+          {t.rozvrh}
+        </button>
+        <button 
+          className={activeTab === 'rezervace' ? 'active' : ''}
+          onClick={() => setActiveTab('rezervace')}
+        >
+          {t.rezervace}
         </button>
         <button 
           className={activeTab === 'reviews' ? 'active' : ''}
           onClick={() => setActiveTab('reviews')}
         >
-          {language === 'cs' ? 'Moje recenze' : 'My Reviews'}
+          {t.reviews}
         </button>
       </div>
 
       <div className="dashboard-content">
-        {activeTab === 'overview' && (
+        {activeTab === 'analytika' && (
+          <MasterAnalytics 
+            master={master} 
+            language={language} 
+          />
+        )}
+
+        {activeTab === 'sluzby' && (
+          <ServiceManagement
+            providerId={master.id}
+            providerType="master"
+            language={language}
+          />
+        )}
+
+        {activeTab === 'rozvrh' && (
+          <ScheduleManagement
+            providerId={master.id}
+            providerType="master"
+            language={language}
+          />
+        )}
+
+        {activeTab === 'rezervace' && (
+          <MasterBookingsTab
+            master={master}
+            language={language}
+          />
+        )}
+
+        {activeTab === 'analytika' && (
           <div className="overview-section">
             <h2>{t.overview}</h2>
             <div className="master-info">
@@ -520,7 +564,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           </div>
         )}
 
-        {activeTab === 'bookings' && (
+        {activeTab === 'rezervace' && (
           <div className="bookings-section">
             <h2>{t.bookings}</h2>
             {bookings.length === 0 ? (
@@ -569,7 +613,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           </div>
         )}
 
-        {activeTab === 'schedule' && (
+        {activeTab === 'rozvrh' && (
           <div className="schedule-section">
             <h2>{t.schedule}</h2>
             <button 
@@ -713,7 +757,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           </div>
         )}
 
-        {activeTab === 'favorites' && (
+        {false && (
           <div className="favorites-section">
             
             <div className="favorites-content">
