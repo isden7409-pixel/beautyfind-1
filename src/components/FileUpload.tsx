@@ -68,15 +68,26 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const getFileStatusText = () => {
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return noFileText;
+    // Если есть выбранные файлы
+    if (selectedFiles && selectedFiles.length > 0) {
+      if (multiple) {
+        return `${selectedFiles.length} ${selectedFiles.length === 1 ? fileSelectedText : filesSelectedText}`;
+      } else {
+        return selectedFiles[0].name;
+      }
     }
     
-    if (multiple) {
-      return `${selectedFiles.length} ${selectedFiles.length === 1 ? fileSelectedText : filesSelectedText}`;
-    } else {
-      return selectedFiles[0].name;
+    // Если есть предпросмотр URL (для редактирования)
+    if (previewUrls && previewUrls.length > 0) {
+      if (multiple) {
+        return `${previewUrls.length} ${previewUrls.length === 1 ? fileSelectedText : filesSelectedText}`;
+      } else {
+        return fileSelectedText;
+      }
     }
+    
+    // Если ничего нет
+    return noFileText;
   };
 
   return (

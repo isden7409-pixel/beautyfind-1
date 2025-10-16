@@ -155,15 +155,30 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
 
   return (
     <div className="service-management">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h2 className="text-2xl font-bold">{translations.title}</h2>
-        <button
-          onClick={handleAddNew}
-          disabled={hasMasters && !selectedMasterId}
-          className="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          + {translations.addService}
-        </button>
+        
+        {/* Текст о том, что нет услуг - только когда нет услуг */}
+        {!loading && services.length === 0 && (
+          <div style={{ marginTop: '16px', marginBottom: '24px' }}>
+            <p className="text-sm text-gray-500" style={{ fontWeight: 'bold' }}>
+              {translations.noServices}
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              {translations.noServicesDesc}
+            </p>
+          </div>
+        )}
+        
+        <div className="flex justify-end" style={{ marginTop: '16px' }}>
+          <button
+            onClick={handleAddNew}
+            disabled={hasMasters && !selectedMasterId}
+            className="schedule-button enable"
+          >
+            + {translations.addService}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -172,12 +187,18 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
         </div>
       )}
 
-      {/* Переключатель мастеров для салона */}
+      {/* Старый блок выбора мастера удалён (заменён новым ниже) */}
+
+      {loading && (
+        <div className="text-center py-8 text-gray-500">{translations.loading}</div>
+      )}
+
+      {/* Отступы под кнопкой и лейблом выбора мастера */}
       {hasMasters && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
+        <div style={{ marginTop: '16px' }}>
+          <div className="text-sm font-medium" style={{ marginBottom: '8px' }}>
             {translations.selectMaster}
-          </label>
+          </div>
           <div className="flex gap-2 flex-wrap">
             {masters.map((master) => (
               <button
@@ -185,9 +206,10 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
                 onClick={() => setSelectedMasterId(master.id)}
                 className={`px-4 py-2 rounded border ${
                   selectedMasterId === master.id
-                    ? 'bg-pink-500 text-white border-pink-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    ? 'schedule-button active-master small'
+                    : 'schedule-button secondary small'
                 }`}
+                style={{ marginRight: 12, marginBottom: 8 }}
               >
                 {master.name}
               </button>
@@ -196,34 +218,9 @@ export const ServiceManagement: React.FC<ServiceManagementProps> = ({
         </div>
       )}
 
-      {loading ? (
-        <div className="text-center py-8 text-gray-500">
-          {translations.loading}
-        </div>
-      ) : services.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {translations.noServices}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {translations.noServicesDesc}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Список услуг отображаем ПОД выбором мастера */}
+      {!loading && services.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0" style={{ marginTop: '24px' }}>
           {services.map((service) => (
             <ServiceCard
               key={service.id}
@@ -262,46 +259,45 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     : (service.description_en || service.description_cs);
 
   return (
-    <div className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {service.photoUrl && (
-        <img
-          src={service.photoUrl}
-          alt={serviceName}
-          className="w-full h-48 object-cover"
-        />
-      )}
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2">{serviceName}</h3>
+    <div className="service-card">
+      <div className="service-card-content">
+        <h3 className="service-card-title">{serviceName}</h3>
         
         {serviceDescription && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+          <p className="service-card-description">
             {serviceDescription}
           </p>
         )}
 
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-pink-600 font-semibold text-lg">
-            {service.price} {language === 'cs' ? 'Kč' : 'CZK'}
-          </div>
-          <div className="text-sm text-gray-500">
-            {service.duration} {translations.duration}
-          </div>
+        <div className="service-card-price">
+          {service.price} {language === 'cs' ? 'Kč' : 'CZK'}
         </div>
+        <div className="service-card-duration">
+          {service.duration} {translations.duration}
+        </div>
+      </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => onEdit(service)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 text-sm"
-          >
-            {translations.edit}
-          </button>
-          <button
-            onClick={() => onDelete(service)}
-            className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-          >
-            {translations.delete}
-          </button>
-        </div>
+      {service.photoUrl && (
+        <img
+          src={service.photoUrl}
+          alt={serviceName}
+          className="service-card-photo"
+        />
+      )}
+
+      <div className="service-card-actions">
+        <button
+          onClick={() => onEdit(service)}
+          className="service-card-button service-card-button-edit"
+        >
+          {translations.edit}
+        </button>
+        <button
+          onClick={() => onDelete(service)}
+          className="service-card-button service-card-button-delete"
+        >
+          {translations.delete}
+        </button>
       </div>
     </div>
   );

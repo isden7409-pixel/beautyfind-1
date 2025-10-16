@@ -297,7 +297,7 @@ export const SalonBookingsTab: React.FC<SalonBookingsTabProps> = ({
           ) : filteredBookings.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto icon-constrained text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

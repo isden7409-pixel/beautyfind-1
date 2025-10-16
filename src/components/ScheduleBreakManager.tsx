@@ -90,16 +90,16 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
   };
 
   return (
-    <div className="schedule-break-manager mt-3">
+    <div className="schedule-breaks-section">
       <div className="flex justify-between items-center mb-2">
         <label className="text-sm font-medium text-gray-700">
-          ⏸️ {translations.breaks}: 
+          ⏸️ {translations.breaks}:&nbsp;&nbsp;&nbsp;&nbsp;
         </label>
         {!showAddForm && (
           <button
             type="button"
             onClick={() => setShowAddForm(true)}
-            className="text-sm text-pink-600 hover:text-pink-700"
+            className="schedule-button secondary small"
           >
             + {translations.addBreak}
           </button>
@@ -112,18 +112,20 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
           {breaks.map((breakItem, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-200"
+              className="schedule-break-item"
             >
               <div className="flex-1">
                 <span className="font-medium text-sm">{breakItem.label || translations.breakTypes.break}</span>
-                <span className="text-gray-600 text-sm ml-2">
+                <span className="text-gray-600 text-sm" style={{ marginLeft: 8 }}>
                   {breakItem.start} - {breakItem.end}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => onRemoveBreak(index)}
-                className="text-red-600 hover:text-red-700 text-sm px-2"
+                className="schedule-icon-btn danger"
+                aria-label={translations.remove}
+                title={translations.remove}
               >
                 ✕
               </button>
@@ -132,7 +134,7 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
         </div>
       ) : (
         !showAddForm && (
-          <div className="text-sm text-gray-500 italic mb-3">
+          <div className="text-sm text-gray-500 italic mb-3" style={{ marginTop: 8 }}>
             {translations.noBreaks}
           </div>
         )
@@ -143,7 +145,7 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
         <div className="p-3 bg-blue-50 rounded border border-blue-200 space-y-3">
           <div>
             <label className="block text-sm font-medium mb-1">
-              {translations.label}
+              {translations.label}:&nbsp;&nbsp;&nbsp;&nbsp;
             </label>
             <select
               value={newBreak.label}
@@ -160,7 +162,7 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-sm font-medium mb-1">
-                {translations.from}
+                {translations.from}:&nbsp;&nbsp;&nbsp;&nbsp;
               </label>
               <select
                 value={newBreak.start}
@@ -177,7 +179,7 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                {translations.to}
+                {translations.to}:&nbsp;&nbsp;&nbsp;&nbsp;
               </label>
               <select
                 value={newBreak.end}
@@ -193,18 +195,19 @@ export const ScheduleBreakManager: React.FC<ScheduleBreakManagerProps> = ({
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex" style={{ marginTop: 12 }}>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="flex-1 px-3 py-2 border rounded hover:bg-gray-100 text-sm"
+              className="schedule-button secondary small flex-1"
             >
-              {translations.cancel}
+              ❌ {translations.cancel}
             </button>
             <button
               type="button"
               onClick={handleAddBreak}
-              className="flex-1 px-3 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 text-sm"
+              className="schedule-button secondary small flex-1"
+              style={{ marginLeft: 12 }}
             >
               ✅ {translations.save}
             </button>

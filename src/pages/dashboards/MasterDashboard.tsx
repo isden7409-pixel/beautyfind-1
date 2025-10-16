@@ -613,17 +613,13 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           </div>
         )}
 
-        {activeTab === 'rozvrh' && (
+        {activeTab === 'rozvrh' && master && (
           <div className="schedule-section">
-            <h2>{t.schedule}</h2>
-            <button 
-              onClick={() => setEditingSchedule(!editingSchedule)}
-              className="edit-button"
-            >
-              {editingSchedule ? t.save : t.edit}
-            </button>
-            {/* TODO: Implement schedule editing component */}
-            <p>{t.scheduleEditingMessage}</p>
+            <ScheduleManagement
+              providerId={master.id}
+              providerType="master"
+              language={language}
+            />
           </div>
         )}
 
