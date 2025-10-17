@@ -91,14 +91,33 @@ export const MasterBookingsTab: React.FC<MasterBookingsTabProps> = ({
   const translations = t[language];
 
   useEffect(() => {
-    loadBookings();
-  }, [master.id]);
+    if (master?.id) {
+      loadBookings();
+    }
+  }, [master?.id]);
 
   useEffect(() => {
     applyFilters();
   }, [incomingBookings, outgoingBookings, filterStatus, viewMode]);
 
+  // Если master не загружен, показываем сообщение
+  if (!master) {
+    return (
+      <div className="text-center py-8">
+        <div className="max-w-md mx-auto p-6 bg-yellow-50 rounded-lg border border-yellow-200 text-yellow-600 text-sm">
+          Načítání dat mistra, prosím počkejte...
+        </div>
+      </div>
+    );
+  }
+
   const loadBookings = async () => {
+    if (!master?.id) {
+      setError('Master data not loaded');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -110,7 +129,13 @@ export const MasterBookingsTab: React.FC<MasterBookingsTabProps> = ({
       const outgoing = await getClientBookings(master.id);
       setOutgoingBookings(outgoing);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error loading bookings:', err);
+      // Проверяем, если это ошибка индекса
+      if (err.message && err.message.includes('index')) {
+        setError('Systém se připravuje, prosím počkejte 2-3 minuty...');
+      } else {
+        setError('Načítání rezervací, prosím počkejte...');
+      }
     } finally {
       setLoading(false);
     }
@@ -184,176 +209,172 @@ export const MasterBookingsTab: React.FC<MasterBookingsTabProps> = ({
 
   return (
     <div className="master-bookings-tab">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{translations.title}</h2>
-
-        {/* View Mode Switcher */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setViewMode('incoming')}
-            className={`px-4 py-2 rounded ${
-              viewMode === 'incoming'
-                ? 'bg-pink-500 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-          >
-            📥 {translations.incoming}
-          </button>
-          <button
-            onClick={() => setViewMode('outgoing')}
-            className={`px-4 py-2 rounded ${
-              viewMode === 'outgoing'
-                ? 'bg-pink-500 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-          >
-            📤 {translations.outgoing}
-          </button>
-          <button
-            onClick={() => setViewMode('settings')}
-            className={`px-4 py-2 rounded ${
-              viewMode === 'settings'
-                ? 'bg-pink-500 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-          >
-            ⚙️ {translations.settings}
-          </button>
-          <button
-            onClick={() => setViewMode('emails')}
-            className={`px-4 py-2 rounded ${
-              viewMode === 'emails'
-                ? 'bg-pink-500 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-          >
-            📧 {translations.emails}
-          </button>
-        </div>
+      {/* Header Section */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">{translations.title}</h2>
+        <p className="text-gray-600 mb-6">Spravujte své rezervace a nastavení</p>
       </div>
 
+      {/* Loading State - показываем сразу под заголовком */}
+      {loading && (
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-lg border border-pink-200">
+            <div className="animate-spin w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full"></div>
+            <span className="text-pink-700 text-sm font-medium">{translations.loading}</span>
+          </div>
+        </div>
+      )}
+
+      {/* View Mode Switcher */}
+      <div className="btn-group" style={{ marginTop: '24px' }}>
+        <button
+          onClick={() => setViewMode('incoming')}
+          className={`btn-primary ${viewMode === 'incoming' ? 'active' : ''}`}
+        >
+          {translations.incoming}
+        </button>
+        <button
+          onClick={() => setViewMode('outgoing')}
+          className={`btn-primary ${viewMode === 'outgoing' ? 'active' : ''}`}
+        >
+          {translations.outgoing}
+        </button>
+        <button
+          onClick={() => setViewMode('settings')}
+          className={`btn-primary ${viewMode === 'settings' ? 'active' : ''}`}
+        >
+          {translations.settings}
+        </button>
+        <button
+          onClick={() => setViewMode('emails')}
+          className={`btn-primary ${viewMode === 'emails' ? 'active' : ''}`}
+        >
+          {translations.emails}
+        </button>
+      </div>
+
+      {/* Error Message */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
           {error}
         </div>
       )}
 
       {/* Settings View */}
       {viewMode === 'settings' && (
-        <BookingSettingsForm
-          providerId={master.id}
-          providerType="master"
-          language={language}
-        />
+        <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+          <BookingSettingsForm
+            providerId={master.id}
+            providerType="master"
+            language={language}
+          />
+        </div>
       )}
 
       {/* Emails View */}
       {viewMode === 'emails' && (
-        <EmailTemplateEditor
-          providerId={master.id}
-          providerType="master"
-          language={language}
-        />
+        <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
+          <EmailTemplateEditor
+            providerId={master.id}
+            providerType="master"
+            language={language}
+          />
+        </div>
       )}
 
       {/* List Views */}
-      {(viewMode === 'incoming' || viewMode === 'outgoing') && (
+      {(viewMode === 'incoming' || viewMode === 'outgoing') && !error && (
         <>
           {/* Description */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
-            {viewMode === 'incoming' ? translations.incomingDesc : translations.outgoingDesc}
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+            <h3 className="font-semibold text-blue-800">
+              {viewMode === 'incoming' ? translations.incomingDesc : translations.outgoingDesc}
+            </h3>
           </div>
 
-          {/* Status Filters */}
-          <div className="flex gap-2 mb-6 overflow-x-auto">
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-4 py-2 rounded whitespace-nowrap ${
-                filterStatus === 'all'
-                  ? 'bg-pink-500 text-white'
-                  : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              {translations.all} ({statusCounts.all})
-            </button>
-            <button
-              onClick={() => setFilterStatus('confirmed')}
-              className={`px-4 py-2 rounded whitespace-nowrap ${
-                filterStatus === 'confirmed'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-green-50 hover:bg-green-100 text-green-700'
-              }`}
-            >
-              🟢 {translations.confirmed} ({statusCounts.confirmed})
-            </button>
-            <button
-              onClick={() => setFilterStatus('completed')}
-              className={`px-4 py-2 rounded whitespace-nowrap ${
-                filterStatus === 'completed'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
-              }`}
-            >
-              🔵 {translations.completed} ({statusCounts.completed})
-            </button>
-            <button
-              onClick={() => setFilterStatus('cancelled')}
-              className={`px-4 py-2 rounded whitespace-nowrap ${
-                filterStatus === 'cancelled'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-red-50 hover:bg-red-100 text-red-700'
-              }`}
-            >
-              🔴 {translations.cancelled} ({statusCounts.cancelled})
-            </button>
+      {/* Status Filters */}
+      <div style={{ marginBottom: '32px', marginTop: '24px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '400', color: '#111827', marginBottom: '16px' }}>Filtry podle stavu</h3>
+            <div className="btn-group">
+              <button
+                onClick={() => setFilterStatus('all')}
+                className={`btn-status status-all ${filterStatus === 'all' ? 'active' : ''}`}
+              >
+                <span className="status-dot status-dot-gray"></span>
+                {translations.all} ({statusCounts.all})
+              </button>
+              <button
+                onClick={() => setFilterStatus('confirmed')}
+                className={`btn-status status-confirmed ${filterStatus === 'confirmed' ? 'active' : ''}`}
+              >
+                <span className="status-dot status-dot-green"></span>
+                {translations.confirmed} ({statusCounts.confirmed})
+              </button>
+              <button
+                onClick={() => setFilterStatus('completed')}
+                className={`btn-status status-completed ${filterStatus === 'completed' ? 'active' : ''}`}
+              >
+                <span className="status-dot status-dot-blue"></span>
+                {translations.completed} ({statusCounts.completed})
+              </button>
+              <button
+                onClick={() => setFilterStatus('cancelled')}
+                className={`btn-status status-cancelled ${filterStatus === 'cancelled' ? 'active' : ''}`}
+              >
+                <span className="status-dot status-dot-red"></span>
+                {translations.cancelled} ({statusCounts.cancelled})
+              </button>
+            </div>
           </div>
 
           {/* Bookings List */}
-          {loading ? (
-            <div className="text-center py-8 text-gray-500">{translations.loading}</div>
-          ) : filteredBookings.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded">
-              <svg
-                className="mx-auto icon-constrained text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                {translations.noBookings}
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {viewMode === 'incoming' ? translations.noIncomingDesc : translations.noOutgoingDesc}
-              </p>
+          {!loading && filteredBookings.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="max-w-md mx-auto p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {translations.noBookings}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  {viewMode === 'incoming' ? translations.noIncomingDesc : translations.noOutgoingDesc}
+                </p>
+                {viewMode === 'incoming' && (
+                  <div className="btn-group" style={{ justifyContent: 'center' }}>
+                    <button className="btn-action">
+                      Zveřejnit služby
+                    </button>
+                    <button className="btn-action">
+                      Upravit profil
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredBookings.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  userRole={viewMode === 'incoming' ? 'provider' : 'client'}
-                  onViewDetails={handleViewDetails}
-                  onCancel={handleCancelBooking}
-                  canCancel={true}
-                  language={language}
-                />
-              ))}
-            </div>
-          )}
+          ) : !loading && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredBookings.map((booking) => (
+                  <BookingCard
+                    key={booking.id}
+                    booking={booking}
+                    userRole={viewMode === 'incoming' ? 'provider' : 'client'}
+                    onViewDetails={handleViewDetails}
+                    onCancel={handleCancelBooking}
+                    canCancel={true}
+                    language={language}
+                  />
+                ))}
+              </div>
 
-          {/* Total Count */}
-          {filteredBookings.length > 0 && (
-            <div className="mt-6 text-sm text-gray-600 text-center">
-              {translations.total}: {filteredBookings.length}
-            </div>
+              {/* Total Count */}
+              <div className="mt-8 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-700 rounded-full border border-pink-200">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="font-semibold">{translations.total}: {filteredBookings.length}</span>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}

@@ -14,6 +14,7 @@ import { ServiceManagement } from '../../components/ServiceManagement';
 import { ScheduleManagement } from '../../components/ScheduleManagement';
 import { SalonBookingsTab } from '../../components/dashboard/SalonBookingsTab';
 import { SalonAnalytics } from '../../components/dashboard/SalonAnalytics';
+import FavoritesSection from '../../components/dashboard/FavoritesSection';
 
 interface SalonDashboardProps {
   language: 'cs' | 'en';
@@ -38,13 +39,15 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'masters' | 'reviews'>('analytika');
+  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'masters' | 'reviews' | 'oblibene'>('profile');
   const [editingProfile, setEditingProfile] = useState(false);
   const [showMasterForm, setShowMasterForm] = useState(false);
   const [editingMaster, setEditingMaster] = useState<Master | null>(null);
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
-  const [userReviews, setUserReviews] = useState<any[]>([]);
+  const [userReviews, setUserReviews] = useState<any[]>([]); // Отзывы, написанные салоном
+  const [salonReviews, setSalonReviews] = useState<any[]>([]); // Отзывы о салоне
+  const [mastersReviews, setMastersReviews] = useState<any[]>([]); // Отзывы о мастерах салона
 
   // Helper: format address without city because city is displayed separately
   const formatAddressWithoutCity = (addr: string | undefined, structured?: { street: string; houseNumber: string; orientationNumber?: string; postalCode: string; city: string; }) => {
@@ -109,6 +112,19 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
     }
   };
 
+  const deleteReview = async (reviewId: string) => {
+    try {
+      await reviewService.delete(reviewId);
+      // Перезагружаем все списки отзывов
+      loadSalonReviews();
+      loadMastersReviews();
+      loadUserReviews();
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert(language === 'cs' ? 'Chyba při mazání recenze' : 'Error deleting review');
+    }
+  };
+
   const loadUserReviews = useCallback(async () => {
     if (!userProfile) return;
 
@@ -145,6 +161,91 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       console.error('Error loading user reviews:', error);
     }
   }, [userProfile]);
+
+  const loadSalonReviews = useCallback(async () => {
+    if (!salon) return;
+
+    try {
+      // Загружаем отзывы о салоне (где salonId == salon.id)
+      const reviewsQuery = query(
+        collection(db, 'reviews'),
+        where('salonId', '==', salon.id)
+      );
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+      const reviewsData = reviewsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+      
+      // Загружаем данные пользователей, которые оставили отзывы
+      const reviewsWithUsers = await Promise.all(reviewsData.map(async (review) => {
+        let userData = null;
+        if (review.userId) {
+          const userDoc = await getDoc(doc(db, 'users', review.userId));
+          if (userDoc.exists()) {
+            userData = { id: userDoc.id, ...userDoc.data() };
+          }
+        }
+        return { ...review, userData };
+      }));
+
+      setSalonReviews(reviewsWithUsers);
+    } catch (error) {
+      console.error('Error loading salon reviews:', error);
+    }
+  }, [salon]);
+
+  const loadMastersReviews = useCallback(async () => {
+    if (!salon || masters.length === 0) return;
+
+    try {
+      // Получаем ID всех мастеров салона
+      const masterIds = masters.map(m => m.id);
+      
+      // Загружаем отзывы о всех мастерах салона
+      const allReviews: any[] = [];
+      
+      for (const masterId of masterIds) {
+        const reviewsQuery = query(
+          collection(db, 'reviews'),
+          where('masterId', '==', masterId)
+        );
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        const reviewsData = reviewsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as any[];
+        
+        allReviews.push(...reviewsData);
+      }
+      
+      // Загружаем данные пользователей и мастеров для каждого отзыва
+      const reviewsWithDetails = await Promise.all(allReviews.map(async (review) => {
+        let userData = null;
+        let masterData = null;
+        
+        if (review.userId) {
+          const userDoc = await getDoc(doc(db, 'users', review.userId));
+          if (userDoc.exists()) {
+            userData = { id: userDoc.id, ...userDoc.data() };
+          }
+        }
+        
+        if (review.masterId) {
+          const masterDoc = await getDoc(doc(db, 'masters', review.masterId));
+          if (masterDoc.exists()) {
+            masterData = { id: masterDoc.id, ...masterDoc.data() };
+          }
+        }
+        
+        return { ...review, userData, masterData };
+      }));
+
+      setMastersReviews(reviewsWithDetails);
+    } catch (error) {
+      console.error('Error loading masters reviews:', error);
+    }
+  }, [salon, masters]);
 
   const loadSalonData = useCallback(async () => {
     if (!userProfile) return;
@@ -260,6 +361,20 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       loadUserReviews();
     }
   }, [userProfile, loadFavorites, loadUserReviews, loadSalonData]);
+
+  // Загружаем отзывы о салоне когда salon загружен
+  useEffect(() => {
+    if (salon) {
+      loadSalonReviews();
+    }
+  }, [salon, loadSalonReviews]);
+
+  // Загружаем отзывы о мастерах салона когда masters загружены
+  useEffect(() => {
+    if (salon && masters.length > 0) {
+      loadMastersReviews();
+    }
+  }, [salon, masters, loadMastersReviews]);
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
     try {
@@ -400,6 +515,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       rezervace: 'Rezervace',
       masters: 'Mistři',
       reviews: 'Recenze',
+      oblibene: 'Oblíbené',
       overview: 'Přehled',
       bookings: 'Rezervace',
       favorites: 'Oblíbené',
@@ -442,6 +558,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
       rezervace: 'Bookings',
       masters: 'Masters',
       reviews: 'Reviews',
+      oblibene: 'Favorites',
       overview: 'Overview',
       bookings: 'Bookings',
       favorites: 'Favorites',
@@ -551,16 +668,16 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
 
       <div className="dashboard-tabs">
         <button 
-          className={activeTab === 'analytika' ? 'active' : ''}
-          onClick={() => setActiveTab('analytika')}
-        >
-          {t.analytika}
-        </button>
-        <button 
           className={activeTab === 'profile' ? 'active' : ''}
           onClick={() => setActiveTab('profile')}
         >
           {t.profile}
+        </button>
+        <button 
+          className={activeTab === 'masters' ? 'active' : ''}
+          onClick={() => setActiveTab('masters')}
+        >
+          {t.masters}
         </button>
         <button 
           className={activeTab === 'sluzby' ? 'active' : ''}
@@ -581,16 +698,22 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           {t.rezervace}
         </button>
         <button 
-          className={activeTab === 'masters' ? 'active' : ''}
-          onClick={() => setActiveTab('masters')}
-        >
-          {t.masters}
-        </button>
-        <button 
           className={activeTab === 'reviews' ? 'active' : ''}
           onClick={() => setActiveTab('reviews')}
         >
           {t.reviews}
+        </button>
+        <button 
+          className={activeTab === 'oblibene' ? 'active' : ''}
+          onClick={() => setActiveTab('oblibene')}
+        >
+          {t.oblibene}
+        </button>
+        <button 
+          className={activeTab === 'analytika' ? 'active' : ''}
+          onClick={() => setActiveTab('analytika')}
+        >
+          {t.analytika}
         </button>
       </div>
 
@@ -621,7 +744,7 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           />
         )}
 
-        {activeTab === 'rezervace' && (
+        {activeTab === 'rezervace' && salon && (
           <SalonBookingsTab
             salon={salon}
             masters={masters}
@@ -697,55 +820,6 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
           </div>
         )}
 
-        {activeTab === 'rezervace' && (
-          <div className="bookings-section">
-            <h2>{t.bookings}</h2>
-            {bookings.length === 0 ? (
-              <p>{t.noBookings}</p>
-            ) : (
-              <div className="bookings-list">
-                {bookings.map(booking => (
-                  <div key={booking.id} className="booking-item">
-                    <div className="booking-info">
-                      <h4>{booking.serviceName}</h4>
-                      <p>Client: {booking.clientName}</p>
-                      <p>Master: {masters.find(m => m.id === booking.masterId)?.name}</p>
-                      <p>Date: {booking.date} at {booking.time}</p>
-                      <p>Price: {booking.price} Kč</p>
-                      <p>Status: {t.status[booking.status]}</p>
-                    </div>
-                    <div className="booking-actions">
-                      {booking.status === 'pending' && (
-                        <>
-                          <button 
-                            onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                            className="confirm-button"
-                          >
-                            {t.confirm}
-                          </button>
-                          <button 
-                            onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                            className="cancel-button"
-                          >
-                            {t.cancel}
-                          </button>
-                        </>
-                      )}
-                      {booking.status === 'confirmed' && (
-                        <button 
-                          onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          className="complete-button"
-                        >
-                          {t.complete}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {activeTab === 'profile' && (
           <div className="profile-section">
@@ -1009,50 +1083,189 @@ const SalonDashboard: React.FC<SalonDashboardProps> = ({ language, onBack, onLan
 
         {activeTab === 'reviews' && (
           <div className="reviews-section">
-            <h2>{language === 'cs' ? 'Moje recenze' : 'My Reviews'}</h2>
-            {userReviews.length === 0 ? (
-              <p>{language === 'cs' ? 'Nemáte žádné recenze' : 'You have no reviews'}</p>
-            ) : (
-              <div className="reviews-list">
-                {userReviews.map(review => (
-                  <div key={review.id} className="review-item">
-                    <div className="review-content">
-                      <div className="review-header">
-                        <h4>
-                          {review.targetData ? (
-                            <span 
-                              className="clickable-target"
-                              onClick={() => window.location.href = `/${review.targetData.type}/${review.targetData.id}`}
-                            >
-                              {review.targetData.name}
-                            </span>
-                          ) : (
-                            <span className="deleted-target">
-                              {language === 'cs' ? 'Smazaný ' : 'Deleted '}
-                              {review.salonId ? (language === 'cs' ? 'salon' : 'salon') : (language === 'cs' ? 'mistr' : 'master')}
-                            </span>
-                          )}
-                        </h4>
-                        <div className="review-rating">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
-                          ))}
-                          <span className="rating-number">({review.rating})</span>
+            {/* Секция 1: Отзывы о салоне */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2>{language === 'cs' ? 'Recenze o mém salonu' : 'Reviews About My Salon'}</h2>
+              {salonReviews.length === 0 ? (
+                <p>{language === 'cs' ? 'Zatím žádné recenze o vašem salonu' : 'No reviews about your salon yet'}</p>
+              ) : (
+                <div className="reviews-list">
+                  {salonReviews.map(review => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-content">
+                        <div className="review-header">
+                          <h4>
+                            {review.userData ? (
+                              <span>{review.userData.name || (language === 'cs' ? 'Anonym' : 'Anonymous')}</span>
+                            ) : (
+                              <span>{language === 'cs' ? 'Anonym' : 'Anonymous'}</span>
+                            )}
+                          </h4>
+                          <div className="review-rating">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                            ))}
+                            <span className="rating-number">({review.rating})</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">"{review.comment}"</p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p className="review-date">
+                            {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                          </p>
+                          <button 
+                            onClick={() => deleteReview(review.id)}
+                            className="remove-button"
+                          >
+                            {language === 'cs' ? 'Smazat' : 'Delete'}
+                          </button>
                         </div>
                       </div>
-                      {review.comment && (
-                        <p className="review-comment">"{review.comment}"</p>
-                      )}
-                      <p className="review-date">
-                        {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
-                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Секция 2: Отзывы о мастерах салона */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2>{language === 'cs' ? 'Recenze našich mistrů' : 'Reviews of Our Masters'}</h2>
+              {mastersReviews.length === 0 ? (
+                <p>{language === 'cs' ? 'Zatím žádné recenze o vašich mistrech' : 'No reviews about your masters yet'}</p>
+              ) : (
+                <div className="reviews-list">
+                  {mastersReviews.map(review => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-content">
+                        <div className="review-header">
+                          <h4>
+                            <span style={{ fontWeight: 500, color: '#6b7280', fontSize: '0.9rem' }}>
+                              {language === 'cs' ? 'Klient: ' : 'Client: '}
+                            </span>
+                            {review.userData ? (
+                              <span>{review.userData.name || (language === 'cs' ? 'Anonym' : 'Anonymous')}</span>
+                            ) : (
+                              <span>{language === 'cs' ? 'Anonym' : 'Anonymous'}</span>
+                            )}
+                          </h4>
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 600, color: '#ec4899' }}>
+                              {language === 'cs' ? 'Mistr: ' : 'Master: '}
+                            </span>
+                            {review.masterData ? (
+                              <span 
+                                className="clickable-target"
+                                onClick={() => window.location.href = `/master/${review.masterData.id}`}
+                              >
+                                {review.masterData.name}
+                              </span>
+                            ) : (
+                              <span className="deleted-target">
+                                {language === 'cs' ? 'Smazaný mistr' : 'Deleted master'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="review-rating">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                            ))}
+                            <span className="rating-number">({review.rating})</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">"{review.comment}"</p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p className="review-date">
+                            {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                          </p>
+                          <button 
+                            onClick={() => deleteReview(review.id)}
+                            className="remove-button"
+                          >
+                            {language === 'cs' ? 'Smazat' : 'Delete'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Секция 3: Отзывы, написанные салоном */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2>{language === 'cs' ? 'Moje recenze' : 'My Reviews'}</h2>
+              {userReviews.length === 0 ? (
+                <p>{language === 'cs' ? 'Nemáte žádné recenze' : 'You have no reviews'}</p>
+              ) : (
+                <div className="reviews-list">
+                  {userReviews.map(review => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-content">
+                        <div className="review-header">
+                          <h4>
+                            {review.targetData ? (
+                              <span 
+                                className="clickable-target"
+                                onClick={() => window.location.href = `/${review.targetData.type}/${review.targetData.id}`}
+                              >
+                                {review.targetData.name}
+                              </span>
+                            ) : (
+                              <span className="deleted-target">
+                                {language === 'cs' ? 'Smazaný ' : 'Deleted '}
+                                {review.salonId ? (language === 'cs' ? 'salon' : 'salon') : (language === 'cs' ? 'mistr' : 'master')}
+                              </span>
+                            )}
+                          </h4>
+                          <div className="review-rating">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                            ))}
+                            <span className="rating-number">({review.rating})</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">"{review.comment}"</p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p className="review-date">
+                            {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                          </p>
+                          <button 
+                            onClick={() => deleteReview(review.id)}
+                            className="remove-button"
+                          >
+                            {language === 'cs' ? 'Smazat' : 'Delete'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
+
+        {activeTab === 'oblibene' && userProfile && (
+          <FavoritesSection 
+            language={language} 
+            userId={userProfile.uid}
+            onNavigateToSalon={(salonId) => {
+              // Navigate to salon detail page
+              window.location.href = `/salon/${salonId}`;
+            }}
+            onNavigateToMaster={(masterId) => {
+              // Navigate to master detail page
+              window.location.href = `/master/${masterId}`;
+            }}
+          />
+        )}
+
       </div>
     </div>
   );

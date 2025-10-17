@@ -309,9 +309,12 @@ function AppContent() {
   };
 
   const handleBack = () => {
+    console.log('App: handleBack called, history.length:', window.history.length);
     if (window.history.length > 1) {
+      console.log('App: Navigating back with navigate(-1)');
       navigate(-1);
     } else {
+      console.log('App: Going to salons list');
       setSelectedSalon(null);
       setSelectedMaster(null);
       setCurrentViewMode('salons');
@@ -320,9 +323,12 @@ function AppContent() {
   };
 
   const handleBackFromMaster = () => {
+    console.log('App: handleBackFromMaster called, history.length:', window.history.length);
     if (window.history.length > 1) {
+      console.log('App: Navigating back with navigate(-1)');
       navigate(-1);
     } else {
+      console.log('App: Going to masters list');
       setSelectedMaster(null);
       setCurrentViewMode('masters');
       navigate('/');
@@ -463,6 +469,12 @@ function AppContent() {
           navigate('/');
           setShowDashboard(true);
         }}
+        onGoToSalonsList={() => {
+          console.log('App: onGoToSalonsList -> go to / (salons)');
+          setShowDashboard(false);
+          setCurrentViewMode('salons');
+          navigate('/');
+        }}
       />
     );
   };
@@ -501,6 +513,12 @@ function AppContent() {
         onNavigateToDashboard={() => {
           navigate('/');
           setShowDashboard(true);
+        }}
+        onGoToMastersList={() => {
+          console.log('App: onGoToMastersList -> go to / (masters)');
+          setShowDashboard(false);
+          setCurrentViewMode('masters');
+          navigate('/');
         }}
       />
     );

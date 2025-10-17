@@ -31,13 +31,37 @@ service cloud.firestore {
     }
     
     // ============================================================================
+    // MASTERS - QUERY BY OWNER
+    // ============================================================================
+    match /masters/{masterId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid == resource.data.ownerId || 
+         request.auth.uid == request.resource.data.ownerId);
+    }
+    
+    // ============================================================================
     // REVIEWS
     // ============================================================================
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && 
-        request.auth.uid == resource.data.userId;
+        (request.auth.uid == resource.data.userId ||
+         // Салон может удалить отзыв о себе
+         (resource.data.salonId != null && 
+          exists(/databases/$(database)/documents/salons/$(resource.data.salonId)) &&
+          get(/databases/$(database)/documents/salons/$(resource.data.salonId)).data.ownerId == request.auth.uid) ||
+         // Мастер может удалить отзыв о себе
+         (resource.data.masterId != null && 
+          exists(/databases/$(database)/documents/masters/$(resource.data.masterId)) &&
+          get(/databases/$(database)/documents/masters/$(resource.data.masterId)).data.ownerId == request.auth.uid) ||
+         // Салон может удалить отзыв о мастере, который работает в этом салоне
+         (resource.data.masterId != null && 
+          exists(/databases/$(database)/documents/masters/$(resource.data.masterId)) &&
+          get(/databases/$(database)/documents/masters/$(resource.data.masterId)).data.salonId != null &&
+          exists(/databases/$(database)/documents/salons/$(get(/databases/$(database)/documents/masters/$(resource.data.masterId)).data.salonId)) &&
+          get(/databases/$(database)/documents/salons/$(get(/databases/$(database)/documents/masters/$(resource.data.masterId)).data.salonId)).data.ownerId == request.auth.uid));
     }
     
     // ============================================================================
@@ -80,9 +104,7 @@ service cloud.firestore {
     // BOOKING SYSTEM - BOOKINGS
     // ============================================================================
     match /bookings/{bookingId} {
-      allow read: if request.auth != null && 
-        (resource.data.clientId == request.auth.uid || 
-         resource.data.providerId == request.auth.uid);
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && 
         (resource.data.clientId == request.auth.uid || 

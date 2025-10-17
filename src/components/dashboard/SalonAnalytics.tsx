@@ -323,7 +323,7 @@ export const SalonAnalytics: React.FC<SalonAnalyticsProps> = ({
             {mastersData.map((masterData) => (
               <div key={masterData.masterId} className="bg-white border-2 border-gray-200 rounded-lg p-5 hover:border-pink-300 transition-colors">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl">
+                  <div className="w-6 h-6 bg-pink-100 rounded-full flex items-center justify-center text-sm">
                     👤
                   </div>
                   <div>
@@ -402,6 +402,8 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, subValue, icon, color
     </div>
   );
 };
+
+
 
 
 

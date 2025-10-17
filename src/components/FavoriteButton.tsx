@@ -50,6 +50,9 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     try {
       const result = await reviewService.toggleFavorite(currentUser.uid, itemId, itemType);
       setIsFavorite(result === 'added');
+      
+      // Отправляем событие об изменении избранного
+      window.dispatchEvent(new CustomEvent('favoritesChanged'));
     } catch (error) {
       console.error('Error toggling favorite:', error);
       alert(language === 'cs' ? 'Chyba při přidávání do oblíbených' : 'Error adding to favorites');

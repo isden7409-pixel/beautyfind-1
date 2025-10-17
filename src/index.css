@@ -7,6 +7,193 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Красивые кнопки с отступами - только для секции Rezervace */
+.master-bookings-tab .btn-group,
+.salon-bookings-tab .btn-group,
+.user-bookings-tab .btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px !important;
+  margin-bottom: 24px;
+}
+
+.master-bookings-tab .btn-primary,
+.salon-bookings-tab .btn-primary,
+.user-bookings-tab .btn-primary {
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  border: 2px solid #e5e7eb !important;
+  background: white !important;
+  color: #374151 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.master-bookings-tab .btn-primary:hover,
+.salon-bookings-tab .btn-primary:hover,
+.user-bookings-tab .btn-primary:hover {
+  border-color: #ec4899 !important;
+  background: #fdf2f8 !important;
+  transform: translateY(-2px) !important;
+}
+
+.master-bookings-tab .btn-primary.active,
+.salon-bookings-tab .btn-primary.active,
+.user-bookings-tab .btn-primary.active {
+  border: none !important;
+  background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4) !important;
+}
+
+.master-bookings-tab .btn-status,
+.salon-bookings-tab .btn-status,
+.user-bookings-tab .btn-status {
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  border: 2px solid #e5e7eb !important;
+  background: white !important;
+  color: #374151 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.master-bookings-tab .btn-status:hover,
+.salon-bookings-tab .btn-status:hover,
+.user-bookings-tab .btn-status:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.master-bookings-tab .btn-status.active,
+.salon-bookings-tab .btn-status.active,
+.user-bookings-tab .btn-status.active {
+  color: #374151 !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+  transform: scale(1.05) !important;
+}
+
+.master-bookings-tab .btn-status.status-all.active,
+.salon-bookings-tab .btn-status.status-all.active,
+.user-bookings-tab .btn-status.status-all.active {
+  background: rgba(107, 114, 128, 0.15) !important;
+  border-color: #6b7280 !important;
+}
+
+.master-bookings-tab .btn-status.status-confirmed.active,
+.salon-bookings-tab .btn-status.status-confirmed.active,
+.user-bookings-tab .btn-status.status-confirmed.active {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10b981 !important;
+}
+
+.master-bookings-tab .btn-status.status-completed.active,
+.salon-bookings-tab .btn-status.status-completed.active,
+.user-bookings-tab .btn-status.status-completed.active {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: #3b82f6 !important;
+}
+
+.master-bookings-tab .btn-status.status-cancelled.active,
+.salon-bookings-tab .btn-status.status-cancelled.active,
+.user-bookings-tab .btn-status.status-cancelled.active {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444 !important;
+}
+
+.master-bookings-tab .btn-action,
+.salon-bookings-tab .btn-action {
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  border: 2px solid #ec4899 !important;
+  background: white !important;
+  color: #ec4899 !important;
+  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.15) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.master-bookings-tab .btn-action:hover,
+.salon-bookings-tab .btn-action:hover {
+  background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4) !important;
+}
+
+.user-bookings-tab .btn-action {
+  padding: 10px 20px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  border: 2px solid #667eea !important;
+  background: white !important;
+  color: #667eea !important;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.user-bookings-tab .btn-action:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+}
+
+.status-dot {
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  display: inline-block !important;
+}
+
+.status-dot-gray { background: #9ca3af !important; }
+.status-dot-green { background: #10b981 !important; }
+.status-dot-blue { background: #3b82f6 !important; }
+.status-dot-red { background: #ef4444 !important; }
+
+/* Скрываем все дефолтные иконки браузера */
+img[src=""], img:not([src]), img[src*="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEzIDE2aC0xdi00aC0xbTEtNGguMDFNMjEgMTJhOSA5IDAgMTEtMTggMCA5IDkgMCAwMTE4IDB6IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+"] {
+  display: none !important;
+}
+
+/* Скрываем большие дефолтные иконки */
+img[width="24"], img[height="24"], img[width="32"], img[height="32"], img[width="48"], img[height="48"] {
+  display: none !important;
+}
+
+/* Скрываем ВСЕ черные кружки и элементы */
+div[style*="border-radius: 50%"], 
+div[style*="border-radius:50%"],
+div[class*="rounded-full"],
+div[class*="circle"],
+div[style*="background-color: black"],
+div[style*="background: black"],
+div[style*="border: black"],
+div[style*="color: black"] {
+  display: none !important;
+}
+
+/* Скрываем элементы с черным фоном */
+*[style*="background-color: black"],
+*[style*="background: black"],
+*[style*="border-color: black"],
+*[style*="color: black"] {
+  display: none !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

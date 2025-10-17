@@ -13,6 +13,7 @@ import { ServiceManagement } from '../../components/ServiceManagement';
 import { ScheduleManagement } from '../../components/ScheduleManagement';
 import { MasterBookingsTab } from '../../components/dashboard/MasterBookingsTab';
 import { MasterAnalytics } from '../../components/dashboard/MasterAnalytics';
+import FavoritesSection from '../../components/dashboard/FavoritesSection';
 
 interface MasterDashboardProps {
   language: 'cs' | 'en';
@@ -36,7 +37,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     totalReviews: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'reviews'>('analytika');
+  const [activeTab, setActiveTab] = useState<'analytika' | 'profile' | 'sluzby' | 'rozvrh' | 'rezervace' | 'reviews' | 'oblibene'>('profile');
   const [editingProfile, setEditingProfile] = useState(false);
 
   // Helper: format address without city because city is displayed separately
@@ -52,7 +53,8 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
   const [editingSchedule, setEditingSchedule] = useState(false);
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
-  const [userReviews, setUserReviews] = useState<any[]>([]);
+  const [userReviews, setUserReviews] = useState<any[]>([]); // Отзывы, написанные мастером
+  const [masterReviews, setMasterReviews] = useState<any[]>([]); // Отзывы о мастере
 
   const loadMasterData = useCallback(async () => {
     if (!userProfile?.uid) return;
@@ -66,8 +68,15 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         collection(db, 'masters'),
         where('email', '==', userProfile.email)
       );
-      const masterSnapshot = await getDocs(masterQuery);
-      console.log('Master query result:', masterSnapshot.empty ? 'No masters found' : 'Masters found');
+      
+      let masterSnapshot;
+      try {
+        masterSnapshot = await getDocs(masterQuery);
+        console.log('Master query result:', masterSnapshot.empty ? 'No masters found' : 'Masters found');
+      } catch (queryError: any) {
+        console.error('Error querying masters collection:', queryError);
+        throw new Error(`Failed to query masters: ${queryError.message}`);
+      }
       
       let masterData: Master | null = null;
       
@@ -215,6 +224,18 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     }
   };
 
+  const deleteReview = async (reviewId: string) => {
+    try {
+      await reviewService.delete(reviewId);
+      // Перезагружаем оба списка отзывов
+      loadMasterReviews();
+      loadUserReviews();
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert(language === 'cs' ? 'Chyba při mazání recenze' : 'Error deleting review');
+    }
+  };
+
   const loadUserReviews = useCallback(async () => {
     if (!userProfile) return;
 
@@ -252,6 +273,39 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
     }
   }, [userProfile?.uid, userProfile?.email]);
 
+  const loadMasterReviews = useCallback(async () => {
+    if (!master) return;
+
+    try {
+      // Загружаем отзывы о мастере (где masterId == master.id)
+      const reviewsQuery = query(
+        collection(db, 'reviews'),
+        where('masterId', '==', master.id)
+      );
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+      const reviewsData = reviewsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+      
+      // Загружаем данные пользователей, которые оставили отзывы
+      const reviewsWithUsers = await Promise.all(reviewsData.map(async (review) => {
+        let userData = null;
+        if (review.userId) {
+          const userDoc = await getDoc(doc(db, 'users', review.userId));
+          if (userDoc.exists()) {
+            userData = { id: userDoc.id, ...userDoc.data() };
+          }
+        }
+        return { ...review, userData };
+      }));
+
+      setMasterReviews(reviewsWithUsers);
+    } catch (error) {
+      console.error('Error loading master reviews:', error);
+    }
+  }, [master]);
+
   useEffect(() => {
     console.log('MasterDashboard useEffect - userProfile:', userProfile);
     if (userProfile && userProfile.type === 'master') {
@@ -262,6 +316,27 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       console.log('User is not a master, type:', userProfile.type);
     }
   }, [userProfile?.uid, userProfile?.type]);
+
+  // Загружаем отзывы о мастере когда master загружен
+  useEffect(() => {
+    if (master) {
+      loadMasterReviews();
+    }
+  }, [master, loadMasterReviews]);
+
+  // Проверяем аутентификацию после всех хуков
+  if (!userProfile) {
+    return (
+      <div className="text-center py-8">
+        <div className="max-w-md mx-auto p-6 bg-red-50 rounded-lg border border-red-200">
+          <h3 className="font-semibold text-red-800 mb-2">Chyba přihlášení</h3>
+          <p className="text-red-700 text-sm">
+            Uživatel není přihlášen. Prosím přihlaste se znovu.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const updateBookingStatus = async (bookingId: string, status: Booking['status']) => {
     try {
@@ -303,6 +378,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       rozvrh: 'Rozvrh',
       rezervace: 'Rezervace',
       reviews: 'Recenze',
+      oblibene: 'Oblíbené',
       overview: 'Přehled',
       bookings: 'Rezervace',
       schedule: 'Rozvrh',
@@ -357,6 +433,7 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
       rozvrh: 'Schedule',
       rezervace: 'Bookings',
       reviews: 'Reviews',
+      oblibene: 'Favorites',
       overview: 'Overview',
       bookings: 'Bookings',
       schedule: 'Schedule',
@@ -484,12 +561,6 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
 
       <div className="dashboard-tabs">
         <button 
-          className={activeTab === 'analytika' ? 'active' : ''}
-          onClick={() => setActiveTab('analytika')}
-        >
-          {t.analytika}
-        </button>
-        <button 
           className={activeTab === 'profile' ? 'active' : ''}
           onClick={() => setActiveTab('profile')}
         >
@@ -519,6 +590,18 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         >
           {t.reviews}
         </button>
+        <button 
+          className={activeTab === 'oblibene' ? 'active' : ''}
+          onClick={() => setActiveTab('oblibene')}
+        >
+          {t.oblibene}
+        </button>
+        <button 
+          className={activeTab === 'analytika' ? 'active' : ''}
+          onClick={() => setActiveTab('analytika')}
+        >
+          {t.analytika}
+        </button>
       </div>
 
       <div className="dashboard-content">
@@ -546,10 +629,18 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
         )}
 
         {activeTab === 'rezervace' && (
-          <MasterBookingsTab
-            master={master}
-            language={language}
-          />
+          master ? (
+            <MasterBookingsTab
+              master={master}
+              language={language}
+            />
+          ) : (
+            <div className="text-center py-8">
+              <div className="max-w-md mx-auto p-6 bg-red-50 rounded-lg border border-red-200 text-red-700 text-sm">
+                Načítání dat mistra, prosím počkejte...
+              </div>
+            </div>
+          )
         )}
 
         {activeTab === 'analytika' && (
@@ -564,54 +655,6 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
           </div>
         )}
 
-        {activeTab === 'rezervace' && (
-          <div className="bookings-section">
-            <h2>{t.bookings}</h2>
-            {bookings.length === 0 ? (
-              <p>{t.noBookings}</p>
-            ) : (
-              <div className="bookings-list">
-                {bookings.map(booking => (
-                  <div key={booking.id} className="booking-item">
-                    <div className="booking-info">
-                      <h4>{booking.serviceName}</h4>
-                      <p>{t.client}: {booking.clientName}</p>
-                      <p>{t.date}: {booking.date} at {booking.time}</p>
-                      <p>{t.price}: {booking.price} Kč</p>
-                      <p>{t.statusLabel}: {t.status[booking.status]}</p>
-                    </div>
-                    <div className="booking-actions">
-                      {booking.status === 'pending' && (
-                        <>
-                          <button 
-                            onClick={() => updateBookingStatus(booking.id, 'confirmed')}
-                            className="confirm-button"
-                          >
-                            {t.confirm}
-                          </button>
-                          <button 
-                            onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                            className="cancel-button"
-                          >
-                            {t.cancel}
-                          </button>
-                        </>
-                      )}
-                      {booking.status === 'confirmed' && (
-                        <button 
-                          onClick={() => updateBookingStatus(booking.id, 'completed')}
-                          className="complete-button"
-                        >
-                          {t.complete}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {activeTab === 'rozvrh' && master && (
           <div className="schedule-section">
@@ -843,50 +886,123 @@ const MasterDashboard: React.FC<MasterDashboardProps> = ({ language, onBack, onL
 
         {activeTab === 'reviews' && (
           <div className="reviews-section">
-            <h2>{language === 'cs' ? 'Moje recenze' : 'My Reviews'}</h2>
-            {userReviews.length === 0 ? (
-              <p>{language === 'cs' ? 'Nemáte žádné recenze' : 'You have no reviews'}</p>
-            ) : (
-              <div className="reviews-list">
-                {userReviews.map(review => (
-                  <div key={review.id} className="review-item">
-                    <div className="review-content">
-                      <div className="review-header">
-                        <h4>
-                          {review.targetData ? (
-                            <span 
-                              className="clickable-target"
-                              onClick={() => window.location.href = `/${review.targetData.type}/${review.targetData.id}`}
-                            >
-                              {review.targetData.name}
-                            </span>
-                          ) : (
-                            <span className="deleted-target">
-                              {language === 'cs' ? 'Smazaný ' : 'Deleted '}
-                              {review.salonId ? (language === 'cs' ? 'salon' : 'salon') : (language === 'cs' ? 'mistr' : 'master')}
-                            </span>
-                          )}
-                        </h4>
-                        <div className="review-rating">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
-                          ))}
-                          <span className="rating-number">({review.rating})</span>
+            {/* Секция 1: Отзывы о мастере */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2>{language === 'cs' ? 'Recenze o mně' : 'Reviews About Me'}</h2>
+              {masterReviews.length === 0 ? (
+                <p>{language === 'cs' ? 'Zatím žádné recenze o vás' : 'No reviews about you yet'}</p>
+              ) : (
+                <div className="reviews-list">
+                  {masterReviews.map(review => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-content">
+                        <div className="review-header">
+                          <h4>
+                            {review.userData ? (
+                              <span>{review.userData.name || (language === 'cs' ? 'Anonym' : 'Anonymous')}</span>
+                            ) : (
+                              <span>{language === 'cs' ? 'Anonym' : 'Anonymous'}</span>
+                            )}
+                          </h4>
+                          <div className="review-rating">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                            ))}
+                            <span className="rating-number">({review.rating})</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">"{review.comment}"</p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p className="review-date">
+                            {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                          </p>
+                          <button 
+                            onClick={() => deleteReview(review.id)}
+                            className="remove-button"
+                          >
+                            {language === 'cs' ? 'Smazat' : 'Delete'}
+                          </button>
                         </div>
                       </div>
-                      {review.comment && (
-                        <p className="review-comment">"{review.comment}"</p>
-                      )}
-                      <p className="review-date">
-                        {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
-                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Секция 2: Отзывы, написанные мастером */}
+            <div style={{ marginBottom: '40px' }}>
+              <h2>{language === 'cs' ? 'Moje recenze' : 'My Reviews'}</h2>
+              {userReviews.length === 0 ? (
+                <p>{language === 'cs' ? 'Nemáte žádné recenze' : 'You have no reviews'}</p>
+              ) : (
+                <div className="reviews-list">
+                  {userReviews.map(review => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-content">
+                        <div className="review-header">
+                          <h4>
+                            {review.targetData ? (
+                              <span 
+                                className="clickable-target"
+                                onClick={() => window.location.href = `/${review.targetData.type}/${review.targetData.id}`}
+                              >
+                                {review.targetData.name}
+                              </span>
+                            ) : (
+                              <span className="deleted-target">
+                                {language === 'cs' ? 'Smazaný ' : 'Deleted '}
+                                {review.salonId ? (language === 'cs' ? 'salon' : 'salon') : (language === 'cs' ? 'mistr' : 'master')}
+                              </span>
+                            )}
+                          </h4>
+                          <div className="review-rating">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i} className={i < review.rating ? 'star filled' : 'star'}>⭐</span>
+                            ))}
+                            <span className="rating-number">({review.rating})</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">"{review.comment}"</p>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <p className="review-date">
+                            {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                          </p>
+                          <button 
+                            onClick={() => deleteReview(review.id)}
+                            className="remove-button"
+                          >
+                            {language === 'cs' ? 'Smazat' : 'Delete'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
+
+        {activeTab === 'oblibene' && userProfile && (
+          <FavoritesSection 
+            language={language} 
+            userId={userProfile.uid}
+            onNavigateToSalon={(salonId) => {
+              // Navigate to salon detail page
+              window.location.href = `/salon/${salonId}`;
+            }}
+            onNavigateToMaster={(masterId) => {
+              // Navigate to master detail page
+              window.location.href = `/master/${masterId}`;
+            }}
+          />
+        )}
+
       </div>
     </div>
   );

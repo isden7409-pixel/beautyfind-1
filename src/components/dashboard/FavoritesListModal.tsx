@@ -269,7 +269,7 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-2xl">
+                      <div className="w-6 h-6 bg-pink-100 rounded-full flex items-center justify-center text-sm">
                         👤
                       </div>
                       <div>
@@ -325,6 +325,8 @@ export const FavoritesListModal: React.FC<FavoritesListModalProps> = ({
     </div>
   );
 };
+
+
 
 
 

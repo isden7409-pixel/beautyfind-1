@@ -88,22 +88,51 @@ export const UserBookingsTab: React.FC<UserBookingsTabProps> = ({
   const translations = t[language];
 
   useEffect(() => {
-    loadBookings();
-  }, [user.id]);
+    if (user?.id) {
+      loadBookings();
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     applyFilters();
     checkCancelPermissions();
   }, [bookings, filterStatus]);
 
+  // Если user не загружен, показываем сообщение
+  if (!user) {
+    return (
+      <div className="text-center py-8">
+        <div className="max-w-md mx-auto p-6 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div className="text-yellow-600 text-sm">
+            <strong>Načítání dat uživatele...</strong>
+            <br />
+            Prosím počkejte, dokud se data načtou.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const loadBookings = async () => {
+    if (!user?.id) {
+      setError('User data not loaded');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
       const data = await getClientBookings(user.id);
       setBookings(data);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error loading bookings:', err);
+      // Проверяем, если это ошибка индекса
+      if (err.message && err.message.includes('index')) {
+        setError('Systém se připravuje, prosím počkejte 2-3 minuty...');
+      } else {
+        setError('Načítání rezervací, prosím počkejte...');
+      }
     } finally {
       setLoading(false);
     }
@@ -196,132 +225,145 @@ export const UserBookingsTab: React.FC<UserBookingsTabProps> = ({
 
   return (
     <div className="user-bookings-tab">
-      <h2 className="text-2xl font-bold mb-6">{translations.title}</h2>
+      {/* Header Section */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">{translations.title}</h2>
+        <p className="text-gray-600 mb-6">Spravujte své rezervace</p>
+      </div>
 
+      {/* Loading State - показываем сразу под заголовком */}
+      {loading && (
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 rounded-lg border border-pink-200">
+            <div className="animate-spin w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full"></div>
+            <span className="text-pink-700 text-sm font-medium">{translations.loading}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h3 className="font-semibold text-red-800 mb-1">Chyba při načítání</h3>
+          <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
       {/* Statistics */}
       {bookings.length > 0 && (
-        <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-blue-50 rounded border border-blue-200">
-            <div className="text-2xl font-bold text-blue-600">{bookings.length}</div>
-            <div className="text-sm text-gray-600">{translations.totalBookings}</div>
-          </div>
-          <div className="p-4 bg-green-50 rounded border border-green-200">
-            <div className="text-xl font-bold text-green-600">
-              {totalSpent.toLocaleString()} {language === 'cs' ? 'Kč' : 'CZK'}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Statistiky</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200">
+              <div className="text-3xl font-bold text-blue-600 mb-1">{bookings.length}</div>
+              <div className="text-sm text-blue-700 font-medium">{translations.totalBookings}</div>
             </div>
-            <div className="text-sm text-gray-600">{translations.totalSpent}</div>
-          </div>
-          <div className="p-4 bg-purple-50 rounded border border-purple-200">
-            <div className="text-sm font-bold text-purple-600">
-              {firstBooking ? new Date(firstBooking.date).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US') : '—'}
+            <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {totalSpent.toLocaleString()} {language === 'cs' ? 'Kč' : 'CZK'}
+              </div>
+              <div className="text-sm text-green-700 font-medium">{translations.totalSpent}</div>
             </div>
-            <div className="text-sm text-gray-600">{translations.firstBooking}</div>
-          </div>
-          <div className="p-4 bg-pink-50 rounded border border-pink-200">
-            <div className="text-sm font-bold text-pink-600">
-              {lastBooking ? new Date(lastBooking.date).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US') : '—'}
+            <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-2 border-purple-200">
+              <div className="text-sm font-bold text-purple-600 mb-1">
+                {firstBooking ? new Date(firstBooking.date).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US') : '—'}
+              </div>
+              <div className="text-sm text-purple-700 font-medium">{translations.firstBooking}</div>
             </div>
-            <div className="text-sm text-gray-600">{translations.lastBooking}</div>
+            <div className="p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl border-2 border-pink-200">
+              <div className="text-sm font-bold text-pink-600 mb-1">
+                {lastBooking ? new Date(lastBooking.date).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US') : '—'}
+              </div>
+              <div className="text-sm text-pink-700 font-medium">{translations.lastBooking}</div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Status Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto">
-        <button
-          onClick={() => setFilterStatus('all')}
-          className={`px-4 py-2 rounded whitespace-nowrap ${
-            filterStatus === 'all'
-              ? 'bg-pink-500 text-white'
-              : 'bg-gray-100 hover:bg-gray-200'
-          }`}
-        >
-          {translations.all} ({statusCounts.all})
-        </button>
-        <button
-          onClick={() => setFilterStatus('confirmed')}
-          className={`px-4 py-2 rounded whitespace-nowrap ${
-            filterStatus === 'confirmed'
-              ? 'bg-green-500 text-white'
-              : 'bg-green-50 hover:bg-green-100 text-green-700'
-          }`}
-        >
-          🟢 {translations.confirmed} ({statusCounts.confirmed})
-        </button>
-        <button
-          onClick={() => setFilterStatus('completed')}
-          className={`px-4 py-2 rounded whitespace-nowrap ${
-            filterStatus === 'completed'
-              ? 'bg-blue-500 text-white'
-              : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
-          }`}
-        >
-          🔵 {translations.completed} ({statusCounts.completed})
-        </button>
-        <button
-          onClick={() => setFilterStatus('cancelled')}
-          className={`px-4 py-2 rounded whitespace-nowrap ${
-            filterStatus === 'cancelled'
-              ? 'bg-red-500 text-white'
-              : 'bg-red-50 hover:bg-red-100 text-red-700'
-          }`}
-        >
-          🔴 {translations.cancelled} ({statusCounts.cancelled})
-        </button>
+      <div style={{ marginBottom: '32px', marginTop: '24px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>Filtry podle stavu</h3>
+        <div className="btn-group">
+          <button
+            onClick={() => setFilterStatus('all')}
+            className={`btn-status status-all ${filterStatus === 'all' ? 'active' : ''}`}
+          >
+            <span className="status-dot status-dot-gray"></span>
+            {translations.all} ({statusCounts.all})
+          </button>
+          <button
+            onClick={() => setFilterStatus('confirmed')}
+            className={`btn-status status-confirmed ${filterStatus === 'confirmed' ? 'active' : ''}`}
+          >
+            <span className="status-dot status-dot-green"></span>
+            {translations.confirmed} ({statusCounts.confirmed})
+          </button>
+          <button
+            onClick={() => setFilterStatus('completed')}
+            className={`btn-status status-completed ${filterStatus === 'completed' ? 'active' : ''}`}
+          >
+            <span className="status-dot status-dot-blue"></span>
+            {translations.completed} ({statusCounts.completed})
+          </button>
+          <button
+            onClick={() => setFilterStatus('cancelled')}
+            className={`btn-status status-cancelled ${filterStatus === 'cancelled' ? 'active' : ''}`}
+          >
+            <span className="status-dot status-dot-red"></span>
+            {translations.cancelled} ({statusCounts.cancelled})
+          </button>
+        </div>
       </div>
 
       {/* Bookings List */}
-      {loading ? (
-        <div className="text-center py-8 text-gray-500">{translations.loading}</div>
-      ) : filteredBookings.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded">
-          <svg
-            className="mx-auto icon-constrained text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {translations.noBookings}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {translations.noBookingsDesc}
-          </p>
+      {!loading && filteredBookings.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="max-w-md mx-auto p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {translations.noBookings}
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              {translations.noBookingsDesc}
+            </p>
+        <div className="btn-group" style={{ justifyContent: 'flex-start', marginTop: '32px' }}>
+          <button className="btn-action">
+            Najít služby
+          </button>
+          <button className="btn-action">
+            Zobrazit salony
+          </button>
+          <button className="btn-action">
+            Zobrazit mistry
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredBookings.map((booking) => (
-            <BookingCard
-              key={booking.id}
-              booking={booking}
-              userRole="client"
-              onViewDetails={handleViewDetails}
-              onCancel={handleCancelBooking}
-              canCancel={cancelPermissions.get(booking.id) || false}
-              language={language}
-            />
-          ))}
+          </div>
         </div>
-      )}
+      ) : !loading && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredBookings.map((booking) => (
+              <BookingCard
+                key={booking.id}
+                booking={booking}
+                userRole="client"
+                onViewDetails={handleViewDetails}
+                onCancel={handleCancelBooking}
+                canCancel={cancelPermissions.get(booking.id) || false}
+                language={language}
+              />
+            ))}
+          </div>
 
-      {/* Total Count */}
-      {filteredBookings.length > 0 && (
-        <div className="mt-6 text-sm text-gray-600 text-center">
-          {translations.total}: {filteredBookings.length}
-        </div>
+          {/* Total Count */}
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-700 rounded-full border border-pink-200">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="font-semibold">{translations.total}: {filteredBookings.length}</span>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Booking Details Modal */}

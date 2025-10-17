@@ -669,6 +669,10 @@ export const userService = {
       favoriteMasters: userProfile.favoriteMasters || [],
       favoriteSalons: userProfile.favoriteSalons || []
     };
+  },
+
+  async deleteReview(reviewId: string): Promise<void> {
+    return reviewService.delete(reviewId);
   }
 };
 

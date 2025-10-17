@@ -799,6 +799,17 @@
   width: 100% !important;
 }
 
+/* Стили для секции избранного - только для дашбордов салона/мастера */
+.favorites-section {
+  padding: 20px 0;
+}
+
+.favorites-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
 /* Улучшенные стили для форм регистрации в админ панели */
 .admin-panel .registration-form {
   background: white;

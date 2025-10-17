@@ -27,6 +27,7 @@ interface SalonDetailPageProps {
   onMasterSelect: (master: Master) => void;
   onLanguageChange: (language: Language) => void;
   onNavigateToDashboard?: () => void;
+  onGoToSalonsList?: () => void;
 }
 
 const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
@@ -37,6 +38,7 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   onMasterSelect,
   onLanguageChange,
   onNavigateToDashboard,
+  onGoToSalonsList,
 }) => {
   const t = translations[language];
   const setCurrentViewMode = useSetCurrentViewMode();
@@ -120,6 +122,11 @@ const SalonDetailPage: React.FC<SalonDetailPageProps> = ({
   };
 
   const handleGoToSalonsList = () => {
+    console.log('SalonDetailPage: handleGoToSalonsList called');
+    if (onGoToSalonsList) {
+      onGoToSalonsList();
+      return;
+    }
     setCurrentViewMode('salons');
     navigate('/');
   };

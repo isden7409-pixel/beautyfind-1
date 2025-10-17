@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/auth/AuthProvider';
 import { UserBooking, DashboardStats, Salon, Master } from '../../types';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { userService } from '../../firebase/services';
 import PageHeader from '../../components/PageHeader';
 import ClientProfileEditForm from '../../components/ClientProfileEditForm';
 import { UserBookingsTab } from '../../components/dashboard/UserBookingsTab';
+import { useReviewSummary } from '../../hooks/useReviewSummary';
 
 interface UserDashboardProps {
   language: 'cs' | 'en';
@@ -18,7 +19,7 @@ interface UserDashboardProps {
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLanguageChange, onNavigate, onOpenRegistration, onOpenPremium }) => {
-  const { userProfile } = useAuth();
+  const { userProfile, updateProfile: updateUserProfile } = useAuth();
   const [favoriteSalons, setFavoriteSalons] = useState<Salon[]>([]);
   const [favoriteMasters, setFavoriteMasters] = useState<Master[]>([]);
   const [userReviews, setUserReviews] = useState<any[]>([]);
@@ -182,15 +183,26 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
     }
   };
 
+  const deleteReview = async (reviewId: string) => {
+    try {
+      await userService.deleteReview(reviewId);
+      // Перезагружаем список отзывов
+      loadUserReviews();
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert(language === 'cs' ? 'Chyba při mazání recenze' : 'Error deleting review');
+    }
+  };
+
   const updateProfile = async (updatedData: any) => {
     if (!userProfile) return;
 
     try {
-      const userRef = doc(db, 'users', userProfile.uid);
-      await updateDoc(userRef, updatedData);
+      // Используем метод updateProfile из AuthProvider
+      // Он обновит данные в Firebase И локальное состояние
+      await updateUserProfile(updatedData);
       setEditingProfile(false);
-      // Обновляем локальное состояние профиля
-      // userProfile будет обновлен через AuthProvider
+      // Данные обновятся автоматически без перезагрузки страницы!
     } catch (error) {
       console.error('Error updating profile:', error);
       throw error;
@@ -273,6 +285,67 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
   };
 
   const t = translations[language];
+
+  // Компонент карточки салона с реальным рейтингом
+  const FavoriteSalonCard: React.FC<{ salon: Salon }> = ({ salon }) => {
+    const { count, average } = useReviewSummary('salon', salon.id);
+    
+    return (
+      <div className="favorite-item" onClick={() => window.location.href = `/salon/${salon.id}`}>
+        <div className="favorite-item-content">
+          <h4>{salon.name}</h4>
+          <p className="favorite-item-address">
+            {salon.structuredAddress
+              ? require('../../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
+              : salon.address
+            }
+          </p>
+          <p className="favorite-item-rating">
+            ⭐ {average.toFixed(1)} ({count} {language === 'cs' ? 'recenzí' : 'reviews'})
+          </p>
+        </div>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            removeFavorite(salon.id, 'salon');
+          }}
+          className="remove-button"
+        >
+          {t.remove}
+        </button>
+      </div>
+    );
+  };
+
+  // Компонент карточки мастера с реальным рейтингом
+  const FavoriteMasterCard: React.FC<{ master: Master }> = ({ master }) => {
+    const { count, average } = useReviewSummary('master', master.id);
+    
+    return (
+      <div className="favorite-item" onClick={() => window.location.href = `/master/${master.id}`}>
+        <div className="favorite-item-content">
+          <h4>{master.name}</h4>
+          <p className="favorite-item-address">
+            {master.structuredAddress 
+              ? require('../../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
+              : master.address}
+          </p>
+          <p className="favorite-item-rating">
+            ⭐ {average.toFixed(1)} ({count} {language === 'cs' ? 'recenzí' : 'reviews'})
+          </p>
+        </div>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            removeFavorite(master.id, 'master');
+          }}
+          className="remove-button"
+        >
+          {t.remove}
+        </button>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -363,29 +436,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
                 {favoriteSalons.length > 0 ? (
                   <div className="favorites-grid">
                     {favoriteSalons.map((salon) => (
-                      <div key={salon.id} className="favorite-item" onClick={() => window.location.href = `/salon/${salon.id}`}>
-                        <div className="favorite-item-content">
-                          <h4>{salon.name}</h4>
-                          <p className="favorite-item-address">
-                            {salon.structuredAddress
-                              ? require('../../utils/cities').formatStructuredAddressCzech(salon.structuredAddress)
-                              : salon.address
-                            }
-                          </p>
-                          <p className="favorite-item-rating">
-                            ⭐ {salon.rating} ({salon.reviews} {language === 'cs' ? 'recenzí' : 'reviews'})
-                          </p>
-                        </div>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFavorite(salon.id, 'salon');
-                          }}
-                          className="remove-button"
-                        >
-                          {t.remove}
-                        </button>
-                      </div>
+                      <FavoriteSalonCard key={salon.id} salon={salon} />
                     ))}
                   </div>
                 ) : (
@@ -400,28 +451,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
                 {favoriteMasters.length > 0 ? (
                   <div className="favorites-grid">
                     {favoriteMasters.map((master) => (
-                      <div key={master.id} className="favorite-item" onClick={() => window.location.href = `/master/${master.id}`}>
-                        <div className="favorite-item-content">
-                          <h4>{master.name}</h4>
-                          <p className="favorite-item-address">
-                            {master.structuredAddress 
-                              ? require('../../utils/cities').formatStructuredAddressCzech(master.structuredAddress)
-                              : master.address}
-                          </p>
-                          <p className="favorite-item-rating">
-                            ⭐ {master.rating} ({master.reviews} {language === 'cs' ? 'recenzí' : 'reviews'})
-                          </p>
-                        </div>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFavorite(master.id, 'master');
-                          }}
-                          className="remove-button"
-                        >
-                          {t.remove}
-                        </button>
-                      </div>
+                      <FavoriteMasterCard key={master.id} master={master} />
                     ))}
                   </div>
                 ) : (
@@ -434,35 +464,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
           </div>
         )}
 
-        {activeTab === 'rezervace' && (
-          <div className="bookings-section">
-            <h2>{t.bookings}</h2>
-            {bookings.length === 0 ? (
-              <p>{t.noBookings}</p>
-            ) : (
-              <div className="bookings-list">
-                {bookings.map(booking => (
-                  <div key={booking.id} className="booking-item">
-                    <div className="booking-info">
-                      <h4>{booking.serviceName}</h4>
-                      <p>{booking.date} at {booking.time}</p>
-                      <p>Price: {booking.price} Kč</p>
-                      <p>Status: {t.status[booking.status]}</p>
-                    </div>
-                    {booking.status === 'pending' && (
-                      <button 
-                        onClick={() => cancelBooking(booking.id)}
-                        className="cancel-button"
-                      >
-                        {t.cancel}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {activeTab === 'profile' && (
           <div className="profile-section">
@@ -547,9 +548,17 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ language, onBack, onLangu
                       {review.comment && (
                         <p className="review-comment">"{review.comment}"</p>
                       )}
-                      <p className="review-date">
-                        {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
-                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p className="review-date">
+                          {new Date(review.createdAt?.toDate ? review.createdAt.toDate() : review.createdAt).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US')}
+                        </p>
+                        <button 
+                          onClick={() => deleteReview(review.id)}
+                          className="remove-button"
+                        >
+                          {language === 'cs' ? 'Smazat' : 'Delete'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
